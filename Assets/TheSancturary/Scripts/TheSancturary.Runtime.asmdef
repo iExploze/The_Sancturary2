@@ -1,0 +1,19 @@
+{
+  "name": "TheSancturary.Runtime",
+  "rootNamespace": "TheSancturary",
+  "references": [
+    "Unity.AI.Navigation",
+    "Unity.InputSystem",
+    "Unity.Netcode.Runtime",
+    "Unity.ugui"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
