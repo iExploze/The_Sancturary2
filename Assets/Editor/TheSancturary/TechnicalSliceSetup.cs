@@ -17,6 +17,8 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
@@ -25,19 +27,22 @@ namespace TheSancturary.Editor
 {
     public static class TechnicalSliceSetup
     {
-        private const string Root = "Assets/TheSancturary";
-        private const string ScenesFolder = Root + "/Scenes";
-        private const string PrefabsFolder = Root + "/Prefabs";
-        private const string ScriptableObjectsFolder = Root + "/ScriptableObjects";
-        private const string MaterialsFolder = Root + "/Materials";
-        private const string NavigationFolder = Root + "/Navigation";
+        private const string ScenesFolder = "Assets/Scenes";
+        private const string PrefabsFolder = "Assets/Prefabs";
+        private const string ScriptableObjectsFolder = "Assets/ScriptableObjects";
+        private const string MaterialsFolder = "Assets/Materials";
+        private const string NavigationFolder = "Assets/Navigation";
         private const string MainMenuScenePath = ScenesFolder + "/MainMenu.unity";
         private const string GrayboxScenePath = ScenesFolder + "/GrayboxPrototype.unity";
         private const string PlayerPrefabPath = PrefabsFolder + "/NetworkPlayer.prefab";
         private const string MonsterPrefabPath = PrefabsFolder + "/NetworkMonster.prefab";
         private const string MonsterDefinitionPath = ScriptableObjectsFolder + "/PrototypeMonster.asset";
+        private const string PlayerMovementDefinitionPath = ScriptableObjectsFolder + "/PrototypePlayerMovement.asset";
+        private const string TirednessVolumeProfilePath = ScriptableObjectsFolder + "/PrototypePlayerTirednessVolumeProfile.asset";
         private const string NavMeshDataPath = NavigationFolder + "/GrayboxNavMesh.asset";
         private const string NetworkPrefabsPath = "Assets/DefaultNetworkPrefabs.asset";
+        private const string GameplayInstructionsText =
+            "WASD Move   |   Left Shift Sprint   |   Left Control Crouch   |   Space Jump   |   Esc Cursor   |   F10 Disconnect";
 
         private static readonly Color EnvironmentColor = new(0.24f, 0.27f, 0.29f);
         private static readonly Color WallColor = new(0.18f, 0.2f, 0.22f);
@@ -57,7 +62,12 @@ namespace TheSancturary.Editor
                 EnsureFolders();
                 var materials = CreateMaterials();
                 var definition = CreateMonsterDefinition();
-                var playerPrefab = CreatePlayerPrefab(materials.Player);
+                var movementDefinition = CreatePlayerMovementDefinition();
+                var tirednessVolumeProfile = CreateTirednessVolumeProfile();
+                var playerPrefab = CreatePlayerPrefab(
+                    materials.Player,
+                    movementDefinition,
+                    tirednessVolumeProfile);
                 var monsterPrefab = CreateMonsterPrefab(materials.Monster, definition);
                 var networkPrefabs = ConfigureNetworkPrefabs(playerPrefab, monsterPrefab);
 
@@ -86,6 +96,34 @@ namespace TheSancturary.Editor
             Debug.Log("VERTICAL_SLICE_VALIDATION_SUCCESS");
         }
 
+        [MenuItem("The Sancturary/Configure Player Movement")]
+        public static void ConfigurePlayerMovement()
+        {
+            ConfigurePlayerMovementBatch();
+        }
+
+        public static void ConfigurePlayerMovementBatch()
+        {
+            try
+            {
+                EnsureFolders();
+                var movementDefinition = CreatePlayerMovementDefinition();
+                var tirednessVolumeProfile = CreateTirednessVolumeProfile();
+                ConfigureExistingPlayerPrefab(movementDefinition, tirednessVolumeProfile);
+                UpdateGameplayInstructions();
+
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+                ValidateGeneratedSlice();
+                Debug.Log("PLAYER_MOVEMENT_SETUP_SUCCESS");
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                throw;
+            }
+        }
+
         public static void BuildWindowsDevelopmentBatch()
         {
             ValidateGeneratedSlice();
@@ -112,12 +150,11 @@ namespace TheSancturary.Editor
 
         private static void EnsureFolders()
         {
-            EnsureFolder("Assets", "TheSancturary");
-            EnsureFolder(Root, "Scenes");
-            EnsureFolder(Root, "Prefabs");
-            EnsureFolder(Root, "ScriptableObjects");
-            EnsureFolder(Root, "Materials");
-            EnsureFolder(Root, "Navigation");
+            EnsureFolder("Assets", "Scenes");
+            EnsureFolder("Assets", "Prefabs");
+            EnsureFolder("Assets", "ScriptableObjects");
+            EnsureFolder("Assets", "Materials");
+            EnsureFolder("Assets", "Navigation");
         }
 
         private static void EnsureFolder(string parent, string child)
@@ -175,7 +212,73 @@ namespace TheSancturary.Editor
             return definition;
         }
 
-        private static GameObject CreatePlayerPrefab(Material material)
+        private static PlayerMovementDefinition CreatePlayerMovementDefinition()
+        {
+            var definition = AssetDatabase.LoadAssetAtPath<PlayerMovementDefinition>(PlayerMovementDefinitionPath);
+            if (definition != null)
+            {
+                return definition;
+            }
+
+            definition = ScriptableObject.CreateInstance<PlayerMovementDefinition>();
+            AssetDatabase.CreateAsset(definition, PlayerMovementDefinitionPath);
+
+            var serialized = new SerializedObject(definition);
+            serialized.FindProperty("walkSpeed").floatValue = 4.5f;
+            serialized.FindProperty("sprintSpeed").floatValue = 7f;
+            serialized.FindProperty("crouchSpeed").floatValue = 2.25f;
+            serialized.FindProperty("jumpHeight").floatValue = 1.2f;
+            serialized.FindProperty("gravity").floatValue = -22f;
+            serialized.FindProperty("maximumStamina").floatValue = 100f;
+            serialized.FindProperty("sprintDrainPerSecond").floatValue = 25f;
+            serialized.FindProperty("staminaRecoveryPerSecond").floatValue = 20f;
+            serialized.FindProperty("staminaRecoveryDelay").floatValue = 1f;
+            serialized.FindProperty("exhaustedRecoveryThreshold").floatValue = 20f;
+            serialized.FindProperty("standingControllerHeight").floatValue = 1.8f;
+            serialized.FindProperty("crouchingControllerHeight").floatValue = 1.1f;
+            serialized.FindProperty("standingCameraHeight").floatValue = 1.6f;
+            serialized.FindProperty("crouchingCameraHeight").floatValue = 1f;
+            serialized.FindProperty("crouchTransitionSpeed").floatValue = 10f;
+            serialized.FindProperty("vignetteFadeInThreshold").floatValue = 0.5f;
+            serialized.FindProperty("maximumVignetteIntensity").floatValue = 0.42f;
+            serialized.FindProperty("vignetteResponseSpeed").floatValue = 5f;
+            serialized.FindProperty("exhaustedPulseStrength").floatValue = 0.04f;
+            serialized.FindProperty("exhaustedPulseSpeed").floatValue = 2.5f;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return definition;
+        }
+
+        private static VolumeProfile CreateTirednessVolumeProfile()
+        {
+            var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(TirednessVolumeProfilePath);
+            if (profile == null)
+            {
+                profile = ScriptableObject.CreateInstance<VolumeProfile>();
+                AssetDatabase.CreateAsset(profile, TirednessVolumeProfilePath);
+            }
+
+            profile.components.RemoveAll(component => component == null);
+            if (!profile.TryGet(out Vignette vignette) || vignette == null)
+            {
+                vignette = profile.Add<Vignette>(true);
+                AssetDatabase.AddObjectToAsset(vignette, profile);
+            }
+
+            vignette.active = true;
+            vignette.color.Override(Color.black);
+            vignette.center.Override(new Vector2(0.5f, 0.5f));
+            vignette.intensity.Override(0f);
+            vignette.smoothness.Override(0.35f);
+            vignette.rounded.Override(false);
+            EditorUtility.SetDirty(vignette);
+            EditorUtility.SetDirty(profile);
+            return profile;
+        }
+
+        private static GameObject CreatePlayerPrefab(
+            Material material,
+            PlayerMovementDefinition movementDefinition,
+            VolumeProfile tirednessVolumeProfile)
         {
             var root = new GameObject("NetworkPlayer");
             try
@@ -217,6 +320,7 @@ namespace TheSancturary.Editor
                 SetReference(controller, "playerCamera", playerCamera);
                 SetReference(controller, "playerAudioListener", audioListener);
                 SetReference(controller, "bodyRenderer", bodyRenderer);
+                ConfigurePlayerObject(root, movementDefinition, tirednessVolumeProfile);
 
                 var prefab = PrefabUtility.SaveAsPrefabAsset(root, PlayerPrefabPath);
                 if (prefab == null || networkObject == null)
@@ -230,6 +334,112 @@ namespace TheSancturary.Editor
             {
                 Object.DestroyImmediate(root);
             }
+        }
+
+        private static GameObject ConfigureExistingPlayerPrefab(
+            PlayerMovementDefinition movementDefinition,
+            VolumeProfile tirednessVolumeProfile)
+        {
+            var root = PrefabUtility.LoadPrefabContents(PlayerPrefabPath);
+            try
+            {
+                ConfigurePlayerObject(root, movementDefinition, tirednessVolumeProfile);
+                var prefab = PrefabUtility.SaveAsPrefabAsset(root, PlayerPrefabPath);
+                if (prefab == null)
+                {
+                    throw new InvalidOperationException("Failed to update the network player prefab.");
+                }
+
+                return prefab;
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+
+        private static void ConfigurePlayerObject(
+            GameObject root,
+            PlayerMovementDefinition movementDefinition,
+            VolumeProfile tirednessVolumeProfile)
+        {
+            var characterController = root.GetComponent<CharacterController>();
+            var controller = root.GetComponent<NetworkPlayerController>();
+            var cameraPivot = root.transform.Find("CameraPivot");
+            var bodyVisual = root.transform.Find("Body");
+            var bodyRenderer = bodyVisual?.GetComponent<Renderer>();
+            var playerCamera = cameraPivot?.GetComponentInChildren<Camera>(true);
+            var audioListener = cameraPivot?.GetComponentInChildren<AudioListener>(true);
+            if (characterController == null ||
+                controller == null ||
+                cameraPivot == null ||
+                bodyVisual == null ||
+                bodyRenderer == null ||
+                playerCamera == null ||
+                audioListener == null)
+            {
+                throw new InvalidOperationException("Network player prefab is missing its existing movement or presentation hierarchy.");
+            }
+
+            var existingBottom = characterController.center.y - characterController.height * 0.5f;
+            characterController.height = movementDefinition.StandingControllerHeight;
+            var center = characterController.center;
+            center.y = existingBottom + movementDefinition.StandingControllerHeight * 0.5f;
+            characterController.center = center;
+
+            var cameraPosition = cameraPivot.localPosition;
+            cameraPosition.y = movementDefinition.StandingCameraHeight;
+            cameraPivot.localPosition = cameraPosition;
+
+            var cameraData = playerCamera.GetComponent<UniversalAdditionalCameraData>();
+            if (cameraData == null)
+            {
+                cameraData = playerCamera.gameObject.AddComponent<UniversalAdditionalCameraData>();
+            }
+
+            cameraData.renderPostProcessing = true;
+
+            var volumeTransform = root.transform.Find("TirednessVolume");
+            if (volumeTransform == null)
+            {
+                volumeTransform = new GameObject("TirednessVolume").transform;
+                volumeTransform.SetParent(root.transform, false);
+            }
+
+            var volume = volumeTransform.GetComponent<Volume>();
+            if (volume == null)
+            {
+                volume = volumeTransform.gameObject.AddComponent<Volume>();
+            }
+
+            volume.isGlobal = true;
+            volume.priority = 100f;
+            volume.weight = 1f;
+            volume.sharedProfile = tirednessVolumeProfile;
+            volume.enabled = false;
+
+            var tirednessVignette = root.GetComponent<LocalTirednessVignette>();
+            if (tirednessVignette == null)
+            {
+                tirednessVignette = root.AddComponent<LocalTirednessVignette>();
+            }
+
+            SetReference(tirednessVignette, "movementDefinition", movementDefinition);
+            SetReference(tirednessVignette, "volume", volume);
+            SetReference(tirednessVignette, "volumeProfile", tirednessVolumeProfile);
+
+            SetReference(controller, "movementDefinition", movementDefinition);
+            SetReference(controller, "characterController", characterController);
+            SetReference(controller, "cameraPivot", cameraPivot);
+            SetReference(controller, "playerCamera", playerCamera);
+            SetReference(controller, "playerAudioListener", audioListener);
+            SetReference(controller, "tirednessVignette", tirednessVignette);
+            SetReference(controller, "bodyRenderer", bodyRenderer);
+            SetReference(controller, "bodyVisual", bodyVisual);
+
+            var serializedController = new SerializedObject(controller);
+            serializedController.FindProperty("standingCollisionMask").intValue = ~0;
+            serializedController.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static GameObject CreateMonsterPrefab(Material material, MonsterDefinition definition)
@@ -517,13 +727,27 @@ namespace TheSancturary.Editor
             var text = CreateText(
                 canvasObject.transform,
                 "Instructions",
-                "WASD Move   •   Mouse Look   •   Space Jump   •   Esc Cursor   •   F10 Disconnect",
+                GameplayInstructionsText,
                 18,
                 FontStyle.Bold,
                 new Vector2(1040f, 44f),
                 new Vector2(0f, -320f),
                 Color.white);
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
+        }
+
+        private static void UpdateGameplayInstructions()
+        {
+            var scene = EditorSceneManager.OpenScene(GrayboxScenePath, OpenSceneMode.Single);
+            var instructions = GameObject.Find("Instructions")?.GetComponent<Text>();
+            if (!scene.IsValid() || instructions == null)
+            {
+                throw new InvalidOperationException("Graybox scene is missing its gameplay instructions text.");
+            }
+
+            instructions.text = GameplayInstructionsText;
+            EditorUtility.SetDirty(instructions);
+            EditorSceneManager.SaveScene(scene, GrayboxScenePath);
         }
 
         private static GameObject CreateBlock(
@@ -620,6 +844,7 @@ namespace TheSancturary.Editor
 
         private static void ConfigureBuildSettings()
         {
+            EditorBuildSettings.scenes = Array.Empty<EditorBuildSettingsScene>();
             EditorBuildSettings.scenes = new[]
             {
                 new EditorBuildSettingsScene(MainMenuScenePath, true),
@@ -632,16 +857,27 @@ namespace TheSancturary.Editor
             var playerPrefab = RequireAsset<GameObject>(PlayerPrefabPath);
             var monsterPrefab = RequireAsset<GameObject>(MonsterPrefabPath);
             var definition = RequireAsset<MonsterDefinition>(MonsterDefinitionPath);
+            var movementDefinition = RequireAsset<PlayerMovementDefinition>(PlayerMovementDefinitionPath);
+            var tirednessVolumeProfile = RequireAsset<VolumeProfile>(TirednessVolumeProfilePath);
             var networkPrefabs = RequireAsset<NetworkPrefabsList>(NetworkPrefabsPath);
             var navMeshData = RequireAsset<NavMeshData>(NavMeshDataPath);
 
             RequireComponent<NetworkObject>(playerPrefab, "player prefab");
             RequireComponent<NetworkTransform>(playerPrefab, "player prefab");
             RequireComponent<NetworkPlayerController>(playerPrefab, "player prefab");
+            RequireComponent<LocalTirednessVignette>(playerPrefab, "player prefab");
             RequireComponent<NetworkObject>(monsterPrefab, "monster prefab");
             RequireComponent<NetworkTransform>(monsterPrefab, "monster prefab");
-            RequireComponent<NavMeshAgent>(monsterPrefab, "monster prefab");
-            RequireComponent<MonsterController>(monsterPrefab, "monster prefab");
+            var monsterAgent = RequireComponent<NavMeshAgent>(monsterPrefab, "monster prefab");
+            var monsterController = RequireComponent<MonsterController>(monsterPrefab, "monster prefab");
+            RequireSerializedReference(monsterController, "definition", definition, "monster controller");
+            RequireSerializedReference(monsterController, "agent", monsterAgent, "monster controller");
+
+            ValidateNoMissingScripts(playerPrefab, "player prefab");
+            ValidateNoMissingScripts(monsterPrefab, "monster prefab");
+            ValidateRendererMaterials(playerPrefab, "player prefab");
+            ValidateRendererMaterials(monsterPrefab, "monster prefab");
+            ValidatePlayerConfiguration(playerPrefab, movementDefinition, tirednessVolumeProfile);
 
             if (definition.DetectionRange <= 0f || navMeshData.sourceBounds.size.sqrMagnitude <= 0f)
             {
@@ -655,7 +891,7 @@ namespace TheSancturary.Editor
             }
 
             ValidateMainMenuScene(networkPrefabs);
-            ValidateGrayboxScene();
+            ValidateGrayboxScene(playerPrefab, monsterPrefab);
 
             var enabledScenes = EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(scene => scene.path).ToArray();
             if (!enabledScenes.SequenceEqual(new[] { MainMenuScenePath, GrayboxScenePath }))
@@ -683,19 +919,26 @@ namespace TheSancturary.Editor
             {
                 throw new InvalidOperationException("NetworkManager configuration is inconsistent.");
             }
+
+            ValidateSceneReferences(scene, "main menu scene");
         }
 
-        private static void ValidateGrayboxScene()
+        private static void ValidateGrayboxScene(GameObject playerPrefab, GameObject monsterPrefab)
         {
             var scene = EditorSceneManager.OpenScene(GrayboxScenePath, OpenSceneMode.Single);
             var surface = Object.FindFirstObjectByType<NavMeshSurface>();
             var playerSpawnPoints = Object.FindObjectsByType<PlayerSpawnPoint>(FindObjectsSortMode.None);
             var monsterSpawnPoint = GameObject.Find("MonsterSpawnPoint");
+            var playerSpawner = Object.FindFirstObjectByType<PlayerSpawner>();
+            var monsterSpawner = Object.FindFirstObjectByType<MonsterSpawner>();
+            var instructions = GameObject.Find("Instructions")?.GetComponent<Text>();
             if (!scene.IsValid() ||
-                Object.FindFirstObjectByType<PlayerSpawner>() == null ||
-                Object.FindFirstObjectByType<MonsterSpawner>() == null ||
+                playerSpawner == null ||
+                monsterSpawner == null ||
                 playerSpawnPoints.Length != 4 ||
                 monsterSpawnPoint == null ||
+                instructions == null ||
+                instructions.text != GameplayInstructionsText ||
                 surface == null ||
                 surface.navMeshData == null ||
                 AssetDatabase.GetAssetPath(surface.navMeshData) != NavMeshDataPath)
@@ -703,12 +946,127 @@ namespace TheSancturary.Editor
                 throw new InvalidOperationException("Graybox scene is missing spawners, spawn points, or baked NavMesh data.");
             }
 
+            RequireSerializedReference(
+                playerSpawner,
+                "playerPrefab",
+                playerPrefab.GetComponent<NetworkObject>(),
+                "graybox player spawner");
+            RequireSerializedReference(
+                monsterSpawner,
+                "monsterPrefab",
+                monsterPrefab.GetComponent<NetworkObject>(),
+                "graybox monster spawner");
+            RequireSerializedReference(
+                monsterSpawner,
+                "spawnPoint",
+                monsterSpawnPoint.transform,
+                "graybox monster spawner");
+            ValidateSceneReferences(scene, "graybox scene");
+
             foreach (var spawnPoint in playerSpawnPoints)
             {
                 RequireNavMeshPosition(spawnPoint.transform.position, spawnPoint.name);
             }
 
             RequireNavMeshPosition(monsterSpawnPoint.transform.position, monsterSpawnPoint.name);
+        }
+
+        private static void ValidatePlayerConfiguration(
+            GameObject playerPrefab,
+            PlayerMovementDefinition movementDefinition,
+            VolumeProfile tirednessVolumeProfile)
+        {
+            var controller = RequireComponent<NetworkPlayerController>(playerPrefab, "player prefab");
+            var tirednessVignette = RequireComponent<LocalTirednessVignette>(playerPrefab, "player prefab");
+            var characterController = RequireComponent<CharacterController>(playerPrefab, "player prefab");
+            var volume = playerPrefab.GetComponentInChildren<Volume>(true);
+            var camera = playerPrefab.GetComponentInChildren<Camera>(true);
+            var audioListener = playerPrefab.GetComponentInChildren<AudioListener>(true);
+            var cameraPivot = playerPrefab.transform.Find("CameraPivot");
+            var bodyVisual = playerPrefab.transform.Find("Body");
+            var bodyRenderer = bodyVisual?.GetComponent<Renderer>();
+            var cameraData = camera?.GetComponent<UniversalAdditionalCameraData>();
+
+            if (movementDefinition.MaximumStamina <= 0f ||
+                movementDefinition.SprintSpeed < movementDefinition.WalkSpeed ||
+                movementDefinition.CrouchingControllerHeight > movementDefinition.StandingControllerHeight)
+            {
+                throw new InvalidOperationException("Player movement definition contains invalid tuning values.");
+            }
+
+            if (volume == null ||
+                audioListener == null ||
+                cameraPivot == null ||
+                bodyVisual == null ||
+                bodyRenderer == null ||
+                volume.sharedProfile != tirednessVolumeProfile ||
+                volume.enabled ||
+                !volume.isGlobal ||
+                cameraData == null ||
+                !cameraData.renderPostProcessing ||
+                !tirednessVolumeProfile.TryGet(out Vignette vignette) ||
+                vignette == null)
+            {
+                throw new InvalidOperationException(
+                    "Player prefab is missing its disabled owner-only Volume, Vignette profile, or post-processing camera setup.");
+            }
+
+            RequireSerializedReference(controller, "movementDefinition", movementDefinition, "player controller");
+            RequireSerializedReference(controller, "characterController", characterController, "player controller");
+            RequireSerializedReference(controller, "cameraPivot", cameraPivot, "player controller");
+            RequireSerializedReference(controller, "playerCamera", camera, "player controller");
+            RequireSerializedReference(controller, "playerAudioListener", audioListener, "player controller");
+            RequireSerializedReference(controller, "tirednessVignette", tirednessVignette, "player controller");
+            RequireSerializedReference(controller, "bodyRenderer", bodyRenderer, "player controller");
+            RequireSerializedReference(controller, "bodyVisual", bodyVisual, "player controller");
+            RequireSerializedReference(tirednessVignette, "movementDefinition", movementDefinition, "tiredness vignette");
+            RequireSerializedReference(tirednessVignette, "volume", volume, "tiredness vignette");
+            RequireSerializedReference(tirednessVignette, "volumeProfile", tirednessVolumeProfile, "tiredness vignette");
+        }
+
+        private static void ValidateSceneReferences(Scene scene, string context)
+        {
+            foreach (var root in scene.GetRootGameObjects())
+            {
+                ValidateNoMissingScripts(root, context);
+                ValidateRendererMaterials(root, context);
+            }
+        }
+
+        private static void ValidateNoMissingScripts(GameObject root, string context)
+        {
+            foreach (var transform in root.GetComponentsInChildren<Transform>(true))
+            {
+                if (GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(transform.gameObject) > 0)
+                {
+                    throw new InvalidOperationException($"{context} contains a missing script on '{transform.name}'.");
+                }
+            }
+        }
+
+        private static void ValidateRendererMaterials(GameObject root, string context)
+        {
+            foreach (var renderer in root.GetComponentsInChildren<Renderer>(true))
+            {
+                if (renderer.sharedMaterials.Length == 0 || renderer.sharedMaterials.Any(material => material == null))
+                {
+                    throw new InvalidOperationException($"{context} contains a missing material on '{renderer.name}'.");
+                }
+            }
+        }
+
+        private static void RequireSerializedReference(
+            Object target,
+            string propertyName,
+            Object expected,
+            string context)
+        {
+            var serialized = new SerializedObject(target);
+            var property = serialized.FindProperty(propertyName);
+            if (property == null || property.objectReferenceValue != expected)
+            {
+                throw new InvalidOperationException($"{context} has an invalid '{propertyName}' reference.");
+            }
         }
 
         private static void RequireNavMeshPosition(Vector3 position, string context)
@@ -730,12 +1088,15 @@ namespace TheSancturary.Editor
             return asset;
         }
 
-        private static void RequireComponent<T>(GameObject gameObject, string context) where T : Component
+        private static T RequireComponent<T>(GameObject gameObject, string context) where T : Component
         {
-            if (gameObject.GetComponent<T>() == null)
+            var component = gameObject.GetComponent<T>();
+            if (component == null)
             {
                 throw new InvalidOperationException($"{context} is missing {typeof(T).Name}.");
             }
+
+            return component;
         }
 
         private static void RenderPreviews()

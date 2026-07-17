@@ -1,17 +1,16 @@
 {
-  "name": "TheSancturary.Editor",
-  "rootNamespace": "TheSancturary.Editor",
+  "name": "TheSancturary.Runtime",
+  "rootNamespace": "TheSancturary",
   "references": [
-    "TheSancturary.Runtime",
     "Unity.AI.Navigation",
     "Unity.InputSystem",
     "Unity.Netcode.Runtime",
     "Unity.Networking.Transport",
+    "Unity.RenderPipelines.Core.Runtime",
+    "Unity.RenderPipelines.Universal.Runtime",
     "Unity.ugui"
   ],
-  "includePlatforms": [
-    "Editor"
-  ],
+  "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
   "overrideReferences": false,

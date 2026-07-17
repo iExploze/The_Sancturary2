@@ -2856,8 +2856,8 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "WASD Move   \u2022   Mouse Look   \u2022   Space Jump   \u2022   Esc Cursor  
-    \u2022   F10 Disconnect"
+  m_Text: WASD Move   |   Left Shift Sprint   |   Left Control Crouch   |   Space
+    Jump   |   Esc Cursor   |   F10 Disconnect
 --- !u!222 &2070607787
 CanvasRenderer:
   m_ObjectHideFlags: 0
