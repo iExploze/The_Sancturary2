@@ -94,6 +94,31 @@ Do not introduce a new framework, package, online service, or major architectura
 - Treat exported FBX files as game inputs and `.blend` files as art source files.
 - Keep changes focused so they are easy to review and revert.
 
+## Branch and pull request policy
+
+Every repository change, including documentation-only and other low-risk changes, must use this workflow:
+
+1. Start from the latest `main`.
+2. Create a new, focused branch for the task before editing any file.
+3. Keep only that task's changes on the branch.
+4. Commit and push the completed work to the task branch.
+5. Open a pull request targeting `main`.
+6. Leave the pull request open and unmerged for Ian to review.
+
+Never commit or push changes directly to `main`. Do not reuse an already merged or closed task branch for new work.
+
+Ian personally reviews each pull request, may request revisions, and decides whether it is allowed to merge. Push requested revisions to the same open pull-request branch. Do not approve on Ian's behalf, merge a pull request, enable auto-merge, or otherwise update `main` unless Ian explicitly authorizes that merge after reviewing the PR.
+
+Each pull request should clearly describe:
+
+- What changed and why
+- The important files or systems affected
+- Tests and validation performed
+- Known limitations and required manual Unity checks
+- Any unexpected scene, prefab, package, animation, or `.meta` changes
+
+After an approved pull request is merged, delete its task branch when safe and begin the next task from the updated `main`.
+
 ## Agent workflow
 
 Before changing anything:
