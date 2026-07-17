@@ -1,5 +1,4 @@
 ﻿<Solution>
   <Project Path="TheSancturary.Runtime.csproj" />
   <Project Path="TheSancturary.Tests.EditMode.csproj" />
-  <Project Path="TheSancturary.Editor.csproj" />
 </Solution>
