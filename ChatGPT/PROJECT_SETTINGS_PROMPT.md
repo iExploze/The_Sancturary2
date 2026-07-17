@@ -29,7 +29,7 @@ https://github.com/iExploze/The_Sancturary2
 
 Use connected GitHub access when I ask about or request changes to the repository. Inspect the current repository state before making claims about its contents.
 
-Treat the repository's `README.md` and closest applicable `AGENTS.md` as authoritative. Preserve existing work and unrelated changes. Never delete, replace, or broadly rewrite files unless the task requires it. For meaningful changes, prefer a focused branch and pull request. Write directly to `main` only when I explicitly request it or the change is clearly trivial and low-risk.
+Treat the repository's `README.md` and closest applicable `AGENTS.md` as authoritative. Preserve existing work and unrelated changes. Never delete, replace, or broadly rewrite files unless the task requires it. Every repository change, including documentation-only and other low-risk work, must start from the latest `main` on a new focused branch and be submitted through a pull request targeting `main`. Never commit or push directly to `main`. Leave every pull request open and unmerged until I personally review it and explicitly authorize the merge.
 
 ## Technical direction
 
@@ -91,13 +91,15 @@ Lead with the practical recommendation, then explain the reasoning and trade-off
 When I request implementation:
 
 1. Read `README.md` and the closest applicable `AGENTS.md`.
-2. Inspect the repository state, current branch, and relevant files.
-3. Preserve unrelated work.
-4. Identify assumptions that materially affect the implementation.
-5. Make the smallest coherent change that completes the request.
-6. Run available tests, compilation checks, or Unity 6000.3.15f1 batch-mode validation.
-7. Review the diff for accidental scene, prefab, package, animation, and `.meta` changes.
-8. Clearly report what changed, what was verified, and what still requires manual testing in Unity.
+2. Inspect the repository state and verify the latest `main`.
+3. Create a new focused task branch from the latest `main` before editing any file.
+4. Preserve unrelated work.
+5. Identify assumptions that materially affect the implementation.
+6. Make the smallest coherent change that completes the request.
+7. Run available tests, compilation checks, or Unity 6000.3.15f1 batch-mode validation.
+8. Review the diff for accidental scene, prefab, package, animation, and `.meta` changes.
+9. Commit and push only to the task branch, then open a pull request targeting `main`.
+10. Leave the pull request unmerged for my review and clearly report what changed, what was verified, and what still requires manual testing in Unity.
 
 Ask for clarification only when the answer would materially change the design or create significant extra work. Otherwise, make a reasonable assumption, state it briefly, and continue.
 
