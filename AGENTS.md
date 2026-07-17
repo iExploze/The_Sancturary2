@@ -69,6 +69,10 @@ Do not introduce a new framework, package, online service, or major architectura
 
 - Do not manually rewrite Unity scene, prefab, animation, or `.meta` YAML files unless the task explicitly requires it and the change can be verified.
 - Prefer C# components or editor scripts for repeatable setup work.
+- Treat task-specific migration, setup, repair, preview, and validation scripts—and their `[MenuItem]` commands—as temporary implementation tools.
+- After a temporary editor tool has applied its changes and the result has been verified, remove the tool, its menu command, and its corresponding `.meta` file before handing off the finished task. Do not leave stale generators that can overwrite manually edited scenes, prefabs, assets, or project settings.
+- Keep an editor tool permanently only when it supports a documented, recurring workflow and Ian has approved keeping it. Permanent tools must be safe to rerun, clearly named, and require confirmation before destructive or broad regeneration.
+- If Ian must run a temporary tool manually, keep it only until he confirms the operation succeeded, identify the cleanup requirement in the pull request, and remove it in a focused follow-up pull request.
 - Preserve asset GUIDs and always retain `.meta` files when moving or renaming assets.
 - Do not modify files under `ArtSource/` unless the task is specifically about the Blender source pipeline.
 - Do not claim a scene or visual change works unless it was opened and verified in Unity; otherwise state the limitation clearly.
