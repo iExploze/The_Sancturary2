@@ -70,9 +70,9 @@ namespace TheSancturary.UI
             }
 
             var loadStatus = networkManager.SceneManager.LoadScene(
-                NetworkConstants.GrayboxSceneName,
+                NetworkConstants.PlayableSceneName,
                 LoadSceneMode.Single);
-            SetStatus($"Host started. Loading graybox ({loadStatus}).");
+            SetStatus($"Host started. Loading the hospital ({loadStatus}).");
             RefreshButtons();
         }
 

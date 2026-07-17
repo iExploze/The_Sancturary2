@@ -3,8 +3,11 @@
   "rootNamespace": "TheSancturary.Tests",
   "references": [
     "TheSancturary.Runtime",
+    "Unity.AI.Navigation",
+    "Unity.Netcode.Runtime",
     "Unity.RenderPipelines.Core.Runtime",
-    "Unity.RenderPipelines.Universal.Runtime"
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Unity.ugui"
   ],
   "includePlatforms": [
     "Editor"

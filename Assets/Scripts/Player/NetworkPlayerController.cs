@@ -46,6 +46,11 @@ namespace TheSancturary.Player
             NetworkVariableReadPermission.Owner,
             NetworkVariableWritePermission.Server);
 
+        private readonly NetworkVariable<float> synchronizedCameraPitch = new(
+            0f,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
+
         private Vector2 serverMoveInput;
         private float serverYaw;
         private bool serverJumpRequested;
@@ -127,6 +132,10 @@ namespace TheSancturary.Player
                 ReadOwnerInput();
                 UpdateOwnerPresentation();
             }
+            else
+            {
+                cameraPivot.localRotation = Quaternion.Euler(synchronizedCameraPitch.Value, 0f, 0f);
+            }
 
             UpdateBodyPresentation();
             if (IsServer)
@@ -168,6 +177,7 @@ namespace TheSancturary.Player
             SubmitInputRpc(
                 moveInput,
                 yaw,
+                cameraPitch,
                 keyboard.spaceKey.wasPressedThisFrame,
                 keyboard.leftShiftKey.isPressed,
                 keyboard.leftCtrlKey.isPressed);
@@ -177,12 +187,14 @@ namespace TheSancturary.Player
         private void SubmitInputRpc(
             Vector2 moveInput,
             float yaw,
+            float pitch,
             bool jumpRequested,
             bool sprintRequested,
             bool crouchRequested)
         {
             serverMoveInput = Vector2.ClampMagnitude(moveInput, 1f);
             serverYaw = yaw;
+            synchronizedCameraPitch.Value = Mathf.Clamp(pitch, -85f, 85f);
             serverJumpRequested |= jumpRequested;
             serverSprintRequested = sprintRequested;
             serverCrouchRequested = crouchRequested;

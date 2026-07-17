@@ -58,7 +58,7 @@ namespace TheSancturary.Multiplayer
             }
 
             var loadStatus = networkManager.SceneManager.LoadScene(
-                NetworkConstants.GrayboxSceneName,
+                NetworkConstants.PlayableSceneName,
                 LoadSceneMode.Single);
             Debug.Log($"[TechnicalSliceSmoke] Host scene load status: {loadStatus}");
 
@@ -98,7 +98,7 @@ namespace TheSancturary.Multiplayer
                 var hasOwnedPlayer = NetworkPlayerController.ActivePlayers.Values.Any(player => player.IsOwner);
                 var hasMonster = FindFirstObjectByType<MonsterController>() != null;
                 if (networkManager.IsConnectedClient &&
-                    SceneManager.GetActiveScene().name == NetworkConstants.GrayboxSceneName &&
+                    SceneManager.GetActiveScene().name == NetworkConstants.PlayableSceneName &&
                     hasOwnedPlayer &&
                     hasMonster)
                 {
