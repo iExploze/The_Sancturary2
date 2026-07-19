@@ -105,3 +105,6 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# Photon credentials are machine-local. Fusion recreates this asset when configuring an AppId.
+/[Aa]ssets/[Pp]hoton/[Ff]usion/[Rr]esources/PhotonAppSettings.asset*

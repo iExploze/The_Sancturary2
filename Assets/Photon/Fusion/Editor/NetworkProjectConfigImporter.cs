@@ -78,14 +78,19 @@ namespace Fusion.Editor {
       var detailsLog = new System.Text.StringBuilder();
       var paths = new List<string>();
 
-      foreach (var it in AssetDatabaseUtils.IterateAssets<GameObject>(label: FusionPrefabTag)) {
-        var prefabPath = AssetDatabase.GetAssetPath(it.instanceID);
-        var context    = new NetworkAssetSourceFactoryContext(it);
+      foreach (var guid in AssetDatabase.FindAssets($"l:{FusionPrefabTag}")) {
+        var prefabPath = AssetDatabase.GUIDToAssetPath(guid);
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+        if (prefab == null) {
+          continue;
+        }
+
+        var context = new NetworkAssetSourceFactoryContext(prefab);
 
         INetworkPrefabSource source = factory.TryCreatePrefabSource(context);
 
         if (source == null) {
-          ctx.LogImportError($"Unable to create prefab asset for {AssetDatabase.GetAssetPath(it.instanceID)} ({it.guid})");
+          ctx.LogImportError($"Unable to create prefab asset for {prefabPath} ({guid})");
           continue;
         }
 
@@ -224,8 +229,11 @@ namespace Fusion.Editor {
     public static void RefreshNetworkObjectPrefabHash() {
       var hash = new Hash128();
 
-      foreach (var it in AssetDatabaseUtils.IterateAssets<GameObject>(label: FusionPrefabTag)) {
-        hash.Append(it.guid);
+      foreach (var guid in AssetDatabase.FindAssets($"l:{FusionPrefabTag}")) {
+        var prefabPath = AssetDatabase.GUIDToAssetPath(guid);
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath) != null) {
+          hash.Append(guid);
+        }
       }
 
       FusionEditorLog.TraceImport($"Refreshing {PrefabsDependencyName} dependency hash: {hash}");

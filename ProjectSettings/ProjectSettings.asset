@@ -794,7 +794,7 @@ PlayerSettings:
   webEnableSubmoduleStrippingCompatibility: 0
   scriptingDefineSymbols:
     Server: FUSION_WEAVER;FUSION2;FUSION_LOGLEVEL_INFO
-    Standalone: FUSION_WEAVER;FUSION2;FUSION_LOGLEVEL_INFO;APP_UI_EDITOR_ONLY;SENTIS_ANALYTICS_ENABLED
+    Standalone: FUSION_WEAVER;FUSION2;FUSION_LOGLEVEL_INFO;APP_UI_EDITOR_ONLY;SENTIS_ANALYTICS_ENABLED;URP_COMPATIBILITY_MODE
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

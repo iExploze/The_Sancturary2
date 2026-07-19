@@ -21,6 +21,9 @@ namespace TheSancturary.Player
         [SerializeField, Tooltip("Downward acceleration applied by the authoritative server.")]
         private float gravity = -22f;
 
+        [SerializeField, Min(0f), Tooltip("Mouse look sensitivity shared by Fusion and standalone players.")]
+        private float mouseSensitivity = 0.12f;
+
         [Header("Stamina")]
         [SerializeField, Min(0.01f), Tooltip("Total stamina available to the player.")]
         private float maximumStamina = 100f;
@@ -74,6 +77,7 @@ namespace TheSancturary.Player
         public float CrouchSpeed => crouchSpeed;
         public float JumpHeight => jumpHeight;
         public float Gravity => gravity;
+        public float MouseSensitivity => mouseSensitivity;
         public float MaximumStamina => maximumStamina;
         public float SprintDrainPerSecond => sprintDrainPerSecond;
         public float StaminaRecoveryPerSecond => staminaRecoveryPerSecond;
@@ -97,6 +101,7 @@ namespace TheSancturary.Player
             crouchSpeed = Mathf.Clamp(crouchSpeed, 0f, walkSpeed);
             jumpHeight = Mathf.Max(0f, jumpHeight);
             gravity = Mathf.Min(-0.01f, gravity);
+            mouseSensitivity = Mathf.Max(0f, mouseSensitivity);
 
             maximumStamina = Mathf.Max(0.01f, maximumStamina);
             sprintDrainPerSecond = Mathf.Max(0f, sprintDrainPerSecond);

@@ -6,11 +6,17 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/MultiplayerLobby.unity
+    guid: 8fa6d9905c35f134894dde95b38338eb
+  - enabled: 1
     path: Assets/Scenes/Startup.unity
     guid: 0d3b40ecff110444e9d1162e4759a437
   - enabled: 1
     path: Assets/Scenes/Deathmatch.unity
     guid: eda0b8fb7e8c03642a26d0c819eb1630
+  - enabled: 1
+    path: Assets/Scenes/Demo Level.unity
+    guid: c95b93a50b1438647b49c409d74b373e
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings: {fileID: 11400000, guid: 36150db0ceb0fd647ac9f9ed56f13517, type: 2}

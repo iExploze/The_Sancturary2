@@ -5624,11 +5624,18 @@ namespace Fusion.Editor {
           list.Add(assetPath);
         }
       } else {
-        var enumerator = AssetDatabaseUtils.IterateAssets(type: type, label: fallbackToSearchWithoutLabel ? null : GlobalAssetLabel);
-        foreach (var asset in enumerator) {
-          var path = AssetDatabase.GUIDToAssetPath(asset.guid);
-          FusionEditorLog.Assert(!string.IsNullOrEmpty(path));
-          list.Add(path);
+        string filter = fallbackToSearchWithoutLabel
+          ? "t:" + type.Name
+          : "l:" + GlobalAssetLabel;
+        var guids = AssetDatabase.FindAssets(filter);
+        foreach (var g in guids) {
+          string path = AssetDatabase.GUIDToAssetPath(g);
+          foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(path)) {
+            if (asset && type.IsInstanceOfType(asset)) {
+              list.Add(path);
+              break;
+            }
+          }
         }
       }
 

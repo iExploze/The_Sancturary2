@@ -50,13 +50,12 @@ namespace TheSancturary.Monsters
             }
 
             if (stateMachine.CurrentState == MonsterState.Chase &&
-                NetworkPlayerController.ActivePlayers.TryGetValue(
+                PlayerAvatarRegistry.ActivePlayers.TryGetValue(
                     stateMachine.TargetClientId,
                     out var target) &&
-                target != null &&
                 target.IsSpawned)
             {
-                agent.SetDestination(target.transform.position);
+                agent.SetDestination(target.Transform.position);
             }
             else if (agent.hasPath)
             {
@@ -69,13 +68,13 @@ namespace TheSancturary.Monsters
             nextTargetRefreshTime = Time.time + definition.TargetRefreshInterval;
             targetSnapshots.Clear();
 
-            foreach (var pair in NetworkPlayerController.ActivePlayers)
+            foreach (var pair in PlayerAvatarRegistry.ActivePlayers)
             {
                 var target = pair.Value;
                 targetSnapshots.Add(new MonsterTargetSnapshot(
                     pair.Key,
-                    target != null ? target.transform.position : Vector3.zero,
-                    target != null && target.IsSpawned));
+                    target.IsSpawned ? target.Transform.position : Vector3.zero,
+                    target.IsSpawned));
             }
 
             stateMachine.Evaluate(transform.position, targetSnapshots, definition.DetectionRange);

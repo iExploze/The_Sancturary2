@@ -65,7 +65,7 @@ namespace TheSancturary.Multiplayer
             var deadline = Time.realtimeSinceStartup + TimeoutSeconds;
             while (Time.realtimeSinceStartup < deadline)
             {
-                var playerCount = NetworkPlayerController.ActivePlayers.Count;
+                var playerCount = PlayerAvatarRegistry.ActivePlayers.Count;
                 var hasMonster = FindFirstObjectByType<MonsterController>() != null;
                 if (networkManager.ConnectedClientsIds.Count >= 2 && playerCount >= 2 && hasMonster)
                 {
@@ -79,7 +79,7 @@ namespace TheSancturary.Multiplayer
                 yield return null;
             }
 
-            Fail($"Host timed out. clients={networkManager.ConnectedClientsIds.Count} players={NetworkPlayerController.ActivePlayers.Count}");
+            Fail($"Host timed out. clients={networkManager.ConnectedClientsIds.Count} players={PlayerAvatarRegistry.ActivePlayers.Count}");
         }
 
         private IEnumerator RunClient(ushort port)
@@ -95,7 +95,7 @@ namespace TheSancturary.Multiplayer
             var deadline = Time.realtimeSinceStartup + TimeoutSeconds;
             while (Time.realtimeSinceStartup < deadline)
             {
-                var hasOwnedPlayer = NetworkPlayerController.ActivePlayers.Values.Any(player => player.IsOwner);
+                var hasOwnedPlayer = PlayerAvatarRegistry.ActivePlayers.Values.Any(player => player.IsLocallyOwned);
                 var hasMonster = FindFirstObjectByType<MonsterController>() != null;
                 if (networkManager.IsConnectedClient &&
                     SceneManager.GetActiveScene().name == NetworkConstants.GrayboxSceneName &&

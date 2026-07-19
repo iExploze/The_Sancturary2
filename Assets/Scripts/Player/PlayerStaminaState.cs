@@ -43,45 +43,83 @@ namespace TheSancturary.Player
             bool isMoving,
             bool isCrouching)
         {
+            var stamina = CurrentStamina;
+            var exhausted = IsExhausted;
+            IsSprinting = PlayerStaminaSimulation.Advance(
+                deltaTime,
+                sprintRequested,
+                isMoving,
+                isCrouching,
+                maximumStamina,
+                sprintDrainPerSecond,
+                staminaRecoveryPerSecond,
+                recoveryDelay,
+                exhaustedRecoveryThreshold,
+                ref stamina,
+                ref exhausted,
+                ref timeSinceSprintStopped);
+            CurrentStamina = stamina;
+            IsExhausted = exhausted;
+            return IsSprinting;
+        }
+    }
+
+    public static class PlayerStaminaSimulation
+    {
+        public static bool Advance(
+            float deltaTime,
+            bool sprintRequested,
+            bool isMoving,
+            bool isCrouching,
+            float maximumStamina,
+            float sprintDrainPerSecond,
+            float staminaRecoveryPerSecond,
+            float recoveryDelay,
+            float exhaustedRecoveryThreshold,
+            ref float currentStamina,
+            ref bool isExhausted,
+            ref float timeSinceSprintStopped)
+        {
             deltaTime = Mathf.Max(0f, deltaTime);
-            if (IsExhausted && CurrentStamina >= exhaustedRecoveryThreshold)
+            maximumStamina = Mathf.Max(0.01f, maximumStamina);
+            exhaustedRecoveryThreshold = Mathf.Clamp(exhaustedRecoveryThreshold, 0f, maximumStamina);
+
+            if (isExhausted && currentStamina >= exhaustedRecoveryThreshold)
             {
-                IsExhausted = false;
+                isExhausted = false;
             }
 
-            IsSprinting = sprintRequested &&
-                          isMoving &&
-                          !isCrouching &&
-                          !IsExhausted &&
-                          CurrentStamina > 0f;
-
-            if (IsSprinting)
+            var isSprinting = sprintRequested &&
+                              isMoving &&
+                              !isCrouching &&
+                              !isExhausted &&
+                              currentStamina > 0f;
+            if (isSprinting)
             {
-                CurrentStamina -= sprintDrainPerSecond * deltaTime;
+                currentStamina -= Mathf.Max(0f, sprintDrainPerSecond) * deltaTime;
                 timeSinceSprintStopped = 0f;
-
-                if (CurrentStamina <= 0f)
+                if (currentStamina <= 0f)
                 {
-                    CurrentStamina = 0f;
-                    IsExhausted = true;
+                    currentStamina = 0f;
+                    isExhausted = true;
                 }
             }
             else
             {
-                var previousTimeSinceSprint = timeSinceSprintStopped;
+                var previousTime = timeSinceSprintStopped;
                 timeSinceSprintStopped += deltaTime;
-                var recoverableTime = Mathf.Max(0f, timeSinceSprintStopped - recoveryDelay) -
-                                      Mathf.Max(0f, previousTimeSinceSprint - recoveryDelay);
-                CurrentStamina += staminaRecoveryPerSecond * recoverableTime;
+                var recoverableTime = Mathf.Max(0f, timeSinceSprintStopped - Mathf.Max(0f, recoveryDelay)) -
+                                      Mathf.Max(0f, previousTime - Mathf.Max(0f, recoveryDelay));
+                currentStamina += Mathf.Max(0f, staminaRecoveryPerSecond) * recoverableTime;
             }
 
-            CurrentStamina = Mathf.Clamp(CurrentStamina, 0f, maximumStamina);
-            if (IsExhausted && CurrentStamina >= exhaustedRecoveryThreshold)
+            currentStamina = Mathf.Clamp(currentStamina, 0f, maximumStamina);
+            if (isExhausted && currentStamina >= exhaustedRecoveryThreshold)
             {
-                IsExhausted = false;
+                isExhausted = false;
             }
 
-            return IsSprinting;
+            return isSprinting;
         }
     }
 }

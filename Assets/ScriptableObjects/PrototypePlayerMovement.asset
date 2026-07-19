@@ -17,6 +17,7 @@ MonoBehaviour:
   crouchSpeed: 2.25
   jumpHeight: 1.2
   gravity: -22
+  mouseSensitivity: 0.12
   maximumStamina: 100
   sprintDrainPerSecond: 25
   staminaRecoveryPerSecond: 20
