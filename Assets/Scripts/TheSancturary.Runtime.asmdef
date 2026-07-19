@@ -8,7 +8,12 @@
     "Unity.Networking.Transport",
     "Unity.RenderPipelines.Core.Runtime",
     "Unity.RenderPipelines.Universal.Runtime",
-    "Unity.ugui"
+    "Unity.ugui",
+    "GUID:1baf1ffff1031e948b3b228ab3453251",
+    "GUID:26f4f5acc9abee848bd2b92149184272",
+    "GUID:6055be8ebefd69e48b49212b09b47b2f",
+    "GUID:4307f53044263cf4b835bd812fc161a4",
+    "GUID:977dbcf975465374990f471e1497f563"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],
