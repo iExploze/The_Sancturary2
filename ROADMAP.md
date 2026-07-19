@@ -24,17 +24,22 @@ The target playtime for a successful first run is roughly **20–40 minutes**.
 
 ## Milestones
 
-### v0.0.1 — Multiplayer foundation
+### v0.0.1 — Photon Fusion multiplayer foundation
 
-- Keep Netcode for GameObjects and Unity Transport.
-- Support a two-player host/client session.
-- Make local player movement immediately responsive.
-- Synchronize remote players with interpolation.
-- Keep monsters, puzzle state, pickups, doors, scene loading, and escape state host-authoritative.
-- Provide a reliable disconnect and return-to-menu flow.
-- Keep direct IP as a development fallback; add a simpler join-code or platform session flow only after the base connection is stable.
+- Use Photon Fusion 2 as the authoritative multiplayer framework.
+- Use a host-authoritative Fusion session for the two-player cooperative prototype.
+- Host and join through Photon sessions rather than direct IP, Unity Relay, NGO lobby, or Unity Transport flows.
+- Migrate session startup, player spawning, and movement as the first focused Fusion vertical slice.
+- Spawn exactly one Fusion player object per joined player with the correct input authority.
+- Keep local player movement immediately responsive through Fusion input prediction.
+- Synchronize remote players and presentation through Fusion replication and interpolation.
+- Keep monsters, puzzle state, pickups, doors, scene loading, death, failure, restart, and escape state host/state-authoritative.
+- Provide a reliable disconnect, shutdown, and return-to-menu flow that also supports repeated sessions.
+- Treat existing Netcode for GameObjects and Unity Transport code, prefabs, packages, and scene setup as legacy migration material. Do not expand them or leave a permanent NGO/Fusion hybrid.
+- Preserve useful non-network gameplay logic during migration, and remove obsolete NGO material only after its Fusion replacement is implemented and verified.
+- The Simple FPS Multiplayer - Photon Fusion sample may be used as implementation reference, but its deathmatch, scoring, weapons, respawning, pickups, and unrelated shooter systems are not project requirements.
 
-**Exit condition:** Two players can join over the internet, move through the same test scene, and disconnect without severe rubber-banding or session-breaking errors.
+**Exit condition:** Two players can host and join the same Photon session over the internet, spawn exactly one player each, move through the same test scene with responsive local prediction and readable remote interpolation, then disconnect and start another session without severe rubber-banding, duplicate players, or session-breaking errors.
 
 ### v0.0.2 — Player gameplay foundation
 
@@ -98,7 +103,7 @@ Explore
 
 The release includes:
 
-- Two-player online cooperative play.
+- Two-player online cooperative play through Photon Fusion 2 sessions.
 - One compact asylum or Sancturary level.
 - One monster.
 - One complete objective and puzzle chain.
@@ -116,6 +121,7 @@ The release includes:
 - Inventory grids or large item collections.
 - Procedural generation.
 - Matchmaking browsers.
+- A permanent NGO/Fusion hybrid or new direct-IP, Unity Relay, or Unity Transport session path.
 - Steam-specific integration.
 - Save files or persistent progression.
 - Final lore, cinematics, or extensive story delivery.
