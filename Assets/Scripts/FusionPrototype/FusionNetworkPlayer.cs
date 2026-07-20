@@ -41,7 +41,7 @@ namespace TheSancturary.FusionPrototype
         [SerializeField, Min(0f)] private float braking = 16f;
         [SerializeField] private float gravity = -24f;
         [SerializeField, Min(0f)] private float jumpImpulse = 6.3f;
-        [SerializeField, Min(0.001f)] private float lookSensitivity = 0.08f;
+        [SerializeField, Min(0.001f)] private float lookSensitivity = 0.6f;
         [SerializeField] private Vector2 pitchLimits = new(-85f, 85f);
 
         [Header("Crouching")]

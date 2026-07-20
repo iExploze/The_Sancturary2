@@ -136,7 +136,7 @@ MonoBehaviour:
   acceleration: 12
   braking: 16
   maxSpeed: 2.4
-  rotationSpeed: 30
+  rotationSpeed: 70
 --- !u!114 &2245335842809598876
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -392,7 +392,7 @@ MonoBehaviour:
   braking: 16
   gravity: -24
   jumpImpulse: 6.3
-  lookSensitivity: 0.08
+  lookSensitivity: 0.45
   pitchLimits: {x: -85, y: 85}
   standingHeight: 1.8
   crouchingHeight: 1.1
@@ -434,6 +434,14 @@ MonoBehaviour:
   crouchBobAmount: {x: 0.009, y: 0.014}
   crouchBobFrequency: 5
   bobBlendSpeed: 8
+  _Stamina: 0
+  _Health: 0
+  _IsCrouched:
+    RawValue: 0
+  _IsSprinting:
+    RawValue: 0
+  _LookYaw: 0
+  _LookPitch: 0
 --- !u!1 &3170984722257280242
 GameObject:
   m_ObjectHideFlags: 0
