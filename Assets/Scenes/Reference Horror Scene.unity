@@ -42710,12 +42710,11 @@ GameObject:
   - component: {fileID: 920506592}
   - component: {fileID: 920506591}
   - component: {fileID: 920506590}
-  - component: {fileID: 920506589}
   - component: {fileID: 920506588}
   - component: {fileID: 920506593}
   m_Layer: 0
   m_Name: Capsule
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -42732,34 +42731,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c4f2e89da6f44efbce2a6eec7090bb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Player.SimpleCapsuleMovement
-  moveSpeed: 5
+  moveSpeed: 6
   jumpHeight: 1.2
   gravity: -22
   mouseSensitivity: 0.12
   playerCamera: {fileID: 79892007}
---- !u!136 &920506589
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 920506587}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &920506590
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -42851,8 +42827,8 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 2
-  m_Radius: 0.5
+  m_Height: 1.8
+  m_Radius: 0.2
   m_SlopeLimit: 45
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
@@ -59563,6 +59539,87 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4209390464773215170, guid: 8ceb15ea21d63f3449e51224805b5cd2, type: 3}
   m_PrefabInstance: {fileID: 1315390461}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &1316028842
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 310843744131919455, guid: b4b37ffe59741e947b30375a5366315a, type: 3}
+      propertyPath: m_Height
+      value: 2.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 310843744131919455, guid: b4b37ffe59741e947b30375a5366315a, type: 3}
+      propertyPath: m_Center.y
+      value: 1.44
+      objectReference: {fileID: 0}
+    - target: {fileID: 538219135464814236, guid: b4b37ffe59741e947b30375a5366315a, type: 3}
+      propertyPath: target
+      value: 
+      objectReference: {fileID: 920506592}
+    - target: {fileID: 538219135464814236, guid: b4b37ffe59741e947b30375a5366315a, type: 3}
+      propertyPath: moveSpeed
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 538219135464814236, guid: b4b37ffe59741e947b30375a5366315a, type: 3}
+      propertyPath: chaseRadius
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 538219135464814236, guid: b4b37ffe59741e947b30375a5366315a, type: 3}
+      propertyPath: stoppingDistance
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3690204895578080484, guid: b4b37ffe59741e947b30375a5366315a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.12
+      objectReference: {fileID: 0}
+    - target: {fileID: 3690204895578080484, guid: b4b37ffe59741e947b30375a5366315a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3690204895578080484, guid: b4b37ffe59741e947b30375a5366315a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -28.09
+      objectReference: {fileID: 0}
+    - target: {fileID: 3690204895578080484, guid: b4b37ffe59741e947b30375a5366315a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3690204895578080484, guid: b4b37ffe59741e947b30375a5366315a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3690204895578080484, guid: b4b37ffe59741e947b30375a5366315a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3690204895578080484, guid: b4b37ffe59741e947b30375a5366315a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3690204895578080484, guid: b4b37ffe59741e947b30375a5366315a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3690204895578080484, guid: b4b37ffe59741e947b30375a5366315a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3690204895578080484, guid: b4b37ffe59741e947b30375a5366315a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5379660736335971315, guid: b4b37ffe59741e947b30375a5366315a, type: 3}
+      propertyPath: m_Name
+      value: SimpleGeoMonster - Player Chaser
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b4b37ffe59741e947b30375a5366315a, type: 3}
 --- !u!1001 &1319677350
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -94390,3 +94447,4 @@ SceneRoots:
   - {fileID: 920506592}
   - {fileID: 1169813877}
   - {fileID: 563603140}
+  - {fileID: 1316028842}
