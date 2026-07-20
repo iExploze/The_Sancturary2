@@ -1,103 +1,76 @@
 # AGENTS.md
 
-## Role
+## Project goal
 
-Codex is the project's junior gameplay and Unity implementation developer. Its main job is to handle the heavy coding and setup work, then deliver working, reusable prefabs that Ian can place in levels.
+The Sancturary is a small, movement-heavy, first-person escape-horror prototype. The player explores an abandoned institution, finds environmental clues and keys, solves a short chain of puzzles, evades a roaming monster, unlocks the final route, and escapes.
 
-Ian owns the game's design, final level layouts, programming direction, and approval of changes. Vlad owns original monster and environment artwork, modelling, rigging, and animation. Do not replace or substantially redesign their work unless the task explicitly asks for it.
+Prioritize completing one playable and scary vertical slice over building impressive architecture or speculative systems. Preserve the spelling **The Sancturary** unless Ian explicitly renames the project.
 
-Preserve the spelling **The Sancturary** unless Ian explicitly renames the project.
+## Ownership
 
-## What Codex can do
+Ian owns programming, technical implementation, gameplay systems, final level layouts, and overall design decisions.
 
-Codex may:
+Vlad owns Blender work, original monster design, modelling, rigging, animation, and environment art. Do not replace, substantially redesign, or discard Vlad's work without discussing it first.
 
-- Create and maintain player code, including movement, interaction, inventory, weapons, health, death, revival, and related presentation.
-- Create gameplay-ready assets and components for the player, then assemble and configure them as usable prefabs.
-- Create reusable prefabs for interactable items, keys, clues, weapons, doors, puzzles, monsters, effects, and other gameplay objects.
-- Integrate these prefabs into the empty greybox test level named **GreyboxPrototype**.
-- Add minimal test fixtures to GreyboxPrototype so a feature can be demonstrated and verified.
-- Connect imported models, materials, animations, audio, and other assets to working gameplay components.
-- Write tests, debug problems, refactor relevant code, and perform repetitive Unity setup needed to ship a feature.
+## Current technical boundary
 
-Codex is responsible for implementation quality, but Ian makes the final decisions about game feel, level design, balance, atmosphere, and whether a feature is ready.
+- Unity 6.3 LTS, pinned to editor version `6000.3.15f1`.
+- Universal Render Pipeline.
+- C#.
+- Unity Input System.
+- Unity AI Navigation.
+- Blender assets exported as FBX.
+- Windows and Steam are the initial targets.
 
-## Working in the project
+The current prototype is single-player. Do not add or expand multiplayer, Photon Fusion, Netcode for GameObjects, Unity Multiplayer Services, lobbies, session flows, network ownership, security-camera gameplay, or remotely controlled security doors unless Ian explicitly brings those systems back into scope.
 
-- Read this file, the repository README, the roadmap, and the relevant existing code before making changes.
-- Use the existing Unity project, codebase, folder structure, and naming conventions.
-- Do not create another Unity project, nested repository, duplicate Assets directory, or unnecessary replacement system.
-- Reuse and extend existing code before creating parallel implementations.
-- Avoid creating excessive folders, scripts, prefabs, or support files. Make the smallest coherent change that completes the task.
-- Use imported assets when they fit the requested prefab or feature. When Ian explicitly names an imported asset or asset pack, use it instead of substituting a placeholder.
-- Preserve Unity GUIDs and keep each asset's matching `.meta` file when moving or renaming it.
-- Do not manually rewrite scene, prefab, animation, or `.meta` YAML unless the task requires it and the result can be verified in Unity.
-- Photon Fusion and its required official dependencies are approved for the multiplayer migration. Do not add other packages, services, or major architectural patterns unless the task requires them and their value has been explained.
-- Do not create final level layouts unless Ian explicitly asks. GreyboxPrototype is the default place for Codex to demonstrate systems and prefabs.
+Existing networking code, assets, or packages may remain temporarily. Do not build new gameplay on top of them. Remove legacy networking material only as part of a focused, explicitly requested cleanup after confirming that nothing still depends on it.
 
-A delivered prefab should have its required components, references, colliders, layers, tags, and sensible defaults configured. It should be usable in GreyboxPrototype without hidden setup steps. Clearly document any dependency that cannot be included in the prefab itself.
+## How Codex should work
 
-## Multiplayer and Photon Fusion
+- Read this file, `README.md`, the closest applicable `AGENTS.md`, and the relevant existing code before changing anything.
+- Inspect the current branch and working tree before making edits. Preserve unrelated user work.
+- Inspect the live Unity project state before making claims about scenes, prefabs, packages, compiler errors, or runtime behaviour.
+- Make the smallest coherent change that fully completes the request.
+- Reuse existing code, folders, prefabs, and imported assets before creating parallel replacements.
+- Avoid unnecessary folders, scripts, managers, abstractions, and support files.
+- Do not introduce packages, frameworks, online services, or major architectural patterns without explaining their value and trade-offs.
+- Do not create or substantially redesign final level layouts unless Ian explicitly requests it.
+- Use imported assets when they fit the task. When Ian names a specific imported asset or pack, use it unless there is a concrete technical blocker.
+- Check licences before copying third-party art, audio, models, animations, effects, or sample code.
+- Ask for clarification only when the answer would materially change the design, risk existing work, or create significant extra work. Otherwise, state a reasonable assumption briefly and continue.
 
-Photon Fusion 2 is the authoritative multiplayer framework for The Sancturary. New multiplayer work must use Fusion rather than Netcode for GameObjects or Unity Transport.
+A delivered gameplay prefab should include its required components, references, colliders, layers, tags, and sensible defaults. It should not depend on undocumented setup steps.
 
-The **Simple FPS Multiplayer - Photon Fusion** sample may be used as implementation reference and as a source of suitable multiplayer foundations. Do not treat its deathmatch design, weapons, scoring, respawning, pickups, or unrelated shooter systems as requirements for The Sancturary. Reuse only the systems that support the two-player escape-horror game.
+## Unity and MCP workflow
 
-When implementing multiplayer:
+- Prefer Unity MCP for inspecting and modifying live scenes, GameObjects, components, prefabs, assets, the Console, Play Mode, and Unity tests when the MCP connection is available.
+- Never pretend MCP or the Unity Editor was used when it was unavailable. Clearly state what was and was not verified.
+- Prefer Unity Editor or MCP operations over manually editing serialized `.unity`, `.prefab`, `.asset`, animation, or `.meta` YAML.
+- Preserve Unity GUIDs. Keep each asset with its matching `.meta` file when moving or renaming it, and never manually invent replacement GUIDs.
+- Do not modify the same scene or prefab concurrently with Ian. Obtain exclusive access before broad scene changes, asset moves, or operations that trigger large reimports.
+- After changing C# scripts, wait for Unity compilation to finish and inspect the Console before continuing with dependent scene or prefab work.
+- Save modified scenes and assets explicitly when the task requires it. Do not save unrelated dirty scenes.
+- Use Unity `6000.3.15f1` for Editor or batch-mode validation.
 
-- Use Fusion concepts consistently, including `NetworkRunner`, Fusion `NetworkObject` and `NetworkBehaviour`, networked properties, input authority, state authority, and `FixedUpdateNetwork` where appropriate.
-- Prefer a host-authoritative session for the current two-player cooperative prototype unless Ian explicitly chooses another Fusion topology.
-- Keep player input locally responsive through Fusion prediction while authoritative gameplay state remains validated by the host.
-- Keep monsters, puzzle progression, doors, pickups, carried objects, scene transitions, death, failure, restart, and escape state host/state-authoritative.
-- Synchronize remote players and presentation with appropriate interpolation instead of sending transform updates through a separate custom networking layer.
-- Use Photon sessions for hosting and joining. Do not build new direct-IP, Unity Relay, NGO lobby, or Unity Transport flows unless Ian explicitly requests them.
-- Keep the multiplayer implementation focused on the escape-horror loop. Do not add competitive scoring, combat systems, matchmaking browsers, more players, or unrelated sample features without an explicit request.
-- Check licences before copying third-party art, audio, models, animations, or effects from sample content. Prefer project-owned or properly licensed assets.
-
-Existing Netcode for GameObjects code, prefabs, package references, and Unity Transport setup are legacy migration material:
-
-1. Do not expand or build new gameplay systems on NGO.
-2. Do not create a permanent hybrid where the same gameplay path depends on both NGO and Fusion.
-3. Migrate in focused vertical slices, beginning with session startup, player spawning, and movement before shared interactions and monster behaviour.
-4. Preserve useful non-network gameplay logic where practical, but replace NGO-specific ownership, RPC, replication, spawning, and scene-management code with Fusion equivalents.
-5. Remove obsolete NGO scripts, components, prefabs, packages, and references only after the Fusion replacement is implemented, verified, and no longer depends on them.
-6. During migration, clearly identify which path is authoritative and prevent legacy scenes or managers from starting alongside Fusion.
-
-## Unity tools and automation
-
-Codex may create editor scripts, setup commands, generators, migration scripts, or other Unity tools when they make the work reliable and repeatable.
-
-Task-specific tools are temporary:
-
-1. Clearly mark them as temporary.
-2. Use them to apply the required scene, prefab, or project changes.
-3. Verify the generated result.
-4. Delete the temporary script, its menu command, and its matching `.meta` file before handing off the completed task.
-
-Keep a tool permanently only when it supports an ongoing workflow and Ian explicitly approves it. Never leave behind a generator that could accidentally overwrite manually edited scenes or prefabs.
-
-Use Unity 6000.3.15f1 for editor or batch-mode work. Close Unity or obtain exclusive editor access before moving assets or performing changes that require a reimport.
+Codex may create temporary Editor scripts, setup tools, generators, or migration commands when they make a task reliable and repeatable. Mark task-specific tools as temporary, use them, verify their output, and remove the tool and its matching `.meta` file before handoff. Keep a tool permanently only when it supports an ongoing workflow and Ian explicitly approves it.
 
 ## Validation and handoff
 
-Before handing off work:
+Before handing off meaningful work:
 
 - Run relevant tests, compilation checks, or Unity batch-mode validation.
-- Test the feature or prefab in GreyboxPrototype when practical.
-- For multiplayer changes, verify host and client behaviour in separate processes or builds when practical, including joining, movement, synchronization, disconnect, and repeated sessions.
-- Review the diff for accidental scene, prefab, animation, package, and `.meta` changes.
-- Report what changed, what was verified, and what still needs Ian to test manually in Unity.
-- Never claim that a visual, scene, package, or multiplayer change works if it was not opened and verified.
+- Use Unity MCP or the Editor to test the affected scene, prefab, or gameplay path when practical.
+- Review the diff for accidental scene, prefab, package, animation, imported-asset, and `.meta` changes.
+- Report what changed, what was verified, and what still requires manual testing in Unity.
+- Never claim that a visual, scene, package, build, or runtime change works unless it was actually opened or executed and verified.
 
-## Pull request and merge request rules
+## Git and pull requests
 
-For meaningful changes:
-
-1. Start from the latest `main` and create a focused task branch.
-2. Keep only the requested work on that branch and preserve unrelated changes.
-3. Commit and push the completed work.
-4. Open a pull request or merge request targeting `main`.
-5. Describe what changed, what was validated, and any required manual Unity checks.
-6. Leave the request open and unmerged for Ian to review.
-
-Push requested revisions to the same open branch. Do not approve on Ian's behalf, merge into `main`, enable auto-merge, or delete the branch until Ian explicitly approves the merge.
+- Never delete, replace, or broadly rewrite unrelated files.
+- For meaningful work, start from the latest `main` on a focused branch.
+- Keep only the requested work on that branch, commit it, and push it.
+- Open a pull request targeting `main` with a clear summary, validation results, and any required manual Unity checks.
+- Leave pull requests open and unmerged for Ian to review.
+- Push requested revisions to the same branch. Do not approve on Ian's behalf, merge into `main`, enable auto-merge, or delete the branch unless Ian explicitly requests it.
+- Write directly to `main` only when Ian explicitly requests it or the change is clearly trivial and low-risk.

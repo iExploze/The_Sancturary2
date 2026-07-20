@@ -20,6 +20,25 @@
 /[Uu]ser[Ss]ettings/
 *.log
 
+# Unity crash-recovery scenes are local emergency backups, not project scenes.
+/[Aa]ssets/_Recovery/
+/[Aa]ssets/_Recovery.meta
+
+# Unity MCP generated captures and optional tool-call logs.
+/[Aa]ssets/[Ss]creenshots/
+/[Aa]ssets/[Ss]creenshots.meta
+/[Aa]ssets/UnityMCP/Log/
+/[Aa]ssets/UnityMCP/Log.meta
+
+# Unity MCP client registrations can contain machine-specific paths and ports.
+/.claude/mcp.json
+/.cursor/mcp.json
+/.vscode/mcp.json
+
+# Local Unity test and coverage output. Test source and Unity assets remain tracked.
+/[Tt]est[Rr]esults/
+/[Cc]overage[Rr]esults/
+
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be committed to version control.
 *.blend1
 *.blend1.meta
