@@ -1,0 +1,22 @@
+{
+  "name": "TheSancturary.FusionPrototype.PlayModeTests",
+  "references": [
+    "TheSancturary.Runtime",
+    "Fusion.Runtime",
+    "Unity.InputSystem",
+    "UnityEngine.TestRunner"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

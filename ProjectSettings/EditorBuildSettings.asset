@@ -6,8 +6,8 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/MainMenu.unity
-    guid: 8ef554b4245888e4f99ae49a7963f26c
+    path: Assets/Scenes/FusionPrototypeMenu.unity
+    guid: 30c5d5fb93d0e7044bcb87135bcbf278
   - enabled: 1
     path: Assets/Scenes/GrayboxPrototype.unity
     guid: f4eb6125a6143f4499e545861c6c15d0
