@@ -7,6 +7,7 @@ using UnityEngine.Rendering.Universal;
 namespace TheSancturary.FusionPrototype
 {
     [RequireComponent(typeof(NetworkObject), typeof(NetworkCharacterController), typeof(CharacterController))]
+    [RequireComponent(typeof(PlayerAnimationDriver))]
     public sealed class FusionNetworkPlayer : NetworkBehaviour
     {
         private const string OwnerPostProcessingLayerName = "OwnerPostProcessing";
@@ -29,8 +30,8 @@ namespace TheSancturary.FusionPrototype
         [SerializeField] private Transform cameraMotion;
         [SerializeField] private Camera playerCamera;
         [SerializeField] private AudioListener audioListener;
-        [SerializeField] private Transform visibleBody;
-        [SerializeField] private Renderer visibleBodyRenderer;
+        [SerializeField] private PlayerAnimationDriver animationDriver;
+        [SerializeField] private Renderer[] characterRenderers;
         [SerializeField] private AudioSource localAudioSource;
         [SerializeField] private AudioSource spatialAudioSource;
 
@@ -125,9 +126,11 @@ namespace TheSancturary.FusionPrototype
         private float _damagePulse;
         private float _cameraHeightVelocity;
         private float _currentCameraHeight;
-        private float _renderedBodyHeight;
         private float _bobBlend;
         private float _bobTime;
+        private bool _ownerCameraRenderingSubscribed;
+
+        public float AnimationReferenceSpeed => IsCrouched ? crouchSpeed : IsSprinting ? sprintSpeed : walkSpeed;
 
         public override void Spawned()
         {
@@ -145,10 +148,13 @@ namespace TheSancturary.FusionPrototype
             playerInput.enabled = isOwner;
             playerCamera.enabled = isOwner;
             audioListener.enabled = isOwner;
-            visibleBodyRenderer.enabled = !isOwner;
+            SetCharacterVisibility(true);
+            SetCharacterRenderingSuppressed(false);
+            animationDriver.Initialize();
 
             if (isOwner)
             {
+                SubscribeToOwnerCameraRendering();
                 CacheInputActions();
                 playerInput.ActivateInput();
                 _localLookYaw = transform.eulerAngles.y;
@@ -167,7 +173,6 @@ namespace TheSancturary.FusionPrototype
             _lastAudioEventSequence = AudioEventSequence;
             _lastRenderedHealth = Health;
             _currentCameraHeight = standingCameraHeight;
-            _renderedBodyHeight = standingHeight;
         }
 
         private void ResolveReferences()
@@ -175,12 +180,16 @@ namespace TheSancturary.FusionPrototype
             networkController ??= GetComponent<NetworkCharacterController>();
             characterController ??= GetComponent<CharacterController>();
             playerInput ??= GetComponent<PlayerInput>();
+            animationDriver ??= GetComponent<PlayerAnimationDriver>();
             localAudioSource ??= GetComponent<AudioSource>();
             if (spatialAudioSource == null)
             {
                 AudioSource[] sources = GetComponents<AudioSource>();
                 spatialAudioSource = sources.Length > 1 ? sources[1] : localAudioSource;
             }
+
+            if (characterRenderers == null || characterRenderers.Length == 0)
+                characterRenderers = GetComponentsInChildren<Renderer>(true);
         }
 
         private void CacheInputActions()
@@ -430,10 +439,7 @@ namespace TheSancturary.FusionPrototype
 
         public override void Render()
         {
-            float targetBodyHeight = IsCrouched ? crouchingHeight : standingHeight;
-            _renderedBodyHeight = Mathf.MoveTowards(_renderedBodyHeight, targetBodyHeight, crouchTransitionSpeed * Time.deltaTime);
-            visibleBody.localScale = new Vector3(0.68f, _renderedBodyHeight * 0.5f, 0.68f);
-            visibleBody.localPosition = Vector3.up * (_renderedBodyHeight * 0.5f);
+            animationDriver.RenderAnimation(Time.deltaTime);
 
             if (AudioEventSequence != _lastAudioEventSequence)
             {
@@ -446,6 +452,63 @@ namespace TheSancturary.FusionPrototype
 
             RenderOwnerCamera();
             RenderOwnerVignette();
+        }
+
+        private void SetCharacterVisibility(bool visible)
+        {
+            if (characterRenderers == null)
+                return;
+
+            for (int i = 0; i < characterRenderers.Length; i++)
+            {
+                if (characterRenderers[i] != null)
+                    characterRenderers[i].enabled = visible;
+            }
+        }
+
+        private void SubscribeToOwnerCameraRendering()
+        {
+            if (_ownerCameraRenderingSubscribed)
+                return;
+
+            RenderPipelineManager.beginCameraRendering += HandleBeginCameraRendering;
+            RenderPipelineManager.endCameraRendering += HandleEndCameraRendering;
+            _ownerCameraRenderingSubscribed = true;
+        }
+
+        private void UnsubscribeFromOwnerCameraRendering()
+        {
+            if (!_ownerCameraRenderingSubscribed)
+                return;
+
+            RenderPipelineManager.beginCameraRendering -= HandleBeginCameraRendering;
+            RenderPipelineManager.endCameraRendering -= HandleEndCameraRendering;
+            _ownerCameraRenderingSubscribed = false;
+            SetCharacterRenderingSuppressed(false);
+        }
+
+        private void HandleBeginCameraRendering(ScriptableRenderContext context, Camera renderingCamera)
+        {
+            if (renderingCamera == playerCamera)
+                SetCharacterRenderingSuppressed(true);
+        }
+
+        private void HandleEndCameraRendering(ScriptableRenderContext context, Camera renderingCamera)
+        {
+            if (renderingCamera == playerCamera)
+                SetCharacterRenderingSuppressed(false);
+        }
+
+        private void SetCharacterRenderingSuppressed(bool suppressed)
+        {
+            if (characterRenderers == null)
+                return;
+
+            for (int i = 0; i < characterRenderers.Length; i++)
+            {
+                if (characterRenderers[i] != null)
+                    characterRenderers[i].forceRenderingOff = suppressed;
+            }
         }
 
         private void RenderOwnerCamera()
@@ -588,6 +651,7 @@ namespace TheSancturary.FusionPrototype
 
         private void OnDestroy()
         {
+            UnsubscribeFromOwnerCameraRendering();
             if (_runtimeVolumeProfile != null)
                 Destroy(_runtimeVolumeProfile);
         }
