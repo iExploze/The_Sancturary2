@@ -8,7 +8,7 @@ namespace TheSancturary.FusionPrototype
         Jump,
         Sprint,
         Crouch,
-        DebugDamage
+        DebugExhaustion
     }
 
     public struct FusionPlayerInput : INetworkInput

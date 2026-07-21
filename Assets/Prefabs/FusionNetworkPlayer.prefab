@@ -392,7 +392,7 @@ MonoBehaviour:
   braking: 16
   gravity: -24
   jumpImpulse: 6.3
-  lookSensitivity: 0.45
+  lookSensitivity: 0.35
   pitchLimits: {x: -85, y: 85}
   standingHeight: 1.8
   crouchingHeight: 1.1
@@ -403,6 +403,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   maximumStamina: 100
+  jumpStaminaCost: 5
   staminaDrainRate: 20
   staminaRecoveryDelay: 1.25
   staminaRecoveryRate: 24
@@ -410,7 +411,7 @@ MonoBehaviour:
   maximumHealth: 100
   healthRegenerationDelay: 5
   healthRegenerationRate: 8
-  debugDamageAmount: 25
+  inspectorDamageToSubtract: 25
   footstepClips:
   - {fileID: 8300000, guid: 3920448e44dc11443aac6c28a7ac6706, type: 3}
   - {fileID: 8300000, guid: e7f5f2d616c667148a2fab8fc4b37f32, type: 3}
@@ -430,7 +431,7 @@ MonoBehaviour:
   walkBobAmount: {x: 0.018, y: 0.028}
   walkBobFrequency: 8
   sprintBobAmount: {x: 0.045, y: 0.075}
-  sprintBobFrequency: 13
+  sprintBobFrequency: 20
   crouchBobAmount: {x: 0.009, y: 0.014}
   crouchBobFrequency: 5
   bobBlendSpeed: 8
@@ -555,10 +556,10 @@ MonoBehaviour:
   m_RendererIndex: -1
   m_VolumeLayerMask:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 256
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0

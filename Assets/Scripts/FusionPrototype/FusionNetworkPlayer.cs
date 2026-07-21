@@ -9,6 +9,8 @@ namespace TheSancturary.FusionPrototype
     [RequireComponent(typeof(NetworkObject), typeof(NetworkCharacterController), typeof(CharacterController))]
     public sealed class FusionNetworkPlayer : NetworkBehaviour
     {
+        private const string OwnerPostProcessingLayerName = "OwnerPostProcessing";
+
         private enum MovementAudioEvent : byte
         {
             None,
@@ -54,6 +56,7 @@ namespace TheSancturary.FusionPrototype
 
         [Header("Stamina")]
         [SerializeField, Min(0.01f)] private float maximumStamina = 100f;
+        [SerializeField, Min(0f)] private float jumpStaminaCost = 5f;
         [SerializeField, Min(0f)] private float staminaDrainRate = 20f;
         [SerializeField, Min(0f)] private float staminaRecoveryDelay = 1.25f;
         [SerializeField, Min(0f)] private float staminaRecoveryRate = 24f;
@@ -63,7 +66,8 @@ namespace TheSancturary.FusionPrototype
         [SerializeField, Min(1f)] private float maximumHealth = 100f;
         [SerializeField, Min(0f)] private float healthRegenerationDelay = 5f;
         [SerializeField, Min(0f)] private float healthRegenerationRate = 8f;
-        [SerializeField, Min(0f)] private float debugDamageAmount = 25f;
+        [SerializeField, Min(1), Tooltip("Integer health removed when Subtract Inspector Damage is clicked in Play Mode.")]
+        private int inspectorDamageToSubtract = 25;
 
         [Header("Concrete Movement Audio")]
         [SerializeField] private AudioClip[] footstepClips;
@@ -107,8 +111,15 @@ namespace TheSancturary.FusionPrototype
         private InputAction _jumpAction;
         private InputAction _sprintAction;
         private InputAction _crouchAction;
+        private Vector2 _pendingNetworkLookDelta;
+        private float _localLookYaw;
+        private float _localLookPitch;
         private VolumeProfile _runtimeVolumeProfile;
         private Vignette _vignette;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private bool _debugExhaustionRequested;
+#endif
+        private int _pendingDamage;
         private byte _lastAudioEventSequence;
         private float _lastRenderedHealth;
         private float _damagePulse;
@@ -140,6 +151,9 @@ namespace TheSancturary.FusionPrototype
             {
                 CacheInputActions();
                 playerInput.ActivateInput();
+                _localLookYaw = transform.eulerAngles.y;
+                _localLookPitch = Mathf.Clamp(LookPitch, pitchLimits.x, pitchLimits.y);
+                ApplyOwnerCameraLook();
                 FusionSessionManager.Instance?.RegisterLocalPlayer(this);
                 CreateOwnerVignette();
                 LockCursor();
@@ -179,6 +193,42 @@ namespace TheSancturary.FusionPrototype
             _crouchAction = map.FindAction("Crouch", true);
         }
 
+        private void Update()
+        {
+            if (!HasInputAuthority || playerInput == null || !playerInput.enabled)
+                return;
+
+            HandleCursorDebugging();
+            SampleOwnerLook();
+            ApplyOwnerCameraLook();
+        }
+
+        private void LateUpdate()
+        {
+            if (HasInputAuthority)
+                ApplyOwnerCameraLook();
+        }
+
+        private void SampleOwnerLook()
+        {
+            if (_lookAction == null || Cursor.lockState != CursorLockMode.Locked)
+                return;
+
+            Vector2 lookDelta = _lookAction.ReadValue<Vector2>();
+            if (lookDelta.sqrMagnitude <= Mathf.Epsilon)
+                return;
+
+            _localLookYaw = Mathf.Repeat(_localLookYaw + lookDelta.x * lookSensitivity, 360f);
+            _localLookPitch = Mathf.Clamp(_localLookPitch - lookDelta.y * lookSensitivity, pitchLimits.x, pitchLimits.y);
+            _pendingNetworkLookDelta += lookDelta;
+        }
+
+        private void ApplyOwnerCameraLook()
+        {
+            if (cameraRoot != null)
+                cameraRoot.rotation = Quaternion.Euler(_localLookPitch, _localLookYaw, 0f);
+        }
+
         public FusionPlayerInput BuildNetworkInput()
         {
             FusionPlayerInput input = default;
@@ -186,15 +236,16 @@ namespace TheSancturary.FusionPrototype
                 return input;
 
             input.Move = Vector2.ClampMagnitude(_moveAction.ReadValue<Vector2>(), 1f);
-            input.Look = _lookAction.ReadValue<Vector2>();
+            input.Look = _pendingNetworkLookDelta;
+            _pendingNetworkLookDelta = Vector2.zero;
             input.Buttons.Set(FusionPlayerButton.Jump, _jumpAction.IsPressed());
             input.Buttons.Set(FusionPlayerButton.Sprint, _sprintAction.IsPressed());
 
             bool keyboardCrouch = Keyboard.current != null && Keyboard.current.leftCtrlKey.isPressed;
             input.Buttons.Set(FusionPlayerButton.Crouch, _crouchAction.IsPressed() || keyboardCrouch);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            bool debugDamage = Keyboard.current != null && Keyboard.current.f8Key.isPressed;
-            input.Buttons.Set(FusionPlayerButton.DebugDamage, debugDamage);
+            bool debugExhaustion = Keyboard.current != null && Keyboard.current.f7Key.isPressed;
+            input.Buttons.Set(FusionPlayerButton.DebugExhaustion, debugExhaustion);
 #endif
             return input;
         }
@@ -241,11 +292,19 @@ namespace TheSancturary.FusionPrototype
             if (pressed.IsSet(FusionPlayerButton.Jump) && wasGrounded && !IsCrouched)
             {
                 networkController.Jump();
+                Stamina = PlayerVitalsMath.SpendStamina(Stamina, jumpStaminaCost);
+                StaminaRecoveryElapsed = 0f;
                 EmitAudioEvent(MovementAudioEvent.Jump);
             }
 
+            float bodyRotationSpeed = networkController.rotationSpeed;
+            networkController.rotationSpeed = 0f;
             networkController.Move(movement);
-            transform.rotation = Quaternion.Euler(0f, LookYaw, 0f);
+            networkController.rotationSpeed = bodyRotationSpeed;
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                Quaternion.Euler(0f, LookYaw, 0f),
+                Mathf.Max(0f, bodyRotationSpeed) * Runner.DeltaTime);
 
             bool isGrounded = networkController.Grounded;
             if (!WasGrounded && isGrounded)
@@ -285,9 +344,23 @@ namespace TheSancturary.FusionPrototype
             if (HasStateAuthority)
             {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                if (pressed.IsSet(FusionPlayerButton.DebugDamage))
-                    ApplyDamage(debugDamageAmount);
+                if (pressed.IsSet(FusionPlayerButton.DebugExhaustion))
+                    DebugRequestExhaustion();
+                if (_debugExhaustionRequested)
+                {
+                    _debugExhaustionRequested = false;
+                    Stamina = 0f;
+                    StaminaRecoveryElapsed = 0f;
+                    SprintLocked = true;
+                }
 #endif
+                if (_pendingDamage > 0)
+                {
+                    int damage = _pendingDamage;
+                    _pendingDamage = 0;
+                    ApplyDamageAuthoritative(damage);
+                }
+
                 HealthStep healthStep = PlayerVitalsMath.RegenerateHealth(
                     Health,
                     TimeSinceDamage,
@@ -300,14 +373,37 @@ namespace TheSancturary.FusionPrototype
             }
         }
 
-        public void ApplyDamage(float amount)
+        public void TakeDamage(int healthToSubtract)
         {
-            if (!HasStateAuthority || amount <= 0f)
+            if (!HasStateAuthority || healthToSubtract <= 0)
                 return;
 
-            Health = Mathf.Max(0f, Health - amount);
+            _pendingDamage = healthToSubtract > int.MaxValue - _pendingDamage
+                ? int.MaxValue
+                : _pendingDamage + healthToSubtract;
+        }
+
+        private void ApplyDamageAuthoritative(int healthToSubtract)
+        {
+            Health = Mathf.Max(0f, Health - healthToSubtract);
             TimeSinceDamage = 0f;
         }
+
+#if UNITY_EDITOR
+        public void TriggerInspectorDamage()
+        {
+            TakeDamage(inspectorDamageToSubtract);
+        }
+#endif
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        public void DebugRequestExhaustion()
+        {
+            if (HasStateAuthority)
+                _debugExhaustionRequested = true;
+        }
+
+#endif
 
         private bool CanStand()
         {
@@ -350,7 +446,6 @@ namespace TheSancturary.FusionPrototype
 
             RenderOwnerCamera();
             RenderOwnerVignette();
-            HandleCursorDebugging();
         }
 
         private void RenderOwnerCamera()
@@ -358,7 +453,6 @@ namespace TheSancturary.FusionPrototype
             float targetHeight = IsCrouched ? crouchingCameraHeight : standingCameraHeight;
             _currentCameraHeight = Mathf.SmoothDamp(_currentCameraHeight, targetHeight, ref _cameraHeightVelocity, 1f / crouchTransitionSpeed);
             cameraRoot.localPosition = Vector3.up * _currentCameraHeight;
-            cameraRoot.localRotation = Quaternion.Euler(LookPitch, 0f, 0f);
 
             float horizontalSpeed = new Vector2(networkController.Velocity.x, networkController.Velocity.z).magnitude;
             bool moving = networkController.Grounded && horizontalSpeed > 0.08f;
@@ -378,6 +472,18 @@ namespace TheSancturary.FusionPrototype
 
         private void CreateOwnerVignette()
         {
+            UniversalAdditionalCameraData cameraData = playerCamera.GetComponent<UniversalAdditionalCameraData>();
+            int volumeLayer = LayerMask.NameToLayer(OwnerPostProcessingLayerName);
+            if (cameraData == null || volumeLayer < 0)
+            {
+                Debug.LogError($"Owner vignette requires URP camera data and the '{OwnerPostProcessingLayerName}' layer.", this);
+                return;
+            }
+
+            cameraData.renderPostProcessing = true;
+            cameraData.volumeLayerMask = 1 << volumeLayer;
+            cameraData.volumeTrigger = playerCamera.transform;
+
             _runtimeVolumeProfile = ScriptableObject.CreateInstance<VolumeProfile>();
             _runtimeVolumeProfile.name = $"{name}_OwnerRuntimeVignette";
             _vignette = _runtimeVolumeProfile.Add<Vignette>(true);
@@ -386,9 +492,13 @@ namespace TheSancturary.FusionPrototype
             _vignette.smoothness.Override(0.88f);
             _vignette.rounded.Override(false);
 
-            Volume volume = gameObject.AddComponent<Volume>();
+            GameObject volumeObject = new($"{name}_OwnerCameraEffects");
+            volumeObject.layer = volumeLayer;
+            volumeObject.transform.SetParent(playerCamera.transform, false);
+            Volume volume = volumeObject.AddComponent<Volume>();
             volume.isGlobal = true;
             volume.priority = 100f;
+            volume.weight = 1f;
             volume.profile = _runtimeVolumeProfile;
         }
 
@@ -400,7 +510,7 @@ namespace TheSancturary.FusionPrototype
             if (Health + 0.01f < _lastRenderedHealth)
                 _damagePulse = 1f;
             _lastRenderedHealth = Health;
-            _damagePulse = Mathf.MoveTowards(_damagePulse, 0f, Time.deltaTime * 1.7f);
+            _damagePulse = Mathf.MoveTowards(_damagePulse, 0f, Time.deltaTime * 0.65f);
 
             float staminaRatio = maximumStamina > 0f ? Stamina / maximumStamina : 1f;
             float healthRatio = maximumHealth > 0f ? Health / maximumHealth : 1f;
@@ -408,12 +518,23 @@ namespace TheSancturary.FusionPrototype
             if (SprintLocked)
                 exhaustion = Mathf.Max(exhaustion, 0.9f);
             float lowHealth = Mathf.Clamp01(Mathf.InverseLerp(0.65f, 0.15f, healthRatio));
-            float redWeight = Mathf.Clamp01(Mathf.Max(lowHealth * 0.7f, _damagePulse));
+            float missingHealth = 1f - Mathf.Clamp01(healthRatio);
 
-            float targetIntensity = Mathf.Clamp(exhaustion * 0.48f + lowHealth * 0.22f + _damagePulse * 0.3f, 0f, 0.62f);
-            Color targetColor = Color.Lerp(Color.black, new Color(0.55f, 0.015f, 0.015f), redWeight);
-            _vignette.intensity.value = Mathf.MoveTowards(_vignette.intensity.value, targetIntensity, Time.deltaTime * 1.8f);
-            _vignette.color.value = Color.Lerp(_vignette.color.value, targetColor, Time.deltaTime * 5f);
+            float staminaIntensity = exhaustion * 0.46f;
+            float persistentDamageIntensity = missingHealth > 0.001f
+                ? Mathf.Lerp(0.18f, 0.28f, missingHealth)
+                : 0f;
+            float lowHealthIntensity = lowHealth * 0.38f;
+            float healthIntensity = Mathf.Max(persistentDamageIntensity, lowHealthIntensity, _damagePulse * 0.62f);
+            float targetIntensity = 1f - (1f - staminaIntensity) * (1f - healthIntensity);
+            targetIntensity = Mathf.Min(targetIntensity, 0.65f);
+
+            float redWeight = healthIntensity / Mathf.Max(0.001f, staminaIntensity + healthIntensity);
+            redWeight = Mathf.Sqrt(Mathf.Clamp01(redWeight));
+            Color targetColor = Color.Lerp(Color.black, new Color(0.9f, 0.01f, 0.01f), redWeight);
+            float intensitySpeed = targetIntensity > _vignette.intensity.value ? 6f : 1.5f;
+            _vignette.intensity.value = Mathf.MoveTowards(_vignette.intensity.value, targetIntensity, Time.deltaTime * intensitySpeed);
+            _vignette.color.value = Color.Lerp(_vignette.color.value, targetColor, 1f - Mathf.Exp(-10f * Time.deltaTime));
         }
 
         private void PlayMovementAudio(MovementAudioEvent audioEvent, bool localOwner)

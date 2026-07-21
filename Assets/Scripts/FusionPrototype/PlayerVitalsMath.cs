@@ -30,6 +30,11 @@ namespace TheSancturary.FusionPrototype
 
     public static class PlayerVitalsMath
     {
+        public static float SpendStamina(float stamina, float cost)
+        {
+            return Mathf.Max(0f, stamina - Mathf.Max(0f, cost));
+        }
+
         public static StaminaStep UpdateStamina(
             float stamina,
             float recoveryElapsed,

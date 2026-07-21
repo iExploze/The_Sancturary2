@@ -5,6 +5,14 @@ namespace TheSancturary.FusionPrototype.Tests
     public sealed class PlayerVitalsMathTests
     {
         [Test]
+        public void SpendingJumpStaminaSubtractsCostAndClampsAtZero()
+        {
+            Assert.That(PlayerVitalsMath.SpendStamina(100f, 5f), Is.EqualTo(95f));
+            Assert.That(PlayerVitalsMath.SpendStamina(3f, 5f), Is.Zero);
+            Assert.That(PlayerVitalsMath.SpendStamina(50f, -5f), Is.EqualTo(50f));
+        }
+
+        [Test]
         public void FiveSecondsOfSprintingExhaustsAndLocksStamina()
         {
             StaminaStep result = new(100f, 0f, false);
