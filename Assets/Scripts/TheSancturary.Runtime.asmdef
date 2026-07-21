@@ -2,6 +2,10 @@
   "name": "TheSancturary.Runtime",
   "rootNamespace": "TheSancturary",
   "references": [
+    "Fusion.Runtime",
+    "Fusion.Realtime",
+    "Fusion.Unity",
+    "Photon.Realtime",
     "Unity.AI.Navigation",
     "Unity.InputSystem",
     "Unity.Netcode.Runtime",
