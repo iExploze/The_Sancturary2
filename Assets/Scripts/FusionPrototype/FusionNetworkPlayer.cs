@@ -130,7 +130,7 @@ namespace TheSancturary.FusionPrototype
         private float _bobTime;
         private bool _ownerCameraRenderingSubscribed;
 
-        public float AnimationReferenceSpeed => IsCrouched ? crouchSpeed : IsSprinting ? sprintSpeed : walkSpeed;
+        public float AnimationReferenceSpeed => IsCrouched ? crouchSpeed : walkSpeed;
 
         public override void Spawned()
         {
@@ -286,9 +286,18 @@ namespace TheSancturary.FusionPrototype
             characterController.center = Vector3.up * (characterController.height * 0.5f);
 
             Vector2 moveInput = Vector2.ClampMagnitude(input.Move, 1f);
-            Vector3 movement = Quaternion.Euler(0f, LookYaw, 0f) * new Vector3(moveInput.x, 0f, moveInput.y);
+            bool hasForwardInput = moveInput.y > 0.01f;
+            bool wantsToSprint = input.Buttons.IsSet(FusionPlayerButton.Sprint)
+                && !IsCrouched
+                && networkController.Grounded
+                && hasForwardInput
+                && !SprintLocked;
+            Vector2 effectiveMoveInput = wantsToSprint
+                ? new Vector2(0f, Mathf.Clamp01(moveInput.y))
+                : moveInput;
+            Vector3 movement = Quaternion.Euler(0f, LookYaw, 0f)
+                * new Vector3(effectiveMoveInput.x, 0f, effectiveMoveInput.y);
             bool wantsToMove = movement.sqrMagnitude > 0.01f;
-            bool wantsToSprint = input.Buttons.IsSet(FusionPlayerButton.Sprint) && !IsCrouched && wantsToMove && !SprintLocked;
 
             IsSprinting = wantsToSprint;
             networkController.maxSpeed = IsCrouched ? crouchSpeed : wantsToSprint ? sprintSpeed : walkSpeed;
@@ -338,11 +347,12 @@ namespace TheSancturary.FusionPrototype
             Stamina = staminaStep.Stamina;
             StaminaRecoveryElapsed = staminaStep.RecoveryElapsed;
             SprintLocked = staminaStep.SprintLocked;
+            IsSprinting = actuallySprinting && !SprintLocked;
 
             if (actuallyMoving)
             {
                 AccumulatedStepDistance += actualHorizontalSpeed * Runner.DeltaTime;
-                float cadence = IsCrouched ? crouchStepDistance : wantsToSprint ? sprintStepDistance : walkStepDistance;
+                float cadence = IsCrouched ? crouchStepDistance : IsSprinting ? sprintStepDistance : walkStepDistance;
                 if (AccumulatedStepDistance >= cadence)
                 {
                     AccumulatedStepDistance -= cadence;

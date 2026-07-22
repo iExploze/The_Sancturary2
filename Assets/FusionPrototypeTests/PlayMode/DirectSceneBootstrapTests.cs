@@ -4,6 +4,7 @@ using Fusion;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
@@ -14,6 +15,93 @@ namespace TheSancturary.FusionPrototype.Tests
 {
     public sealed class DirectSceneBootstrapTests
     {
+        private static IEnumerator ValidateLocomotionUsesRootRelativeDirectionsAndForwardOnlySprint(
+            FusionNetworkPlayer player,
+            NetworkCharacterController controller,
+            Keyboard keyboard,
+            Animator animator)
+        {
+            NUnitAssert.That(controller, Is.Not.Null);
+            NUnitAssert.That(animator, Is.Not.Null);
+            NUnitAssert.That(animator.applyRootMotion, Is.False);
+            NUnitAssert.That(animator.layerCount, Is.EqualTo(2));
+            NUnitAssert.That(animator.GetLayerName(1), Is.EqualTo("Airborne"));
+            yield return WaitUntil(() => controller.Grounded, 5f, "Player did not begin grounded.");
+
+            yield return HoldKeys(keyboard, 0.6f, Key.W);
+            Vector3 localVelocity = player.transform.InverseTransformDirection(controller.Velocity);
+            NUnitAssert.That(localVelocity.z, Is.GreaterThan(0.5f), "W must create positive local forward velocity.");
+            NUnitAssert.That(animator.GetFloat("MoveY"), Is.GreaterThan(0.2f), "W must drive positive MoveY.");
+            NUnitAssert.That((bool)player.IsSprinting, Is.False, "W without Sprint must remain walking.");
+            yield return ReleaseAndSettle(keyboard, controller);
+
+            yield return HoldKeys(keyboard, 0.6f, Key.S);
+            localVelocity = player.transform.InverseTransformDirection(controller.Velocity);
+            NUnitAssert.That(localVelocity.z, Is.LessThan(-0.5f), "S must create negative local forward velocity.");
+            NUnitAssert.That(animator.GetFloat("MoveY"), Is.LessThan(-0.2f), "S must drive negative MoveY.");
+            yield return ReleaseAndSettle(keyboard, controller);
+
+            yield return HoldKeys(keyboard, 0.6f, Key.A);
+            localVelocity = player.transform.InverseTransformDirection(controller.Velocity);
+            NUnitAssert.That(localVelocity.x, Is.LessThan(-0.5f), "A must create negative local lateral velocity.");
+            NUnitAssert.That(animator.GetFloat("MoveX"), Is.LessThan(-0.2f), "A must drive negative MoveX.");
+            yield return ReleaseAndSettle(keyboard, controller);
+
+            yield return HoldKeys(keyboard, 0.6f, Key.D);
+            localVelocity = player.transform.InverseTransformDirection(controller.Velocity);
+            NUnitAssert.That(localVelocity.x, Is.GreaterThan(0.5f), "D must create positive local lateral velocity.");
+            NUnitAssert.That(animator.GetFloat("MoveX"), Is.GreaterThan(0.2f), "D must drive positive MoveX.");
+            yield return ReleaseAndSettle(keyboard, controller);
+
+            float sprintStaminaBefore = player.Stamina;
+            yield return HoldKeys(keyboard, 0.8f, Key.LeftShift, Key.W);
+            localVelocity = player.transform.InverseTransformDirection(controller.Velocity);
+            NUnitAssert.That((bool)player.IsSprinting, Is.True, "Shift+W must activate sprinting.");
+            NUnitAssert.That(localVelocity.z, Is.GreaterThan(2.5f), "Shift+W must reach forward sprint velocity.");
+            NUnitAssert.That(Mathf.Abs(localVelocity.x), Is.LessThan(0.2f), "Forward sprint must not add lateral velocity.");
+            NUnitAssert.That(animator.GetFloat("MoveY"), Is.GreaterThan(1.1f), "Forward sprint must occupy the >1 MoveY range.");
+            NUnitAssert.That(player.Stamina, Is.LessThan(sprintStaminaBefore), "Valid forward sprint must drain stamina.");
+            yield return ReleaseAndSettle(keyboard, controller);
+
+            yield return AssertInvalidSprintDirection(keyboard, player, controller, animator, Key.A, "Shift+A");
+            yield return AssertInvalidSprintDirection(keyboard, player, controller, animator, Key.D, "Shift+D");
+            yield return AssertInvalidSprintDirection(keyboard, player, controller, animator, Key.S, "Shift+S");
+
+            yield return HoldKeys(keyboard, 0.8f, Key.LeftShift, Key.W, Key.A);
+            localVelocity = player.transform.InverseTransformDirection(controller.Velocity);
+            NUnitAssert.That((bool)player.IsSprinting, Is.True, "Shift+W+A must remain a valid forward sprint.");
+            NUnitAssert.That(localVelocity.z, Is.GreaterThan(2.5f));
+            NUnitAssert.That(Mathf.Abs(localVelocity.x), Is.LessThan(0.2f), "Sprint must ignore diagonal lateral input.");
+            yield return ReleaseAndSettle(keyboard, controller);
+
+            int airborneLayer = animator.GetLayerIndex("Airborne");
+            NUnitAssert.That(animator.GetCurrentAnimatorStateInfo(airborneLayer).IsName("Grounded Pass Through"), Is.True);
+            InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.Space));
+            NUnitAssert.That(
+                animator.GetCurrentAnimatorStateInfo(airborneLayer).IsName("Grounded Pass Through"),
+                Is.True,
+                "Jump input alone must not pre-empt the grounded animation state.");
+            yield return WaitUntil(() => !controller.Grounded, 2f, "Jump did not make the controller airborne.");
+            yield return WaitUntil(
+                () => animator.GetCurrentAnimatorStateInfo(airborneLayer).IsName("Airborne"),
+                1f,
+                "Animator did not enter Airborne after the controller left the ground.");
+            InputSystem.QueueStateEvent(keyboard, new KeyboardState());
+            yield return WaitUntil(() => controller.Grounded, 3f, "Player did not land after jumping.");
+            yield return WaitUntil(
+                () => animator.GetCurrentAnimatorStateInfo(airborneLayer).IsName("Grounded Pass Through"),
+                1f,
+                "Animator did not return to locomotion after landing.");
+
+            controller.Teleport(player.transform.position + Vector3.up * 2f);
+            yield return WaitUntil(() => !controller.Grounded, 1f, "Ungrounded teleport did not begin falling.");
+            yield return WaitUntil(
+                () => animator.GetCurrentAnimatorStateInfo(airborneLayer).IsName("Airborne"),
+                1f,
+                "Airborne animation must activate without jump input when the controller leaves the ground.");
+            yield return WaitUntil(() => controller.Grounded, 3f, "Player did not land after the unprompted fall.");
+        }
+
         [UnityTest]
         public IEnumerator DirectSceneSpawnsOneOwnedCanonicalPlayer()
         {
@@ -40,11 +128,19 @@ namespace TheSancturary.FusionPrototype.Tests
             NUnitAssert.That(player.Object.InputAuthority, Is.EqualTo(runner.LocalPlayer));
 
             PlayerInput ownerInput = player.GetComponent<PlayerInput>();
+            Animator animator = player.GetComponentInChildren<Animator>(true);
+            Renderer[] characterRenderers = player.GetComponentsInChildren<Renderer>(true);
             Keyboard keyboard = Keyboard.current ?? InputSystem.AddDevice<Keyboard>();
             Mouse mouse = Mouse.current ?? InputSystem.AddDevice<Mouse>();
             ownerInput.SwitchCurrentControlScheme("Keyboard&Mouse", keyboard, mouse);
             Transform cameraRoot = player.transform.Find("CameraRoot");
             NUnitAssert.That(cameraRoot, Is.Not.Null);
+            NUnitAssert.That(characterRenderers, Is.Not.Empty, "The canonical player must contain visible character renderers.");
+            foreach (Renderer characterRenderer in characterRenderers)
+            {
+                NUnitAssert.That(characterRenderer.enabled, Is.True, $"{characterRenderer.name} must remain enabled for external and Scene cameras.");
+                NUnitAssert.That(characterRenderer.forceRenderingOff, Is.False, $"{characterRenderer.name} must not remain globally suppressed outside the owner-camera render pass.");
+            }
             Cursor.lockState = CursorLockMode.Locked;
 
             FieldInfo sensitivityField = typeof(FusionNetworkPlayer).GetField("lookSensitivity", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -61,6 +157,12 @@ namespace TheSancturary.FusionPrototype.Tests
                 renderedYawDelta,
                 Is.EqualTo(horizontalMouseDelta * sensitivity).Within(0.75f),
                 "The owner camera should consume raw mouse delta in the next rendered frame without tick delay or delta-time scaling.");
+
+            yield return ValidateLocomotionUsesRootRelativeDirectionsAndForwardOnlySprint(
+                player,
+                player.GetComponent<NetworkCharacterController>(),
+                keyboard,
+                animator);
 
             Camera ownerCamera = cameraRoot.GetComponentInChildren<Camera>(true);
             UniversalAdditionalCameraData cameraData = ownerCamera.GetComponent<UniversalAdditionalCameraData>();
@@ -99,6 +201,37 @@ namespace TheSancturary.FusionPrototype.Tests
                 yield return null;
 
             NUnitAssert.That(condition(), Is.True, failureMessage);
+        }
+
+        private static IEnumerator HoldKeys(Keyboard keyboard, float seconds, params Key[] keys)
+        {
+            InputSystem.QueueStateEvent(keyboard, new KeyboardState(keys));
+            yield return new WaitForSeconds(seconds);
+        }
+
+        private static IEnumerator ReleaseAndSettle(Keyboard keyboard, NetworkCharacterController controller)
+        {
+            InputSystem.QueueStateEvent(keyboard, new KeyboardState());
+            yield return WaitUntil(
+                () => new Vector2(controller.Velocity.x, controller.Velocity.z).magnitude < 0.12f,
+                2f,
+                "Player did not settle after movement input was released.");
+        }
+
+        private static IEnumerator AssertInvalidSprintDirection(
+            Keyboard keyboard,
+            FusionNetworkPlayer player,
+            NetworkCharacterController controller,
+            Animator animator,
+            Key direction,
+            string label)
+        {
+            float staminaBefore = player.Stamina;
+            yield return HoldKeys(keyboard, 0.5f, Key.LeftShift, direction);
+            NUnitAssert.That((bool)player.IsSprinting, Is.False, $"{label} must not activate sprinting.");
+            NUnitAssert.That(player.Stamina, Is.GreaterThanOrEqualTo(staminaBefore - 0.05f), $"{label} must not drain stamina.");
+            NUnitAssert.That(animator.GetFloat("MoveY"), Is.LessThanOrEqualTo(1.05f), $"{label} must not send sprint animation values.");
+            yield return ReleaseAndSettle(keyboard, controller);
         }
 
         private static int CountEnabled<T>() where T : UnityEngine.Behaviour

@@ -466,9 +466,8 @@ MonoBehaviour:
   animator: {fileID: 1564922691669482619}
   player: {fileID: 3534618155417879656}
   networkController: {fileID: 1661761706703525729}
-  holdingItem: 1
+  movementRoot: {fileID: 1862970608609475245}
   parameterDampTime: 0.12
-  holdingLayerBlendSpeed: 8
 --- !u!1 &3170984722257280242
 GameObject:
   m_ObjectHideFlags: 0
@@ -672,7 +671,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 057d86323f55ed74e8c5506438de870b, type: 3}
       propertyPath: m_LocalRotation.w
-      value: -0.00000004371139
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 057d86323f55ed74e8c5506438de870b, type: 3}
       propertyPath: m_LocalRotation.x
@@ -680,7 +679,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 057d86323f55ed74e8c5506438de870b, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 057d86323f55ed74e8c5506438de870b, type: 3}
       propertyPath: m_LocalRotation.z

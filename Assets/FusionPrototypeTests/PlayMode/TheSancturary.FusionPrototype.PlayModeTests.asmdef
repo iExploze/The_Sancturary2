@@ -3,6 +3,7 @@
   "references": [
     "TheSancturary.Runtime",
     "Fusion.Runtime",
+    "Fusion.Unity",
     "Unity.InputSystem",
     "Unity.RenderPipelines.Core.Runtime",
     "Unity.RenderPipelines.Universal.Runtime",
