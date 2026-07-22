@@ -1,5 +1,31 @@
 # AGENTS.md
 
+## Unity Editor Usage and Validation
+
+Do not launch the Unity Editor or run Unity batch mode after every change.
+
+By default:
+
+1. Inspect the repository and applicable instructions.
+2. Make the smallest coherent change.
+3. Review the git diff for accidental changes, especially scenes, prefabs, Animator Controllers, packages, imported assets, and `.meta` files.
+4. Perform static checks on edited C# code where possible.
+5. Report what Ian should manually verify in the Unity Editor.
+
+Ian will normally open Unity, allow the project to compile and import, playtest the result, and report any console errors or incorrect behaviour.
+
+Run Unity 6000.3.15f1 only when:
+
+* Unity Editor serialization is required.
+* The task creates or substantially edits scenes, prefabs, Animator Controllers, Blend Trees, Avatar Masks, imported asset settings, or object references.
+* A temporary editor tool must be executed.
+* Static inspection cannot reasonably validate the result.
+* Ian explicitly requests Unity validation.
+* A larger milestone is being prepared for commit or review.
+
+When Unity validation is needed, run it once after completing the coherent group of changes rather than repeatedly after each small edit.
+
+
 ## Project goal
 
 The Sancturary is a small, movement-heavy, first-person escape-horror prototype. The player explores an abandoned institution, finds environmental clues and keys, solves a short chain of puzzles, evades a roaming monster, unlocks the final route, and escapes.
