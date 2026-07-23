@@ -65,7 +65,7 @@ namespace TheSancturary.FusionPrototype
             float moveY = horizontalSpeed > MovingThreshold
                 ? Mathf.Clamp(localVelocity.z / referenceSpeed, -1f, player.IsCrouched ? 1f : 2f)
                 : 0f;
-            if (player.Health <= 0f)
+            if (player.IsDead || player.Health <= 0f)
                 _deathLatched = true;
             bool dead = _deathLatched;
 

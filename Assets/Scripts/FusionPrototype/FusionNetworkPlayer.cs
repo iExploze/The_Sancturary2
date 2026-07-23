@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.Video;
 
 namespace TheSancturary.FusionPrototype
 {
@@ -93,6 +94,7 @@ namespace TheSancturary.FusionPrototype
 
         [Networked] public float Stamina { get; private set; }
         [Networked] public float Health { get; private set; }
+        [Networked] public NetworkBool IsDead { get; private set; }
         [Networked] public NetworkBool IsCrouched { get; private set; }
         [Networked] public NetworkBool IsSprinting { get; private set; }
         [Networked] public float LookYaw { get; private set; }
@@ -129,6 +131,10 @@ namespace TheSancturary.FusionPrototype
         private float _bobBlend;
         private float _bobTime;
         private bool _ownerCameraRenderingSubscribed;
+        private VideoPlayer _deathVideoPlayer;
+        private bool _deathSequenceStarted;
+
+        public bool IsDeadOrPending => IsDead || Health - _pendingDamage <= 0f;
 
         public float AnimationReferenceSpeed => IsCrouched ? crouchSpeed : walkSpeed;
 
@@ -140,6 +146,7 @@ namespace TheSancturary.FusionPrototype
             {
                 Stamina = maximumStamina;
                 Health = maximumHealth;
+                IsDead = false;
                 LookYaw = transform.eulerAngles.y;
                 WasGrounded = networkController.Grounded;
             }
@@ -263,6 +270,13 @@ namespace TheSancturary.FusionPrototype
         {
             if (IsProxy)
                 return;
+
+            if (IsDead)
+            {
+                IsSprinting = false;
+                networkController.Move(Vector3.zero);
+                return;
+            }
 
             FusionPlayerInput input = default;
             GetInput(out input);
@@ -394,7 +408,7 @@ namespace TheSancturary.FusionPrototype
 
         public void TakeDamage(int healthToSubtract)
         {
-            if (!HasStateAuthority || healthToSubtract <= 0)
+            if (!HasStateAuthority || IsDead || healthToSubtract <= 0)
                 return;
 
             _pendingDamage = healthToSubtract > int.MaxValue - _pendingDamage
@@ -406,6 +420,62 @@ namespace TheSancturary.FusionPrototype
         {
             Health = Mathf.Max(0f, Health - healthToSubtract);
             TimeSinceDamage = 0f;
+            if (Health <= 0f)
+                IsDead = true;
+        }
+
+        public void BeginLocalDeathSequence(VideoClip jumpscareClip)
+        {
+            if (!HasInputAuthority || _deathSequenceStarted)
+                return;
+
+            _deathSequenceStarted = true;
+            if (playerInput != null)
+            {
+                playerInput.DeactivateInput();
+                playerInput.enabled = false;
+            }
+            IsSprinting = false;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+
+            if (jumpscareClip == null || playerCamera == null)
+                return;
+
+            _deathVideoPlayer = playerCamera.gameObject.AddComponent<VideoPlayer>();
+            _deathVideoPlayer.playOnAwake = false;
+            _deathVideoPlayer.isLooping = false;
+            _deathVideoPlayer.skipOnDrop = false;
+            _deathVideoPlayer.renderMode = VideoRenderMode.CameraNearPlane;
+            _deathVideoPlayer.targetCamera = playerCamera;
+            _deathVideoPlayer.targetCameraAlpha = 1f;
+            _deathVideoPlayer.aspectRatio = VideoAspectRatio.FitInside;
+            _deathVideoPlayer.audioOutputMode = VideoAudioOutputMode.Direct;
+            _deathVideoPlayer.clip = jumpscareClip;
+            _deathVideoPlayer.loopPointReached += HandleDeathVideoFinished;
+            _deathVideoPlayer.errorReceived += HandleDeathVideoError;
+            _deathVideoPlayer.Play();
+        }
+
+        private void HandleDeathVideoFinished(VideoPlayer source)
+        {
+            DisposeDeathVideoPlayer();
+        }
+
+        private void HandleDeathVideoError(VideoPlayer source, string message)
+        {
+            Debug.LogWarning($"Geo Monster jumpscare video could not finish: {message}", this);
+            DisposeDeathVideoPlayer();
+        }
+
+        private void DisposeDeathVideoPlayer()
+        {
+            if (_deathVideoPlayer == null)
+                return;
+            _deathVideoPlayer.loopPointReached -= HandleDeathVideoFinished;
+            _deathVideoPlayer.errorReceived -= HandleDeathVideoError;
+            Destroy(_deathVideoPlayer);
+            _deathVideoPlayer = null;
         }
 
 #if UNITY_EDITOR
@@ -661,6 +731,7 @@ namespace TheSancturary.FusionPrototype
 
         private void OnDestroy()
         {
+            DisposeDeathVideoPlayer();
             UnsubscribeFromOwnerCameraRendering();
             if (_runtimeVolumeProfile != null)
                 Destroy(_runtimeVolumeProfile);
