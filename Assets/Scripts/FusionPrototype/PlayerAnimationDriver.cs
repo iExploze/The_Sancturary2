@@ -10,7 +10,6 @@ namespace TheSancturary.FusionPrototype
 
         private static readonly int MoveXHash = Animator.StringToHash("MoveX");
         private static readonly int MoveYHash = Animator.StringToHash("MoveY");
-        private static readonly int IsGroundedHash = Animator.StringToHash("IsGrounded");
         private static readonly int CrouchedHash = Animator.StringToHash("Crouched");
         private static readonly int DeadHash = Animator.StringToHash("Dead");
 
@@ -72,7 +71,6 @@ namespace TheSancturary.FusionPrototype
             float safeDeltaTime = Mathf.Max(0f, deltaTime);
             animator.SetFloat(MoveXHash, moveX, parameterDampTime, safeDeltaTime);
             animator.SetFloat(MoveYHash, moveY, parameterDampTime, safeDeltaTime);
-            animator.SetBool(IsGroundedHash, networkController.Grounded);
             animator.SetBool(CrouchedHash, player.IsCrouched);
             animator.SetBool(DeadHash, dead);
         }
