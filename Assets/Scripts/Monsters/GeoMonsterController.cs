@@ -1,3 +1,4 @@
+using Fusion;
 using TheSancturary.FusionPrototype;
 using UnityEngine;
 using UnityEngine.AI;
@@ -6,14 +7,23 @@ using UnityEngine.Video;
 namespace TheSancturary.Monsters
 {
     [DisallowMultipleComponent]
+    [RequireComponent(typeof(NetworkObject), typeof(NetworkTransform))]
     [RequireComponent(typeof(NavMeshAgent), typeof(CapsuleCollider))]
-    public sealed class GeoMonsterController : MonoBehaviour
+    public sealed class GeoMonsterController : NetworkBehaviour
     {
-        public enum GeoMonsterState
+        public enum GeoMonsterState : byte
         {
             IdleScan,
             Patrol,
             Chase,
+            Attack
+        }
+
+        private enum MonsterAudioEvent : byte
+        {
+            None,
+            WalkFootstep,
+            RunFootstep,
             Attack
         }
 
@@ -40,6 +50,7 @@ namespace TheSancturary.Monsters
         [SerializeField] private LayerMask obstructionMask = ~0;
         [SerializeField, Min(0f)] private float lostTargetGracePeriod = 2.25f;
         [SerializeField, Range(0f, 90f)] private float scanAngle = 55f;
+        [SerializeField, Min(0.05f)] private float retargetInterval = 0.25f;
 
         [Header("Attack")]
         [SerializeField, Min(0.1f)] private float attackRange = 1.8f;
@@ -57,232 +68,353 @@ namespace TheSancturary.Monsters
         [SerializeField, Min(0.05f)] private float walkFootstepInterval = 0.62f;
         [SerializeField, Min(0.05f)] private float runFootstepInterval = 0.34f;
 
+        [Networked] public GeoMonsterState CurrentState { get; private set; }
+        [Networked] public PlayerRef TargetPlayer { get; private set; }
+        [Networked] public Vector3 PatrolDestination { get; private set; }
+        [Networked] private TickTimer StateTimer { get; set; }
+        [Networked] private TickTimer LostTargetTimer { get; set; }
+        [Networked] private TickTimer RetargetTimer { get; set; }
+        [Networked] private TickTimer AttackCooldownTimer { get; set; }
+        [Networked] private NetworkBool DamageApplied { get; set; }
+        [Networked] private NetworkBool LethalAttack { get; set; }
+        [Networked] private float FootstepElapsed { get; set; }
+        [Networked] private byte AudioEventSequence { get; set; }
+        [Networked] private byte AudioEventCode { get; set; }
+        [Networked] private byte AttackSequence { get; set; }
+        [Networked] private byte JumpscareSequence { get; set; }
+        [Networked] private PlayerRef JumpscareVictim { get; set; }
+
         private NavMeshAgent _agent;
-        private FusionNetworkPlayer _target;
-        private GeoMonsterState _state;
+        private NetworkTransform _networkTransform;
         private int _lastWaypointIndex = -1;
-        private float _stateElapsed;
-        private float _lostTargetElapsed;
-        private float _nextAttackAllowedTime;
-        private float _footstepElapsed;
-        private float _nextPlayerSearchTime;
-        private int _footstepIndex;
-        private bool _damageApplied;
+        private byte _lastPresentedAudioSequence;
+        private byte _lastPresentedAttackSequence;
+        private byte _lastPresentedJumpscareSequence;
+        private GeoMonsterState _presentedState;
+        private float _renderStateElapsed;
+        private bool _presentationInitialized;
         private bool _warnedMissingReferences;
 
-        public GeoMonsterState CurrentState => _state;
-        public Transform CurrentTarget => _target != null ? _target.transform : null;
+        public Transform CurrentTarget
+        {
+            get
+            {
+                return TryResolvePlayer(TargetPlayer, out FusionNetworkPlayer player)
+                    ? player.transform
+                    : null;
+            }
+        }
 
         private void Awake()
         {
-            _agent = GetComponent<NavMeshAgent>();
-            animator ??= GetComponentInChildren<Animator>(true);
+            ResolveReferences();
             ConfigureAudioSource(movementAudioSource);
             ConfigureAudioSource(attackAudioSource);
         }
 
-        private void Start()
+        public override void Spawned()
         {
+            ResolveReferences();
             if (!ValidateReferences())
             {
                 enabled = false;
                 return;
             }
 
-            EnterState(GeoMonsterState.IdleScan);
+            Object.EnableInterpolation = !HasStateAuthority;
+            Object.RenderSource = HasStateAuthority ? RenderSource.Latest : RenderSource.Interpolated;
+            PhysicsSettings physicsSettings = _networkTransform.PhysicsSettings;
+            physicsSettings.ForecastEnabled = false;
+            _networkTransform.PhysicsSettings = physicsSettings;
+            _agent.enabled = HasStateAuthority;
+            if (HasStateAuthority)
+            {
+                EnsureAgentOnNavMesh();
+                _agent.updatePosition = false;
+                _agent.updateRotation = false;
+                _agent.nextPosition = transform.position;
+                TargetPlayer = PlayerRef.None;
+                PatrolDestination = transform.position;
+                AudioEventCode = (byte)MonsterAudioEvent.None;
+                EnterAuthorityState(GeoMonsterState.IdleScan);
+            }
+
+            _lastPresentedAudioSequence = AudioEventSequence;
+            _lastPresentedAttackSequence = AttackSequence;
+            _lastPresentedJumpscareSequence = JumpscareSequence;
+            PresentState(true);
         }
 
-        private void Update()
+        public override void FixedUpdateNetwork()
         {
-            if (_agent == null || !_agent.isOnNavMesh)
+            if (!HasStateAuthority || _agent == null || !_agent.enabled || !_agent.isOnNavMesh)
                 return;
 
-            _stateElapsed += Time.deltaTime;
-
-            if (_target == null || _target.IsDeadOrPending)
-                FindLivingPlayer();
-
-            switch (_state)
+            switch (CurrentState)
             {
                 case GeoMonsterState.IdleScan:
-                    UpdateIdleScan();
+                    UpdateAuthorityIdleScan();
                     break;
                 case GeoMonsterState.Patrol:
-                    UpdatePatrol();
+                    UpdateAuthorityPatrol();
                     break;
                 case GeoMonsterState.Chase:
-                    UpdateChase();
+                    UpdateAuthorityChase();
                     break;
                 case GeoMonsterState.Attack:
-                    UpdateAttack();
+                    UpdateAuthorityAttack();
                     break;
             }
 
-            UpdateMovementAudio();
+            AdvanceAuthorityMovement();
+            UpdateAuthorityMovementAudio();
         }
 
-        private void UpdateIdleScan()
+        public override void Render()
         {
-            float normalized = Mathf.Clamp01(_stateElapsed / ScanDuration);
-            float yaw;
-            if (normalized < 0.25f)
-                yaw = Mathf.Lerp(0f, -scanAngle, Smooth01(normalized / 0.25f));
-            else if (normalized < 0.75f)
-                yaw = Mathf.Lerp(-scanAngle, scanAngle, Smooth01((normalized - 0.25f) / 0.5f));
-            else
-                yaw = Mathf.Lerp(scanAngle, 0f, Smooth01((normalized - 0.75f) / 0.25f));
+            PresentState(false);
+            PresentAudioEvents();
+            PresentJumpscareEvent();
 
-            detectionOrigin.localRotation = Quaternion.Euler(0f, yaw, 0f);
-            if (TryAcquireVisiblePlayer())
+            if (CurrentState == GeoMonsterState.IdleScan)
+            {
+                _renderStateElapsed = Mathf.Min(ScanDuration, _renderStateElapsed + Time.deltaTime);
+                ApplyScanPivot(_renderStateElapsed / ScanDuration);
+            }
+            else if (detectionOrigin != null)
+            {
+                detectionOrigin.localRotation = Quaternion.identity;
+            }
+        }
+
+        private void UpdateAuthorityIdleScan()
+        {
+            ApplyScanPivot(GetStateElapsed(ScanDuration) / ScanDuration);
+            if (TryAcquireClosestVisiblePlayer())
                 return;
 
-            if (_stateElapsed >= ScanDuration)
+            if (StateTimer.Expired(Runner))
             {
                 detectionOrigin.localRotation = Quaternion.identity;
                 SelectRandomReachableWaypoint();
             }
         }
 
-        private void UpdatePatrol()
+        private void UpdateAuthorityPatrol()
         {
             detectionOrigin.localRotation = Quaternion.identity;
-            if (TryAcquireVisiblePlayer())
+            if (TryAcquireClosestVisiblePlayer())
                 return;
 
-            if (!_agent.pathPending && (_agent.remainingDistance <= waypointStoppingDistance || _agent.pathStatus != NavMeshPathStatus.PathComplete))
-                EnterState(GeoMonsterState.IdleScan);
+            if (!_agent.pathPending &&
+                (_agent.remainingDistance <= waypointStoppingDistance || _agent.pathStatus != NavMeshPathStatus.PathComplete))
+            {
+                EnterAuthorityState(GeoMonsterState.IdleScan);
+            }
         }
 
-        private void UpdateChase()
+        private void UpdateAuthorityChase()
         {
             detectionOrigin.localRotation = Quaternion.identity;
-            if (_target == null || _target.IsDeadOrPending)
+            if (!TryResolveLivingPlayer(TargetPlayer, out FusionNetworkPlayer target))
+            {
+                if (!TryAcquireClosestVisiblePlayer())
+                    ClearTargetAndScan();
+                return;
+            }
+
+            if (RetargetTimer.ExpiredOrNotRunning(Runner))
+            {
+                TryRetargetToCloserVisiblePlayer(target);
+                RetargetTimer = TickTimer.CreateFromSeconds(Runner, retargetInterval);
+                TryResolveLivingPlayer(TargetPlayer, out target);
+            }
+
+            if (target == null)
             {
                 ClearTargetAndScan();
                 return;
             }
 
-            Vector3 targetPosition = _target.transform.position;
+            Vector3 targetPosition = target.transform.position;
             float distance = HorizontalDistance(attackOrigin.position, targetPosition);
-            if (distance <= attackRange && Time.time >= _nextAttackAllowedTime)
+            if (distance <= attackRange && AttackCooldownTimer.ExpiredOrNotRunning(Runner))
             {
-                EnterState(GeoMonsterState.Attack);
+                EnterAuthorityState(GeoMonsterState.Attack);
                 return;
             }
 
             _agent.SetDestination(targetPosition);
-            if (HasChaseLineOfSight(_target))
-                _lostTargetElapsed = 0f;
+            if (HasChaseLineOfSight(target))
+            {
+                LostTargetTimer = TickTimer.None;
+            }
             else
-                _lostTargetElapsed += Time.deltaTime;
-
-            if (_lostTargetElapsed >= lostTargetGracePeriod)
-                ClearTargetAndScan();
+            {
+                if (!LostTargetTimer.IsRunning)
+                    LostTargetTimer = TickTimer.CreateFromSeconds(Runner, lostTargetGracePeriod);
+                if (LostTargetTimer.Expired(Runner))
+                    ClearTargetAndScan();
+            }
         }
 
-        private void UpdateAttack()
+        private void UpdateAuthorityAttack()
         {
-            if (_target == null || _target.IsDeadOrPending)
-            {
-                ClearTargetAndScan();
-                return;
-            }
+            bool hasLivingTarget = TryResolveLivingPlayer(TargetPlayer, out FusionNetworkPlayer target);
+            if (hasLivingTarget)
+                FaceTarget(target.transform.position);
 
-            FaceTarget(_target.transform.position);
-            float normalized = Mathf.Clamp01(_stateElapsed / Mathf.Max(0.01f, attackDuration));
-            if (!_damageApplied && normalized >= attackImpactNormalizedTime)
+            float normalized = GetStateElapsed(attackDuration) / Mathf.Max(0.01f, attackDuration);
+            if (hasLivingTarget && !DamageApplied && normalized >= attackImpactNormalizedTime)
             {
-                _damageApplied = true;
-                _target.TakeDamage(attackDamage);
-                if (_target.IsDeadOrPending)
+                DamageApplied = true;
+                PlayerRef victim = TargetPlayer;
+                target.TakeDamage(attackDamage);
+                if (target.IsDeadOrPending)
                 {
-                    _target.BeginLocalDeathSequence(jumpscareVideo);
-                    ClearTargetAndScan();
-                    return;
+                    LethalAttack = true;
+                    TargetPlayer = PlayerRef.None;
+                    JumpscareVictim = victim;
+                    JumpscareSequence++;
                 }
             }
 
-            if (_stateElapsed < attackDuration)
+            if (!StateTimer.Expired(Runner))
                 return;
 
-            _nextAttackAllowedTime = Time.time + attackCooldown;
-            float distance = HorizontalDistance(attackOrigin.position, _target.transform.position);
-            EnterState(distance <= attackRange && Time.time >= _nextAttackAllowedTime
-                ? GeoMonsterState.Attack
-                : GeoMonsterState.Chase);
+            AttackCooldownTimer = TickTimer.CreateFromSeconds(Runner, attackCooldown);
+            if (LethalAttack)
+            {
+                ClearTargetAndScan();
+                return;
+            }
+
+            if (hasLivingTarget)
+            {
+                TryRetargetToCloserVisiblePlayer(target);
+                EnterAuthorityState(GeoMonsterState.Chase);
+                return;
+            }
+
+            if (!TryAcquireClosestVisiblePlayer())
+                ClearTargetAndScan();
         }
 
-        private void EnterState(GeoMonsterState newState)
+        private void EnterAuthorityState(GeoMonsterState newState)
         {
-            _state = newState;
-            _stateElapsed = 0f;
-            _footstepElapsed = 0f;
+            CurrentState = newState;
+            FootstepElapsed = 0f;
 
             switch (newState)
             {
                 case GeoMonsterState.IdleScan:
+                    StateTimer = TickTimer.CreateFromSeconds(Runner, ScanDuration);
+                    LostTargetTimer = TickTimer.None;
+                    RetargetTimer = TickTimer.None;
+                    PatrolDestination = transform.position;
                     _agent.isStopped = true;
                     _agent.ResetPath();
-                    animator.CrossFade(IdleScanState, 0.08f, 0, 0f);
                     break;
                 case GeoMonsterState.Patrol:
+                    StateTimer = TickTimer.None;
                     _agent.isStopped = false;
                     _agent.speed = patrolSpeed;
                     _agent.stoppingDistance = waypointStoppingDistance;
-                    animator.CrossFade(WalkState, 0.1f, 0, 0f);
                     break;
                 case GeoMonsterState.Chase:
+                    StateTimer = TickTimer.None;
+                    RetargetTimer = TickTimer.CreateFromSeconds(Runner, retargetInterval);
                     _agent.isStopped = false;
                     _agent.speed = chaseSpeed;
                     _agent.stoppingDistance = Mathf.Max(0.05f, attackRange * 0.8f);
-                    animator.CrossFade(RunState, 0.08f, 0, 0f);
                     break;
                 case GeoMonsterState.Attack:
+                    StateTimer = TickTimer.CreateFromSeconds(Runner, attackDuration);
                     _agent.isStopped = true;
                     _agent.ResetPath();
-                    _damageApplied = false;
-                    animator.CrossFade(AttackState, 0.05f, 0, 0f);
-                    if (attackAudioSource != null && attackClip != null)
-                        attackAudioSource.PlayOneShot(attackClip);
+                    DamageApplied = false;
+                    LethalAttack = false;
+                    AttackSequence++;
+                    EmitAudioEvent(MonsterAudioEvent.Attack);
                     break;
             }
         }
 
-        private bool TryAcquireVisiblePlayer()
+        private bool TryAcquireClosestVisiblePlayer()
         {
-            if (_target == null || _target.IsDeadOrPending)
-                FindLivingPlayer();
-            if (_target == null || !CanSee(_target, true))
+            PlayerRef bestPlayer = PlayerRef.None;
+            float bestDistance = float.PositiveInfinity;
+
+            foreach (PlayerRef playerRef in Runner.ActivePlayers)
+            {
+                if (!TryResolveLivingPlayer(playerRef, out FusionNetworkPlayer candidate))
+                    continue;
+
+                float distance = HorizontalDistance(transform.position, candidate.transform.position);
+                bool visible = CanSee(candidate, true);
+                if (GeoMonsterTargetSelection.ShouldSelectCandidate(true, true, visible, distance, bestDistance))
+                {
+                    bestDistance = distance;
+                    bestPlayer = playerRef;
+                }
+            }
+
+            if (bestPlayer == PlayerRef.None)
                 return false;
 
-            _lostTargetElapsed = 0f;
-            EnterState(GeoMonsterState.Chase);
+            TargetPlayer = bestPlayer;
+            LostTargetTimer = TickTimer.None;
+            EnterAuthorityState(GeoMonsterState.Chase);
             return true;
         }
 
-        private void FindLivingPlayer()
+        private bool TryRetargetToCloserVisiblePlayer(FusionNetworkPlayer currentTarget)
         {
-            _target = null;
-            if (Time.time < _nextPlayerSearchTime)
-                return;
+            if (currentTarget == null)
+                return false;
 
-            _nextPlayerSearchTime = Time.time + 0.25f;
-            FusionNetworkPlayer[] players = Object.FindObjectsByType<FusionNetworkPlayer>(
-                FindObjectsInactive.Exclude,
-                FindObjectsSortMode.None);
-            float nearestDistance = float.PositiveInfinity;
-            foreach (FusionNetworkPlayer candidate in players)
+            float bestDistance = HorizontalDistance(transform.position, currentTarget.transform.position);
+            PlayerRef bestPlayer = TargetPlayer;
+
+            foreach (PlayerRef playerRef in Runner.ActivePlayers)
             {
-                if (candidate.IsDeadOrPending)
-                    continue;
-
-                float distance = (candidate.transform.position - transform.position).sqrMagnitude;
-                if (distance < nearestDistance)
+                if (playerRef == TargetPlayer || !TryResolveLivingPlayer(playerRef, out FusionNetworkPlayer candidate))
                 {
-                    nearestDistance = distance;
-                    _target = candidate;
+                    continue;
+                }
+
+                float candidateDistance = HorizontalDistance(transform.position, candidate.transform.position);
+                bool visible = CanSee(candidate, true);
+                if (GeoMonsterTargetSelection.ShouldSelectCandidate(true, true, visible, candidateDistance, bestDistance))
+                {
+                    bestDistance = candidateDistance;
+                    bestPlayer = playerRef;
                 }
             }
+
+            if (bestPlayer == TargetPlayer)
+                return false;
+
+            TargetPlayer = bestPlayer;
+            LostTargetTimer = TickTimer.None;
+            return true;
+        }
+
+        private bool TryResolveLivingPlayer(PlayerRef playerRef, out FusionNetworkPlayer player)
+        {
+            if (!TryResolvePlayer(playerRef, out player))
+                return false;
+            return !player.IsDeadOrPending;
+        }
+
+        private bool TryResolvePlayer(PlayerRef playerRef, out FusionNetworkPlayer player)
+        {
+            player = null;
+            if (playerRef == PlayerRef.None || Runner == null || !Runner.TryGetPlayerObject(playerRef, out NetworkObject playerObject))
+                return false;
+
+            player = playerObject.GetComponent<FusionNetworkPlayer>();
+            return player != null;
         }
 
         private bool CanSee(FusionNetworkPlayer player, bool requireFieldOfView)
@@ -319,7 +451,15 @@ namespace TheSancturary.Monsters
         {
             Vector3 direction = targetPoint - detectionOrigin.position;
             float distance = direction.magnitude;
-            RaycastHit[] hits = Physics.RaycastAll(detectionOrigin.position, direction / distance, distance, obstructionMask, QueryTriggerInteraction.Ignore);
+            if (distance <= Mathf.Epsilon)
+                return true;
+
+            RaycastHit[] hits = Physics.RaycastAll(
+                detectionOrigin.position,
+                direction / distance,
+                distance,
+                obstructionMask,
+                QueryTriggerInteraction.Ignore);
             System.Array.Sort(hits, (left, right) => left.distance.CompareTo(right.distance));
             foreach (RaycastHit hit in hits)
             {
@@ -335,7 +475,7 @@ namespace TheSancturary.Monsters
         {
             if (patrolWaypoints == null || patrolWaypoints.Length == 0)
             {
-                EnterState(GeoMonsterState.IdleScan);
+                EnterAuthorityState(GeoMonsterState.IdleScan);
                 return;
             }
 
@@ -345,69 +485,226 @@ namespace TheSancturary.Monsters
                 int index = (startIndex + offset) % patrolWaypoints.Length;
                 if (patrolWaypoints.Length > 1 && index == _lastWaypointIndex)
                     continue;
+
                 Transform waypoint = patrolWaypoints[index];
-                if (waypoint == null)
+                if (waypoint == null ||
+                    HorizontalDistance(transform.position, waypoint.position) <= waypointStoppingDistance * 1.5f)
+                {
                     continue;
-                if (HorizontalDistance(transform.position, waypoint.position) <= waypointStoppingDistance * 1.5f)
-                    continue;
+                }
 
                 NavMeshPath path = new();
                 if (!_agent.CalculatePath(waypoint.position, path) || path.status != NavMeshPathStatus.PathComplete)
                     continue;
 
                 _lastWaypointIndex = index;
-                EnterState(GeoMonsterState.Patrol);
+                PatrolDestination = waypoint.position;
+                EnterAuthorityState(GeoMonsterState.Patrol);
                 _agent.SetPath(path);
                 return;
             }
 
-            EnterState(GeoMonsterState.IdleScan);
+            EnterAuthorityState(GeoMonsterState.IdleScan);
         }
 
         private void ClearTargetAndScan()
         {
-            _target = null;
-            _lostTargetElapsed = 0f;
-            EnterState(GeoMonsterState.IdleScan);
+            TargetPlayer = PlayerRef.None;
+            LostTargetTimer = TickTimer.None;
+            EnterAuthorityState(GeoMonsterState.IdleScan);
         }
 
         private void FaceTarget(Vector3 targetPosition)
         {
             Vector3 direction = Vector3.ProjectOnPlane(targetPosition - transform.position, Vector3.up);
             if (direction.sqrMagnitude > 0.001f)
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(direction), 540f * Time.deltaTime);
+            {
+                transform.rotation = Quaternion.RotateTowards(
+                    transform.rotation,
+                    Quaternion.LookRotation(direction),
+                    540f * Runner.DeltaTime);
+            }
         }
 
-        private void UpdateMovementAudio()
+        private void UpdateAuthorityMovementAudio()
         {
-            bool moving = (_state == GeoMonsterState.Patrol || _state == GeoMonsterState.Chase)
-                && !_agent.isStopped && _agent.velocity.sqrMagnitude > 0.04f;
-            if (!moving || movementAudioSource == null || footstepClips == null || footstepClips.Length == 0)
+            bool moving = (CurrentState == GeoMonsterState.Patrol || CurrentState == GeoMonsterState.Chase) &&
+                !_agent.isStopped &&
+                _agent.velocity.sqrMagnitude > 0.04f;
+            if (!moving)
             {
-                _footstepElapsed = 0f;
+                FootstepElapsed = 0f;
                 return;
             }
 
-            _footstepElapsed += Time.deltaTime;
-            float interval = _state == GeoMonsterState.Chase ? runFootstepInterval : walkFootstepInterval;
-            if (_footstepElapsed < interval)
+            FootstepElapsed += Runner.DeltaTime;
+            float interval = CurrentState == GeoMonsterState.Chase ? runFootstepInterval : walkFootstepInterval;
+            if (FootstepElapsed < interval)
                 return;
 
-            _footstepElapsed %= interval;
-            AudioClip clip = footstepClips[_footstepIndex++ % footstepClips.Length];
-            movementAudioSource.pitch = _state == GeoMonsterState.Chase ? 1.05f : 0.92f;
-            movementAudioSource.PlayOneShot(clip, _state == GeoMonsterState.Chase ? 1f : 0.78f);
+            FootstepElapsed %= interval;
+            EmitAudioEvent(CurrentState == GeoMonsterState.Chase
+                ? MonsterAudioEvent.RunFootstep
+                : MonsterAudioEvent.WalkFootstep);
+        }
+
+        private void AdvanceAuthorityMovement()
+        {
+            if ((CurrentState != GeoMonsterState.Patrol && CurrentState != GeoMonsterState.Chase) ||
+                _agent.isStopped)
+            {
+                _agent.nextPosition = transform.position;
+                return;
+            }
+
+            Vector3 velocity = Vector3.ProjectOnPlane(_agent.desiredVelocity, Vector3.up);
+            if (velocity.sqrMagnitude <= 0.0001f)
+            {
+                _agent.nextPosition = transform.position;
+                return;
+            }
+
+            float configuredSpeed = CurrentState == GeoMonsterState.Chase ? chaseSpeed : patrolSpeed;
+            Vector3 movement = Vector3.ClampMagnitude(velocity, configuredSpeed) * Runner.DeltaTime;
+            transform.position += movement;
+            _agent.nextPosition = transform.position;
+
+            Quaternion targetRotation = Quaternion.LookRotation(velocity);
+            transform.rotation = Quaternion.RotateTowards(
+                transform.rotation,
+                targetRotation,
+                _agent.angularSpeed * Runner.DeltaTime);
+        }
+
+        private void EmitAudioEvent(MonsterAudioEvent audioEvent)
+        {
+            AudioEventCode = (byte)audioEvent;
+            AudioEventSequence++;
+        }
+
+        private void PresentState(bool force)
+        {
+            bool stateChanged = !_presentationInitialized || CurrentState != _presentedState;
+            bool attackRestarted = CurrentState == GeoMonsterState.Attack && AttackSequence != _lastPresentedAttackSequence;
+            if (!force && !stateChanged && !attackRestarted)
+                return;
+
+            _presentationInitialized = true;
+            _presentedState = CurrentState;
+            _lastPresentedAttackSequence = AttackSequence;
+            _renderStateElapsed = GetStateElapsed(GetStateDuration(CurrentState));
+
+            int stateHash = CurrentState switch
+            {
+                GeoMonsterState.IdleScan => IdleScanState,
+                GeoMonsterState.Patrol => WalkState,
+                GeoMonsterState.Chase => RunState,
+                GeoMonsterState.Attack => AttackState,
+                _ => IdleScanState
+            };
+            float transitionDuration = CurrentState == GeoMonsterState.Attack ? 0.05f : 0.08f;
+            float normalizedStart = GetStateDuration(CurrentState) > 0f
+                ? Mathf.Clamp01(_renderStateElapsed / GetStateDuration(CurrentState))
+                : 0f;
+            animator.CrossFade(stateHash, transitionDuration, 0, normalizedStart);
+        }
+
+        private void PresentAudioEvents()
+        {
+            if (AudioEventSequence == _lastPresentedAudioSequence)
+                return;
+
+            _lastPresentedAudioSequence = AudioEventSequence;
+            MonsterAudioEvent audioEvent = (MonsterAudioEvent)AudioEventCode;
+            if (audioEvent == MonsterAudioEvent.Attack)
+            {
+                if (attackAudioSource != null && attackClip != null)
+                    attackAudioSource.PlayOneShot(attackClip);
+                return;
+            }
+
+            if (movementAudioSource == null || footstepClips == null || footstepClips.Length == 0)
+                return;
+
+            int clipIndex = AudioEventSequence % footstepClips.Length;
+            AudioClip clip = footstepClips[clipIndex];
+            bool running = audioEvent == MonsterAudioEvent.RunFootstep;
+            movementAudioSource.pitch = running ? 1.05f : 0.92f;
+            movementAudioSource.PlayOneShot(clip, running ? 1f : 0.78f);
+        }
+
+        private void PresentJumpscareEvent()
+        {
+            if (JumpscareSequence == _lastPresentedJumpscareSequence)
+                return;
+
+            _lastPresentedJumpscareSequence = JumpscareSequence;
+            if (!TryResolvePlayer(JumpscareVictim, out FusionNetworkPlayer player) || !player.HasInputAuthority)
+                return;
+
+            player.BeginLocalDeathSequence(jumpscareVideo);
+        }
+
+        private float GetStateElapsed(float duration)
+        {
+            if (duration <= 0f || Runner == null)
+                return 0f;
+            float remaining = StateTimer.RemainingTime(Runner) ?? 0f;
+            return Mathf.Clamp(duration - remaining, 0f, duration);
+        }
+
+        private float GetStateDuration(GeoMonsterState state)
+        {
+            return state switch
+            {
+                GeoMonsterState.IdleScan => ScanDuration,
+                GeoMonsterState.Attack => attackDuration,
+                _ => 0f
+            };
+        }
+
+        private void ApplyScanPivot(float normalized)
+        {
+            normalized = Mathf.Clamp01(normalized);
+            float yaw;
+            if (normalized < 0.25f)
+                yaw = Mathf.Lerp(0f, -scanAngle, Smooth01(normalized / 0.25f));
+            else if (normalized < 0.75f)
+                yaw = Mathf.Lerp(-scanAngle, scanAngle, Smooth01((normalized - 0.25f) / 0.5f));
+            else
+                yaw = Mathf.Lerp(scanAngle, 0f, Smooth01((normalized - 0.75f) / 0.25f));
+            detectionOrigin.localRotation = Quaternion.Euler(0f, yaw, 0f);
+        }
+
+        private void ResolveReferences()
+        {
+            _agent ??= GetComponent<NavMeshAgent>();
+            _networkTransform ??= GetComponent<NetworkTransform>();
+            animator ??= GetComponentInChildren<Animator>(true);
+        }
+
+        private void EnsureAgentOnNavMesh()
+        {
+            if (_agent.isOnNavMesh)
+                return;
+            if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+                _agent.Warp(hit.position);
         }
 
         private bool ValidateReferences()
         {
-            bool valid = animator != null && detectionOrigin != null && attackOrigin != null;
+            bool valid = _agent != null &&
+                _networkTransform != null &&
+                animator != null &&
+                detectionOrigin != null &&
+                attackOrigin != null;
             if (!valid && !_warnedMissingReferences)
             {
-                Debug.LogError($"{nameof(GeoMonsterController)} on '{name}' is missing its Animator, DetectionOrigin, or AttackOrigin reference.", this);
+                Debug.LogError(
+                    $"{nameof(GeoMonsterController)} on '{name}' requires a NetworkTransform, NavMeshAgent, Animator, DetectionOrigin, and AttackOrigin.",
+                    this);
                 _warnedMissingReferences = true;
             }
-
             return valid;
         }
 
@@ -448,10 +745,11 @@ namespace TheSancturary.Monsters
             Gizmos.color = new Color(0.9f, 0.1f, 0.1f, 0.8f);
             Gizmos.DrawWireSphere(attack.position, attackRange);
 
-            if (_target != null)
+            Transform target = Application.isPlaying ? CurrentTarget : null;
+            if (target != null)
             {
-                Gizmos.color = CanSee(_target, false) ? Color.green : Color.red;
-                Gizmos.DrawLine(origin.position, _target.transform.position + Vector3.up * 1.1f);
+                Gizmos.color = Color.green;
+                Gizmos.DrawLine(origin.position, target.position + Vector3.up * 1.1f);
             }
         }
     }
