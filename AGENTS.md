@@ -30,7 +30,7 @@ Existing networking code, assets, or packages may remain temporarily. Do not bui
 
 - Read this file, `README.md`, the closest applicable `AGENTS.md`, and the relevant existing code before changing anything.
 - Inspect the current branch and working tree before making edits. Preserve unrelated user work.
-- Inspect the live Unity project state before making claims about scenes, prefabs, packages, compiler errors, or runtime behaviour.
+- Inspect the repository and available Unity project state before making claims about scenes, prefabs, packages, compiler errors, or runtime behaviour.
 - Make the smallest coherent change that fully completes the request.
 - Reuse existing code, folders, prefabs, and imported assets before creating parallel replacements.
 - Avoid unnecessary folders, scripts, managers, abstractions, and support files.
@@ -39,31 +39,65 @@ Existing networking code, assets, or packages may remain temporarily. Do not bui
 - Use imported assets when they fit the task. When Ian names a specific imported asset or pack, use it unless there is a concrete technical blocker.
 - Check licences before copying third-party art, audio, models, animations, effects, or sample code.
 - Ask for clarification only when the answer would materially change the design, risk existing work, or create significant extra work. Otherwise, state a reasonable assumption briefly and continue.
+- Stop after the requested coherent task. Do not begin unrelated follow-up features.
 
 A delivered gameplay prefab should include its required components, references, colliders, layers, tags, and sensible defaults. It should not depend on undocumented setup steps.
 
+## Development workflow
+
+Use this loop by default:
+
+1. Inspect the current implementation and identify the smallest coherent change.
+2. Implement the requested code, prefab, animation integration, or Unity setup.
+3. Review the final diff for accidental or unrelated changes.
+4. Report the exact manual Unity test steps and expected results.
+5. Ian opens Unity, allows compilation and import to finish, playtests the change, and reports concrete results, screenshots, videos, or Console errors.
+6. Use Ian's playtest report for the next focused correction.
+
+Treat Ian's manual playtest as the default source of truth for movement feel, animation quality, camera comfort, horror pacing, chase readability, sound timing, map flow, and other subjective gameplay behaviour.
+
+Build complete vertical slices instead of isolated speculative systems. Prefer finishing a small playable chain from exploration through puzzle, pursuit, and escape before expanding content or architecture.
+
 ## Unity and MCP workflow
 
-- Prefer Unity MCP for inspecting and modifying live scenes, GameObjects, components, prefabs, assets, the Console, Play Mode, and Unity tests when the MCP connection is available.
+- Prefer direct C# edits for code-only changes.
+- Use Unity MCP, the Unity Editor, or a temporary Editor tool when the task genuinely requires live scene inspection, GameObject creation, component assignment, prefab wiring, Animator Controller or Blend Tree setup, imported-asset settings, object references, Unity tests, or Editor serialization.
+- Do not launch Unity, enter Play Mode, or run batch mode after every small change.
+- Do not use Unity merely to judge subjective gameplay behaviour that Ian will immediately playtest.
+- When Unity validation is required, run it once after completing the coherent group of changes rather than repeatedly after each edit.
 - Never pretend MCP or the Unity Editor was used when it was unavailable. Clearly state what was and was not verified.
 - Prefer Unity Editor or MCP operations over manually editing serialized `.unity`, `.prefab`, `.asset`, animation, or `.meta` YAML.
 - Preserve Unity GUIDs. Keep each asset with its matching `.meta` file when moving or renaming it, and never manually invent replacement GUIDs.
 - Do not modify the same scene or prefab concurrently with Ian. Obtain exclusive access before broad scene changes, asset moves, or operations that trigger large reimports.
-- After changing C# scripts, wait for Unity compilation to finish and inspect the Console before continuing with dependent scene or prefab work.
+- If dependent scene or prefab work requires successful script compilation, wait for Unity compilation and inspect the Console before continuing.
 - Save modified scenes and assets explicitly when the task requires it. Do not save unrelated dirty scenes.
-- Use Unity `6000.3.15f1` for Editor or batch-mode validation.
+- Use Unity `6000.3.15f1` whenever Editor or batch-mode validation is performed.
 
 Codex may create temporary Editor scripts, setup tools, generators, or migration commands when they make a task reliable and repeatable. Mark task-specific tools as temporary, use them, verify their output, and remove the tool and its matching `.meta` file before handoff. Keep a tool permanently only when it supports an ongoing workflow and Ian explicitly approves it.
+
+## When Unity validation is required
+
+Launch Unity, use MCP, or run batch mode when at least one of these applies:
+
+- The task requires Unity Editor serialization.
+- The task creates or substantially edits scenes, prefabs, Animator Controllers, Blend Trees, Avatar Masks, imported-asset settings, or object references.
+- A temporary Editor tool must be executed.
+- Static inspection cannot reasonably validate the result.
+- Ian explicitly requests Unity validation.
+- A larger milestone is being prepared for commit or review.
+
+For ordinary C# gameplay logic, small value adjustments, input logic, state changes, stamina, health, interaction logic, and focused bug fixes, prefer static inspection plus Ian's manual playtest unless Unity execution is specifically needed.
 
 ## Validation and handoff
 
 Before handing off meaningful work:
 
-- Run relevant tests, compilation checks, or Unity batch-mode validation.
-- Use Unity MCP or the Editor to test the affected scene, prefab, or gameplay path when practical.
+- Perform relevant static checks on edited C# code.
+- Run tests, compilation checks, or Unity validation only when they are available and proportionate to the change.
 - Review the diff for accidental scene, prefab, package, animation, imported-asset, and `.meta` changes.
-- Report what changed, what was verified, and what still requires manual testing in Unity.
+- Report the files changed, behaviour implemented, checks performed, exact manual Unity test steps, and anything still requiring setup or verification.
 - Never claim that a visual, scene, package, build, or runtime change works unless it was actually opened or executed and verified.
+- When Unity was not run, state that clearly and identify what Ian must verify manually.
 
 ## Git and pull requests
 
