@@ -1,10 +1,7 @@
 fileFormatVersion: 2
 guid: 3e8322fabb5bf8e43ab490a07ea50803
-PrefabImporter:
-  externalObjects: {}
-  userData: 
-  assetBundleName: 
-  assetBundleVariant: 
+labels:
+- FusionPrefab
 AssetOrigin:
   serializedVersion: 1
   productId: 335086
@@ -13,3 +10,8 @@ AssetOrigin:
   assetPath: Assets/Skyden_Games/FPS Horror Hospital Pack/Art/Prefabs/Props/Aid Kit
     Box.prefab
   uploadId: 943382
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

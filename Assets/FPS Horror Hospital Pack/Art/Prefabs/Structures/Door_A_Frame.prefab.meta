@@ -1,10 +1,7 @@
 fileFormatVersion: 2
 guid: 504e35d7d5171ce4b8b15db466c2940d
-PrefabImporter:
-  externalObjects: {}
-  userData: 
-  assetBundleName: 
-  assetBundleVariant: 
+labels:
+- FusionPrefab
 AssetOrigin:
   serializedVersion: 1
   productId: 335086
@@ -12,3 +9,8 @@ AssetOrigin:
   packageVersion: 1.0
   assetPath: Assets/Skyden_Games/FPS Horror Hospital Pack/Art/Prefabs/Structures/Door_A_Frame.prefab
   uploadId: 943382
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

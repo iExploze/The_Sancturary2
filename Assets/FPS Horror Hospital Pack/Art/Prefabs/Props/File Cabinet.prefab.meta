@@ -1,10 +1,7 @@
 fileFormatVersion: 2
 guid: 68453892b29bedb459b1d9f0e7d47cc3
-PrefabImporter:
-  externalObjects: {}
-  userData: 
-  assetBundleName: 
-  assetBundleVariant: 
+labels:
+- FusionPrefab
 AssetOrigin:
   serializedVersion: 1
   productId: 335086
@@ -13,3 +10,8 @@ AssetOrigin:
   assetPath: Assets/Skyden_Games/FPS Horror Hospital Pack/Art/Prefabs/Props/File
     Cabinet.prefab
   uploadId: 943382
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
