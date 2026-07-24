@@ -12,6 +12,7 @@ namespace TheSancturary.FusionPrototype
     public sealed class FusionNetworkPlayer : NetworkBehaviour
     {
         private const string OwnerPostProcessingLayerName = "OwnerPostProcessing";
+        private const float AirborneCharacterControllerHeightReduction = 0.5f;
 
         private enum MovementAudioEvent : byte
         {
@@ -49,11 +50,13 @@ namespace TheSancturary.FusionPrototype
         [SerializeField] private Vector2 pitchLimits = new(-85f, 85f);
 
         [Header("Crouching")]
-        [SerializeField, Min(0.5f)] private float standingHeight = 1.8f;
+        [SerializeField, Min(0.5f)] private float standingHeight = 1.65f;
         [SerializeField, Min(0.5f)] private float crouchingHeight = 1.1f;
         [SerializeField, Min(0f)] private float standingCameraHeight = 1.62f;
         [SerializeField, Min(0f)] private float crouchingCameraHeight = 0.92f;
         [SerializeField, Min(0.1f)] private float crouchTransitionSpeed = 5f;
+        [SerializeField, Range(0.08f, 0.15f), Tooltip("Seconds used to restore the airborne collider to its grounded height.")]
+        private float characterControllerRestoreDuration = 0.1f;
         [SerializeField] private LayerMask standingCollisionMask = ~0;
 
         [Header("Stamina")]
@@ -133,6 +136,10 @@ namespace TheSancturary.FusionPrototype
         private bool _ownerCameraRenderingSubscribed;
         private VideoPlayer _deathVideoPlayer;
         private bool _deathSequenceStarted;
+        private bool _airborneCharacterControllerShrunk;
+        private bool _airborneCharacterControllerHasClearedGround;
+        private float _airborneCharacterControllerHeight;
+        private Vector3 _airborneCharacterControllerCenter;
 
         public bool IsDeadOrPending => IsDead || Health - _pendingDamage <= 0f;
 
@@ -275,6 +282,7 @@ namespace TheSancturary.FusionPrototype
             {
                 IsSprinting = false;
                 networkController.Move(Vector3.zero);
+                UpdateCharacterControllerHeight(networkController.Grounded);
                 return;
             }
 
@@ -294,10 +302,6 @@ namespace TheSancturary.FusionPrototype
                     EmitAudioEvent(IsCrouched ? MovementAudioEvent.Crouch : MovementAudioEvent.Stand);
                 }
             }
-
-            float targetHeight = IsCrouched ? crouchingHeight : standingHeight;
-            characterController.height = Mathf.MoveTowards(characterController.height, targetHeight, crouchTransitionSpeed * Runner.DeltaTime);
-            characterController.center = Vector3.up * (characterController.height * 0.5f);
 
             Vector2 moveInput = Vector2.ClampMagnitude(input.Move, 1f);
             bool hasForwardInput = moveInput.y > 0.01f;
@@ -324,6 +328,7 @@ namespace TheSancturary.FusionPrototype
             if (pressed.IsSet(FusionPlayerButton.Jump) && wasGrounded && !IsCrouched)
             {
                 networkController.Jump();
+                BeginAirborneCharacterControllerShrink();
                 Stamina = PlayerVitalsMath.SpendStamina(Stamina, jumpStaminaCost);
                 StaminaRecoveryElapsed = 0f;
                 EmitAudioEvent(MovementAudioEvent.Jump);
@@ -339,6 +344,7 @@ namespace TheSancturary.FusionPrototype
                 Mathf.Max(0f, bodyRotationSpeed) * Runner.DeltaTime);
 
             bool isGrounded = networkController.Grounded;
+            UpdateCharacterControllerHeight(isGrounded);
             if (!WasGrounded && isGrounded)
                 EmitAudioEvent(MovementAudioEvent.Land);
             WasGrounded = isGrounded;
@@ -509,6 +515,60 @@ namespace TheSancturary.FusionPrototype
             }
 
             return true;
+        }
+
+        private void UpdateCharacterControllerHeight(bool grounded)
+        {
+            if (!grounded)
+            {
+                BeginAirborneCharacterControllerShrink();
+                _airborneCharacterControllerHasClearedGround = true;
+                return;
+            }
+
+            if (_airborneCharacterControllerShrunk
+                && (!_airborneCharacterControllerHasClearedGround || networkController.Velocity.y > 0f))
+            {
+                characterController.height = _airborneCharacterControllerHeight;
+                characterController.center = _airborneCharacterControllerCenter;
+                return;
+            }
+
+            _airborneCharacterControllerShrunk = false;
+            _airborneCharacterControllerHasClearedGround = false;
+            float targetHeight = IsCrouched ? crouchingHeight : standingHeight;
+            if (!IsCrouched
+                && characterController.height < standingHeight
+                && !CanStand())
+            {
+                characterController.center = Vector3.up * (characterController.height * 0.5f);
+                return;
+            }
+
+            float restoreDistance = Mathf.Max(
+                0.01f,
+                Mathf.Abs(targetHeight - _airborneCharacterControllerHeight));
+            float restoreSpeed = restoreDistance / Mathf.Max(0.01f, characterControllerRestoreDuration);
+            characterController.height = Mathf.MoveTowards(
+                characterController.height,
+                targetHeight,
+                restoreSpeed * Runner.DeltaTime);
+            characterController.center = Vector3.up * (characterController.height * 0.5f);
+        }
+
+        private void BeginAirborneCharacterControllerShrink()
+        {
+            if (_airborneCharacterControllerShrunk)
+                return;
+
+            _airborneCharacterControllerHeight = Mathf.Max(
+                characterController.radius * 2f,
+                characterController.height - AirborneCharacterControllerHeightReduction);
+            _airborneCharacterControllerCenter = Vector3.up * (_airborneCharacterControllerHeight * 0.5f);
+            _airborneCharacterControllerShrunk = true;
+            _airborneCharacterControllerHasClearedGround = false;
+            characterController.height = _airborneCharacterControllerHeight;
+            characterController.center = _airborneCharacterControllerCenter;
         }
 
         private void EmitAudioEvent(MovementAudioEvent audioEvent)

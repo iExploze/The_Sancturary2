@@ -17,6 +17,7 @@ namespace TheSancturary.FusionPrototype
         private static readonly int DeadHash = Animator.StringToHash("Dead");
         private static readonly int IsAirborneHash = Animator.StringToHash("IsAirborne");
         private static readonly int JumpTakeoffHash = Animator.StringToHash("JumpTakeoff");
+        private static readonly int LandingImpactHash = Animator.StringToHash("LandingImpact");
         private static readonly int VerticalVelocityHash = Animator.StringToHash("VerticalVelocity");
         private static readonly int GroundedPassThroughStateHash =
             Animator.StringToHash("Airborne.Grounded Pass-Through");
@@ -27,6 +28,8 @@ namespace TheSancturary.FusionPrototype
         [SerializeField, Tooltip("Movement/network root used to convert world velocity into Animator coordinates.")]
         private Transform movementRoot;
         [SerializeField, Min(0f)] private float parameterDampTime = 0.12f;
+        [SerializeField, Min(0f), Tooltip("Minimum downward speed required to play the landing-impact animation.")]
+        private float minimumLandingImpactSpeed = 1.75f;
 
         private bool _initialized;
         private bool _reportedMissingReferences;
@@ -35,8 +38,10 @@ namespace TheSancturary.FusionPrototype
         private bool _wasGrounded;
         private bool _confirmedAirborne;
         private bool _jumpTakeoff;
+        private bool _landingImpact;
         private bool _airborneSuppressedForDeath;
         private float _ungroundedTime;
+        private float _lastAirborneVerticalVelocity;
         private int _airborneLayerIndex = -1;
 
         public Animator Animator => animator;
@@ -105,6 +110,7 @@ namespace TheSancturary.FusionPrototype
                 _ungroundedTime = 0f;
                 animator.SetBool(IsAirborneHash, false);
                 animator.SetBool(JumpTakeoffHash, false);
+                animator.SetBool(LandingImpactHash, false);
 
                 if (!_airborneSuppressedForDeath && _airborneLayerIndex >= 0)
                 {
@@ -122,11 +128,18 @@ namespace TheSancturary.FusionPrototype
                 _wasGrounded = grounded;
                 animator.SetBool(IsAirborneHash, false);
                 animator.SetBool(JumpTakeoffHash, false);
+                animator.SetBool(LandingImpactHash, false);
                 return;
             }
 
             if (grounded)
             {
+                if (_confirmedAirborne)
+                {
+                    float impactSpeed = Mathf.Max(0f, -_lastAirborneVerticalVelocity);
+                    _landingImpact = impactSpeed >= minimumLandingImpactSpeed;
+                }
+
                 _ungroundedTime = 0f;
                 _confirmedAirborne = false;
                 _jumpTakeoff = false;
@@ -139,6 +152,7 @@ namespace TheSancturary.FusionPrototype
                 {
                     _confirmedAirborne = true;
                     _jumpTakeoff = true;
+                    _landingImpact = false;
                     _ungroundedTime = 0f;
                 }
                 else if (!_confirmedAirborne)
@@ -148,16 +162,21 @@ namespace TheSancturary.FusionPrototype
                     {
                         _confirmedAirborne = true;
                         _jumpTakeoff = false;
+                        _landingImpact = false;
                     }
                 }
                 else if (_jumpTakeoff && verticalVelocity <= JumpApexVelocityThreshold)
                 {
                     _jumpTakeoff = false;
                 }
+
+                if (_confirmedAirborne)
+                    _lastAirborneVerticalVelocity = verticalVelocity;
             }
 
             animator.SetBool(IsAirborneHash, _confirmedAirborne);
             animator.SetBool(JumpTakeoffHash, _jumpTakeoff);
+            animator.SetBool(LandingImpactHash, _landingImpact);
             _wasGrounded = grounded;
         }
 
@@ -167,11 +186,14 @@ namespace TheSancturary.FusionPrototype
             _wasGrounded = false;
             _confirmedAirborne = false;
             _jumpTakeoff = false;
+            _landingImpact = false;
             _airborneSuppressedForDeath = false;
             _ungroundedTime = 0f;
+            _lastAirborneVerticalVelocity = 0f;
 
             animator.SetBool(IsAirborneHash, false);
             animator.SetBool(JumpTakeoffHash, false);
+            animator.SetBool(LandingImpactHash, false);
             animator.SetFloat(VerticalVelocityHash, 0f);
             if (_airborneLayerIndex >= 0)
                 animator.Play(GroundedPassThroughStateHash, _airborneLayerIndex, 0f);
