@@ -307,7 +307,6 @@ namespace TheSancturary.FusionPrototype
             bool hasForwardInput = moveInput.y > 0.01f;
             bool wantsToSprint = input.Buttons.IsSet(FusionPlayerButton.Sprint)
                 && !IsCrouched
-                && networkController.Grounded
                 && hasForwardInput
                 && !SprintLocked;
             Vector2 effectiveMoveInput = wantsToSprint
@@ -350,7 +349,7 @@ namespace TheSancturary.FusionPrototype
             WasGrounded = isGrounded;
 
             float actualHorizontalSpeed = new Vector2(networkController.Velocity.x, networkController.Velocity.z).magnitude;
-            bool actuallyMoving = isGrounded && wantsToMove && actualHorizontalSpeed > 0.08f;
+            bool actuallyMoving = wantsToMove && actualHorizontalSpeed > 0.08f;
             bool actuallySprinting = actuallyMoving && wantsToSprint;
 
             StaminaStep staminaStep = PlayerVitalsMath.UpdateStamina(
@@ -369,7 +368,7 @@ namespace TheSancturary.FusionPrototype
             SprintLocked = staminaStep.SprintLocked;
             IsSprinting = actuallySprinting && !SprintLocked;
 
-            if (actuallyMoving)
+            if (isGrounded && actuallyMoving)
             {
                 AccumulatedStepDistance += actualHorizontalSpeed * Runner.DeltaTime;
                 float cadence = IsCrouched ? crouchStepDistance : IsSprinting ? sprintStepDistance : walkStepDistance;
