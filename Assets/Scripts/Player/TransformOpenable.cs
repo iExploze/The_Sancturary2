@@ -75,8 +75,13 @@ namespace TheSancturary.FusionPrototype
         [SerializeField] private NetworkLockGroup lockGroup;
         [SerializeField, Min(0.05f)] private float duration = 0.65f;
         [SerializeField] private TransformOpenMotion[] motions;
+        [Header("Local replicated-state audio")]
+        [SerializeField] private AudioSource audioSource;
+        [SerializeField] private AudioClip openSound;
+        [SerializeField] private AudioClip closeSound;
 
         [Networked] public NetworkBool IsOpen { get; private set; }
+        [Networked] private TickTimer InteractionCooldown { get; set; }
 
         private float _elapsed;
         private bool _openingVisual;
@@ -110,6 +115,7 @@ namespace TheSancturary.FusionPrototype
                 _visualTargetOpen = shouldBeOpen;
                 _elapsed = 0f;
                 _openingVisual = true;
+                PlayInteractionSound(shouldBeOpen);
             }
 
             if (!_openingVisual)
@@ -141,7 +147,7 @@ namespace TheSancturary.FusionPrototype
             string interactionVerb,
             out string actionText)
         {
-            if (!_spawned || IsOpen || !HasValidMotion())
+            if (!_spawned || IsInteractionInProgress() || !HasValidMotion())
             {
                 actionText = null;
                 return false;
@@ -156,15 +162,17 @@ namespace TheSancturary.FusionPrototype
                 return true;
             }
 
-            actionText = string.IsNullOrWhiteSpace(interactionVerb)
+            string currentVerb = IsOpen ? GetClosingVerb(interactionVerb) : interactionVerb;
+            actionText = string.IsNullOrWhiteSpace(currentVerb)
                 ? null
-                : $"F \u2014 {interactionVerb}";
+                : $"F \u2014 {currentVerb}";
             return !string.IsNullOrEmpty(actionText);
         }
 
         public bool RequestInteraction(FusionNetworkPlayer requestingPlayer)
         {
-            if (!_spawned || IsOpen || requestingPlayer == null || !requestingPlayer.HasInputAuthority)
+            if (!_spawned || IsInteractionInProgress() ||
+                requestingPlayer == null || !requestingPlayer.HasInputAuthority)
                 return false;
 
             requestingPlayer.RequestInteraction(this);
@@ -173,13 +181,16 @@ namespace TheSancturary.FusionPrototype
 
         public bool TryInteractAuthoritative(FusionNetworkPlayer requestingPlayer)
         {
-            if (!HasStateAuthority || IsOpen || requestingPlayer == null || !HasValidMotion())
+            if (!HasStateAuthority || IsInteractionInProgress() ||
+                requestingPlayer == null || !HasValidMotion())
                 return false;
 
-            if (lockGroup != null && !lockGroup.TryUnlockAuthoritative(requestingPlayer.Inventory))
+            if (!IsOpen && lockGroup != null &&
+                !lockGroup.TryUnlockAuthoritative(requestingPlayer.Inventory))
                 return false;
 
-            IsOpen = true;
+            IsOpen = !IsOpen;
+            InteractionCooldown = TickTimer.CreateFromSeconds(Runner, duration);
             return true;
         }
 
@@ -192,6 +203,16 @@ namespace TheSancturary.FusionPrototype
             duration = Mathf.Max(0.05f, openingDuration);
             motions = configuredMotions;
             _captured = false;
+        }
+
+        public void ConfigureAudio(
+            AudioSource configuredAudioSource,
+            AudioClip configuredOpenSound,
+            AudioClip configuredCloseSound)
+        {
+            audioSource = configuredAudioSource;
+            openSound = configuredOpenSound;
+            closeSound = configuredCloseSound;
         }
 
         public void SetLockGroup(NetworkLockGroup configuredLockGroup)
@@ -237,6 +258,32 @@ namespace TheSancturary.FusionPrototype
             }
 
             return false;
+        }
+
+        private void PlayInteractionSound(bool opening)
+        {
+            AudioClip clip = opening ? openSound : closeSound;
+            if (audioSource != null && clip != null)
+                audioSource.PlayOneShot(clip);
+        }
+
+        private bool IsInteractionInProgress()
+        {
+            return InteractionCooldown.IsRunning &&
+                   Runner != null &&
+                   !InteractionCooldown.ExpiredOrNotRunning(Runner);
+        }
+
+        private static string GetClosingVerb(string openingVerb)
+        {
+            if (string.IsNullOrWhiteSpace(openingVerb))
+                return null;
+
+            const string openPrefix = "Open";
+            if (openingVerb.StartsWith(openPrefix, StringComparison.OrdinalIgnoreCase))
+                return $"Close{openingVerb.Substring(openPrefix.Length)}";
+
+            return "Close";
         }
     }
 }
