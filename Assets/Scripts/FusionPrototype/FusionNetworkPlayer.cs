@@ -13,7 +13,6 @@ namespace TheSancturary.FusionPrototype
     {
         private const string OwnerPostProcessingLayerName = "OwnerPostProcessing";
         private const float AirborneCharacterControllerHeightReduction = 0.5f;
-        private const float StandingCharacterControllerCenterY = 1f;
 
         private enum MovementAudioEvent : byte
         {
@@ -505,12 +504,8 @@ namespace TheSancturary.FusionPrototype
         {
             float radius = Mathf.Max(0.05f, characterController.radius * 0.95f);
             float floorClearance = Mathf.Max(0.01f, characterController.skinWidth);
-            Vector3 standingCenter = transform.TransformPoint(
-                new Vector3(0f, StandingCharacterControllerCenterY, 0f));
-            float capsuleHalfSegment = Mathf.Max(0f, standingHeight * 0.5f - radius);
-            Vector3 bottom = standingCenter - Vector3.up * capsuleHalfSegment
-                + Vector3.up * floorClearance;
-            Vector3 top = standingCenter + Vector3.up * capsuleHalfSegment;
+            Vector3 bottom = transform.position + Vector3.up * (radius + floorClearance);
+            Vector3 top = transform.position + Vector3.up * (standingHeight - radius);
             int hitCount = Physics.OverlapCapsuleNonAlloc(bottom, top, radius, _standingHits, standingCollisionMask, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < hitCount; i++)
             {
@@ -539,7 +534,6 @@ namespace TheSancturary.FusionPrototype
                 return;
             }
 
-            bool restoringFromAirborne = _airborneCharacterControllerShrunk;
             _airborneCharacterControllerShrunk = false;
             _airborneCharacterControllerHasClearedGround = false;
             float targetHeight = IsCrouched ? crouchingHeight : standingHeight;
@@ -547,33 +541,19 @@ namespace TheSancturary.FusionPrototype
                 && characterController.height < standingHeight
                 && !CanStand())
             {
+                characterController.center = Vector3.up * (characterController.height * 0.5f);
                 return;
             }
 
             float restoreDistance = Mathf.Max(
                 0.01f,
                 Mathf.Abs(targetHeight - _airborneCharacterControllerHeight));
-            float restoreSpeed = restoringFromAirborne
-                ? restoreDistance / Mathf.Max(0.01f, characterControllerRestoreDuration)
-                : crouchTransitionSpeed;
+            float restoreSpeed = restoreDistance / Mathf.Max(0.01f, characterControllerRestoreDuration);
             characterController.height = Mathf.MoveTowards(
                 characterController.height,
                 targetHeight,
                 restoreSpeed * Runner.DeltaTime);
-
-            Vector3 targetCenter = IsCrouched
-                ? Vector3.up * (targetHeight * 0.5f)
-                : new Vector3(0f, StandingCharacterControllerCenterY, 0f);
-            float centerRestoreDistance = Mathf.Max(
-                0.01f,
-                Vector3.Distance(_airborneCharacterControllerCenter, targetCenter));
-            float centerRestoreSpeed = restoringFromAirborne
-                ? centerRestoreDistance / Mathf.Max(0.01f, characterControllerRestoreDuration)
-                : crouchTransitionSpeed;
-            characterController.center = Vector3.MoveTowards(
-                characterController.center,
-                targetCenter,
-                centerRestoreSpeed * Runner.DeltaTime);
+            characterController.center = Vector3.up * (characterController.height * 0.5f);
         }
 
         private void BeginAirborneCharacterControllerShrink()
