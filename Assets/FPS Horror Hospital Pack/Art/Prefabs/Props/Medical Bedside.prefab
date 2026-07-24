@@ -12,12 +12,14 @@ GameObject:
   - component: {fileID: 6178795511788835348}
   - component: {fileID: 3348557178580478085}
   - component: {fileID: 2098890849770049689}
+  - component: {fileID: 5589632290288293321}
+  - component: {fileID: 2780486599784054247}
   m_Layer: 0
   m_Name: Medical Bedside Drawer 5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &6142649491632662697
 Transform:
@@ -89,6 +91,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!64 &2098890849770049689
 MeshCollider:
@@ -112,6 +115,44 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 311208216094294882, guid: 5808c6ffcbe975a479440cf59366f1ff, type: 3}
+--- !u!114 &5589632290288293321
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 619152945277193988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1515b9cd8213daa419dfb8e7e30aca34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.TransformOpenable
+  interactionTarget: {fileID: 2780486599784054247}
+  lockGroup: {fileID: 343684368492768908}
+  duration: 0.55
+  motions:
+  - target: {fileID: 6142649491632662697}
+    openLocalPositionOffset: {x: 0, y: 0, z: 0.38}
+    openLocalEulerOffset: {x: 0, y: 0, z: 0}
+  _IsOpen:
+    RawValue: 0
+--- !u!114 &2780486599784054247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 619152945277193988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 974ed835efe4e9845800145e42023f38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.InteractionTarget
+  displayName: Medical Bedside Drawer 5
+  interactionVerb: Open Drawer
+  status: 0
+  requiredKeyDisplayName: 
+  interactionBehaviour: {fileID: 5589632290288293321}
 --- !u!1 &828143082819061323
 GameObject:
   m_ObjectHideFlags: 0
@@ -124,6 +165,8 @@ GameObject:
   - component: {fileID: 2198241520368612929}
   - component: {fileID: 2183547679783469056}
   - component: {fileID: 2937903788735187785}
+  - component: {fileID: 8683632453156482895}
+  - component: {fileID: 343684368492768908}
   m_Layer: 0
   m_Name: Medical Bedside
   m_TagString: Untagged
@@ -207,6 +250,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!64 &2937903788735187785
 MeshCollider:
@@ -230,6 +274,49 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -6193297297390303914, guid: 5808c6ffcbe975a479440cf59366f1ff, type: 3}
+--- !u!114 &8683632453156482895
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 828143082819061323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 2993233540
+  SendPriority: 1
+  EnableInterpolation: 1
+  Flags: 262146
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 343684368492768908}
+  - {fileID: 971163691774394634}
+  - {fileID: 7223593288391964238}
+  - {fileID: 6560528777387949760}
+  - {fileID: 3473690314368329623}
+  - {fileID: 5589632290288293321}
+  ForceRemoteRenderTimeframe: 0
+--- !u!114 &343684368492768908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 828143082819061323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92f0af051ee64aa468f8d7b471190ce1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.NetworkLockGroup
+  needsKey: 0
+  requiredKeyId: 
+  requiredKeyDisplayName: 
+  consumeKeyOnUnlock: 0
+  _IsUnlocked:
+    RawValue: 0
 --- !u!1 &945460202158679207
 GameObject:
   m_ObjectHideFlags: 0
@@ -242,12 +329,14 @@ GameObject:
   - component: {fileID: 4530845064523401779}
   - component: {fileID: 714781141145601893}
   - component: {fileID: 1307475313388567547}
+  - component: {fileID: 6560528777387949760}
+  - component: {fileID: 6285031651114847481}
   m_Layer: 0
   m_Name: Medical Bedside Drawer 3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &1961080408491490999
 Transform:
@@ -319,6 +408,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!64 &1307475313388567547
 MeshCollider:
@@ -342,6 +432,44 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -8293048699448971443, guid: 5808c6ffcbe975a479440cf59366f1ff, type: 3}
+--- !u!114 &6560528777387949760
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 945460202158679207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1515b9cd8213daa419dfb8e7e30aca34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.TransformOpenable
+  interactionTarget: {fileID: 6285031651114847481}
+  lockGroup: {fileID: 343684368492768908}
+  duration: 0.55
+  motions:
+  - target: {fileID: 1961080408491490999}
+    openLocalPositionOffset: {x: 0, y: 0, z: 0.38}
+    openLocalEulerOffset: {x: 0, y: 0, z: 0}
+  _IsOpen:
+    RawValue: 0
+--- !u!114 &6285031651114847481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 945460202158679207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 974ed835efe4e9845800145e42023f38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.InteractionTarget
+  displayName: Medical Bedside Drawer 3
+  interactionVerb: Open Drawer
+  status: 0
+  requiredKeyDisplayName: 
+  interactionBehaviour: {fileID: 6560528777387949760}
 --- !u!1 &1579255560712504231
 GameObject:
   m_ObjectHideFlags: 0
@@ -354,12 +482,14 @@ GameObject:
   - component: {fileID: 9015350848976738475}
   - component: {fileID: 5538432339251934095}
   - component: {fileID: 8866840250309301488}
+  - component: {fileID: 3473690314368329623}
+  - component: {fileID: 3412837457140923075}
   m_Layer: 0
   m_Name: Medical Bedside Drawer 4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &857156889259153602
 Transform:
@@ -431,6 +561,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!64 &8866840250309301488
 MeshCollider:
@@ -454,6 +585,44 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 8248385361079405047, guid: 5808c6ffcbe975a479440cf59366f1ff, type: 3}
+--- !u!114 &3473690314368329623
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1579255560712504231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1515b9cd8213daa419dfb8e7e30aca34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.TransformOpenable
+  interactionTarget: {fileID: 3412837457140923075}
+  lockGroup: {fileID: 343684368492768908}
+  duration: 0.55
+  motions:
+  - target: {fileID: 857156889259153602}
+    openLocalPositionOffset: {x: 0, y: 0, z: 0.38}
+    openLocalEulerOffset: {x: 0, y: 0, z: 0}
+  _IsOpen:
+    RawValue: 0
+--- !u!114 &3412837457140923075
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1579255560712504231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 974ed835efe4e9845800145e42023f38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.InteractionTarget
+  displayName: Medical Bedside Drawer 4
+  interactionVerb: Open Drawer
+  status: 0
+  requiredKeyDisplayName: 
+  interactionBehaviour: {fileID: 3473690314368329623}
 --- !u!1 &6170361805006305889
 GameObject:
   m_ObjectHideFlags: 0
@@ -466,12 +635,14 @@ GameObject:
   - component: {fileID: 4877487951602672022}
   - component: {fileID: 6871349463312951327}
   - component: {fileID: 1237382341655677389}
+  - component: {fileID: 7223593288391964238}
+  - component: {fileID: 2517776457908128926}
   m_Layer: 0
   m_Name: Medical Bedside Drawer 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &3609730409252957716
 Transform:
@@ -543,6 +714,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!64 &1237382341655677389
 MeshCollider:
@@ -566,6 +738,44 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -968247522970922879, guid: 5808c6ffcbe975a479440cf59366f1ff, type: 3}
+--- !u!114 &7223593288391964238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6170361805006305889}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1515b9cd8213daa419dfb8e7e30aca34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.TransformOpenable
+  interactionTarget: {fileID: 2517776457908128926}
+  lockGroup: {fileID: 343684368492768908}
+  duration: 0.55
+  motions:
+  - target: {fileID: 3609730409252957716}
+    openLocalPositionOffset: {x: 0, y: 0, z: 0.38}
+    openLocalEulerOffset: {x: 0, y: 0, z: 0}
+  _IsOpen:
+    RawValue: 0
+--- !u!114 &2517776457908128926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6170361805006305889}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 974ed835efe4e9845800145e42023f38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.InteractionTarget
+  displayName: Medical Bedside Drawer 2
+  interactionVerb: Open Drawer
+  status: 0
+  requiredKeyDisplayName: 
+  interactionBehaviour: {fileID: 7223593288391964238}
 --- !u!1 &7872978680587006605
 GameObject:
   m_ObjectHideFlags: 0
@@ -578,12 +788,14 @@ GameObject:
   - component: {fileID: 7485873009797035900}
   - component: {fileID: 1381991821979367842}
   - component: {fileID: 1243002388413940821}
+  - component: {fileID: 971163691774394634}
+  - component: {fileID: 5770463237350591234}
   m_Layer: 0
   m_Name: Medical Bedside Drawer 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &2946104055876592593
 Transform:
@@ -655,6 +867,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!64 &1243002388413940821
 MeshCollider:
@@ -678,6 +891,44 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 5034945558998964921, guid: 5808c6ffcbe975a479440cf59366f1ff, type: 3}
+--- !u!114 &971163691774394634
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7872978680587006605}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1515b9cd8213daa419dfb8e7e30aca34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.TransformOpenable
+  interactionTarget: {fileID: 5770463237350591234}
+  lockGroup: {fileID: 343684368492768908}
+  duration: 0.55
+  motions:
+  - target: {fileID: 2946104055876592593}
+    openLocalPositionOffset: {x: 0, y: 0, z: 0.38}
+    openLocalEulerOffset: {x: 0, y: 0, z: 0}
+  _IsOpen:
+    RawValue: 0
+--- !u!114 &5770463237350591234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7872978680587006605}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 974ed835efe4e9845800145e42023f38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.InteractionTarget
+  displayName: Medical Bedside Drawer 1
+  interactionVerb: Open Drawer
+  status: 0
+  requiredKeyDisplayName: 
+  interactionBehaviour: {fileID: 971163691774394634}
 --- !u!1 &8066280834671622485
 GameObject:
   m_ObjectHideFlags: 0
@@ -766,4 +1017,5 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}

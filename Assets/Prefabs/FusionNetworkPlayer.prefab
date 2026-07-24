@@ -49,6 +49,8 @@ GameObject:
   - component: {fileID: 3678016109987678052}
   - component: {fileID: 3534618155417879656}
   - component: {fileID: 1950252639633320911}
+  - component: {fileID: 2203274112193757590}
+  - component: {fileID: 4952048985873913713}
   m_Layer: 0
   m_Name: FusionNetworkPlayer
   m_TagString: Untagged
@@ -93,6 +95,7 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 1661761706703525729}
   - {fileID: 3534618155417879656}
+  - {fileID: 4952048985873913713}
   ForceRemoteRenderTimeframe: 0
 --- !u!143 &1817330395535169925
 CharacterController:
@@ -382,6 +385,8 @@ MonoBehaviour:
   playerCamera: {fileID: 5671701118482004310}
   audioListener: {fileID: 7705212066031944877}
   animationDriver: {fileID: 1950252639633320911}
+  localInteractionTargeting: {fileID: 2203274112193757590}
+  inventory: {fileID: 4952048985873913713}
   characterRenderers:
   - {fileID: 4607367529537180434}
   - {fileID: 2698025421313357052}
@@ -472,6 +477,39 @@ MonoBehaviour:
   movementRoot: {fileID: 1862970608609475245}
   parameterDampTime: 0.12
   minimumLandingImpactSpeed: 1.75
+--- !u!114 &2203274112193757590
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 935648667489386037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2df94744fd661b24a8ad4e9df8124d4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.LocalInteractionTargeting
+  interactionDistance: 3
+  interactionRaycastMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  dotSize: 5
+  displayNameFontSize: 16
+  actionFontSize: 14
+--- !u!114 &4952048985873913713
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 935648667489386037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5a14d43447965b488c8140bc17e496c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.NetworkPlayerInventory
+  _ItemCount: 0
+  _Revision: 0
 --- !u!1 &3170984722257280242
 GameObject:
   m_ObjectHideFlags: 0

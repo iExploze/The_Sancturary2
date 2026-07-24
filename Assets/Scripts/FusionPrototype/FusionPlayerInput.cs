@@ -8,6 +8,7 @@ namespace TheSancturary.FusionPrototype
         Jump,
         Sprint,
         Crouch,
+        Interact,
         DebugExhaustion
     }
 
@@ -15,6 +16,7 @@ namespace TheSancturary.FusionPrototype
     {
         public Vector2 Move;
         public Vector2 Look;
+        public NetworkBehaviourId InteractionTarget;
         public NetworkButtons Buttons;
     }
 }

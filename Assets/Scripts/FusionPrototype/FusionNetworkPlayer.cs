@@ -9,6 +9,7 @@ namespace TheSancturary.FusionPrototype
 {
     [RequireComponent(typeof(NetworkObject), typeof(NetworkCharacterController), typeof(CharacterController))]
     [RequireComponent(typeof(PlayerAnimationDriver))]
+    [RequireComponent(typeof(LocalInteractionTargeting), typeof(NetworkPlayerInventory))]
     public sealed class FusionNetworkPlayer : NetworkBehaviour
     {
         private const string OwnerPostProcessingLayerName = "OwnerPostProcessing";
@@ -33,6 +34,8 @@ namespace TheSancturary.FusionPrototype
         [SerializeField] private Camera playerCamera;
         [SerializeField] private AudioListener audioListener;
         [SerializeField] private PlayerAnimationDriver animationDriver;
+        [SerializeField] private LocalInteractionTargeting localInteractionTargeting;
+        [SerializeField] private NetworkPlayerInventory inventory;
         [SerializeField] private Renderer[] characterRenderers;
         [SerializeField] private AudioSource localAudioSource;
         [SerializeField] private AudioSource spatialAudioSource;
@@ -118,6 +121,7 @@ namespace TheSancturary.FusionPrototype
         private InputAction _sprintAction;
         private InputAction _crouchAction;
         private Vector2 _pendingNetworkLookDelta;
+        private NetworkBehaviourId _pendingInteractionTarget;
         private float _localLookYaw;
         private float _localLookPitch;
         private VolumeProfile _runtimeVolumeProfile;
@@ -142,6 +146,7 @@ namespace TheSancturary.FusionPrototype
         private Vector3 _airborneCharacterControllerCenter;
 
         public bool IsDeadOrPending => IsDead || Health - _pendingDamage <= 0f;
+        public NetworkPlayerInventory Inventory => inventory;
 
         public float AnimationReferenceSpeed => IsCrouched ? crouchSpeed : walkSpeed;
 
@@ -162,6 +167,7 @@ namespace TheSancturary.FusionPrototype
             playerInput.enabled = isOwner;
             playerCamera.enabled = isOwner;
             audioListener.enabled = isOwner;
+            localInteractionTargeting.enabled = isOwner;
             SetCharacterVisibility(true);
             SetCharacterRenderingSuppressed(false);
             animationDriver.Initialize();
@@ -174,6 +180,8 @@ namespace TheSancturary.FusionPrototype
                 _localLookYaw = transform.eulerAngles.y;
                 _localLookPitch = Mathf.Clamp(LookPitch, pitchLimits.x, pitchLimits.y);
                 ApplyOwnerCameraLook();
+                localInteractionTargeting.Initialize(playerCamera, playerInput, this, inventory);
+                inventory.InitializeOwner(playerInput, localInteractionTargeting);
                 FusionSessionManager.Instance?.RegisterLocalPlayer(this);
                 CreateOwnerVignette();
                 LockCursor();
@@ -195,6 +203,8 @@ namespace TheSancturary.FusionPrototype
             characterController ??= GetComponent<CharacterController>();
             playerInput ??= GetComponent<PlayerInput>();
             animationDriver ??= GetComponent<PlayerAnimationDriver>();
+            localInteractionTargeting ??= GetComponent<LocalInteractionTargeting>();
+            inventory ??= GetComponent<NetworkPlayerInventory>();
             localAudioSource ??= GetComponent<AudioSource>();
             if (spatialAudioSource == null)
             {
@@ -221,6 +231,8 @@ namespace TheSancturary.FusionPrototype
             if (!HasInputAuthority || playerInput == null || !playerInput.enabled)
                 return;
 
+            if (inventory != null && inventory.IsMenuOpen)
+                return;
             HandleCursorDebugging();
             SampleOwnerLook();
             ApplyOwnerCameraLook();
@@ -255,14 +267,20 @@ namespace TheSancturary.FusionPrototype
         public FusionPlayerInput BuildNetworkInput()
         {
             FusionPlayerInput input = default;
-            if (!HasInputAuthority || !playerInput.enabled)
+            if (!HasInputAuthority || !playerInput.enabled || (inventory != null && inventory.IsMenuOpen))
+            {
+                _pendingInteractionTarget = default;
                 return input;
+            }
 
             input.Move = Vector2.ClampMagnitude(_moveAction.ReadValue<Vector2>(), 1f);
             input.Look = _pendingNetworkLookDelta;
             _pendingNetworkLookDelta = Vector2.zero;
+            input.InteractionTarget = _pendingInteractionTarget;
             input.Buttons.Set(FusionPlayerButton.Jump, _jumpAction.IsPressed());
             input.Buttons.Set(FusionPlayerButton.Sprint, _sprintAction.IsPressed());
+            input.Buttons.Set(FusionPlayerButton.Interact, _pendingInteractionTarget.IsValid);
+            _pendingInteractionTarget = default;
 
             bool keyboardCrouch = Keyboard.current != null && Keyboard.current.leftCtrlKey.isPressed;
             input.Buttons.Set(FusionPlayerButton.Crouch, _crouchAction.IsPressed() || keyboardCrouch);
@@ -271,6 +289,49 @@ namespace TheSancturary.FusionPrototype
             input.Buttons.Set(FusionPlayerButton.DebugExhaustion, debugExhaustion);
 #endif
             return input;
+        }
+
+        public void RequestInteraction(NetworkBehaviour targetBehaviour)
+        {
+            if (!HasInputAuthority || targetBehaviour == null || !targetBehaviour.Id.IsValid)
+                return;
+
+            _pendingInteractionTarget = targetBehaviour.Id;
+        }
+
+        private void ProcessInteractionRequest(NetworkBehaviourId targetId)
+        {
+            if (!HasStateAuthority ||
+                inventory == null ||
+                !Runner.TryFindBehaviour(targetId, out NetworkBehaviour resolvedBehaviour) ||
+                resolvedBehaviour is not IAuthoritativeInteractable interactable ||
+                !ValidateInteractionRequest(interactable))
+                return;
+
+            interactable.TryInteractAuthoritative(this);
+        }
+
+        private bool ValidateInteractionRequest(IAuthoritativeInteractable interactable)
+        {
+            InteractionTarget requestedTarget = interactable.PromptTarget;
+            if (requestedTarget == null || !requestedTarget.isActiveAndEnabled ||
+                localInteractionTargeting == null || cameraRoot == null)
+                return false;
+
+            float distance = localInteractionTargeting.InteractionDistance;
+            Vector3 origin = cameraRoot.position;
+            Vector3 direction = Quaternion.Euler(LookPitch, LookYaw, 0f) * Vector3.forward;
+            if (!Physics.Raycast(
+                    origin,
+                    direction,
+                    out RaycastHit hit,
+                    distance,
+                    localInteractionTargeting.InteractionRaycastMask,
+                    QueryTriggerInteraction.Ignore))
+                return false;
+
+            InteractionTarget hitTarget = hit.collider.GetComponentInParent<InteractionTarget>();
+            return hitTarget == requestedTarget;
         }
 
         public override void FixedUpdateNetwork()
@@ -293,6 +354,9 @@ namespace TheSancturary.FusionPrototype
 
             LookYaw = Mathf.Repeat(LookYaw + input.Look.x * lookSensitivity, 360f);
             LookPitch = Mathf.Clamp(LookPitch - input.Look.y * lookSensitivity, pitchLimits.x, pitchLimits.y);
+
+            if (pressed.IsSet(FusionPlayerButton.Interact))
+                ProcessInteractionRequest(input.InteractionTarget);
 
             if (pressed.IsSet(FusionPlayerButton.Crouch))
             {

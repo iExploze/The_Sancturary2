@@ -1,10 +1,7 @@
 fileFormatVersion: 2
 guid: 10e7bd670d4d34f45a66642ee4f5bd57
-PrefabImporter:
-  externalObjects: {}
-  userData: 
-  assetBundleName: 
-  assetBundleVariant: 
+labels:
+- FusionPrefab
 AssetOrigin:
   serializedVersion: 1
   productId: 335086
@@ -13,3 +10,8 @@ AssetOrigin:
   assetPath: Assets/Skyden_Games/FPS Horror Hospital Pack/Art/Prefabs/Props/Medical
     Bedside.prefab
   uploadId: 943382
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
