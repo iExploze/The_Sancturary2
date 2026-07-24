@@ -112,13 +112,13 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 1.8
+  m_Height: 1.65
   m_Radius: 0.32
   m_SlopeLimit: 48
   m_StepOffset: 0.28
   m_SkinWidth: 0.04
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0.9, z: 0}
+  m_Center: {x: 0, y: 0.825, z: 0}
 --- !u!114 &1661761706703525729
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -402,11 +402,12 @@ MonoBehaviour:
   jumpImpulse: 6.3
   lookSensitivity: 0.35
   pitchLimits: {x: -85, y: 85}
-  standingHeight: 1.8
+  standingHeight: 1.65
   crouchingHeight: 1.1
   standingCameraHeight: 1.62
   crouchingCameraHeight: 0.92
   crouchTransitionSpeed: 5
+  characterControllerRestoreDuration: 0.1
   standingCollisionMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -445,6 +446,8 @@ MonoBehaviour:
   bobBlendSpeed: 8
   _Stamina: 0
   _Health: 0
+  _IsDead:
+    RawValue: 0
   _IsCrouched:
     RawValue: 0
   _IsSprinting:
@@ -468,6 +471,7 @@ MonoBehaviour:
   networkController: {fileID: 1661761706703525729}
   movementRoot: {fileID: 1862970608609475245}
   parameterDampTime: 0.12
+  minimumLandingImpactSpeed: 1.75
 --- !u!1 &3170984722257280242
 GameObject:
   m_ObjectHideFlags: 0
@@ -663,7 +667,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 057d86323f55ed74e8c5506438de870b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.183
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 057d86323f55ed74e8c5506438de870b, type: 3}
       propertyPath: m_LocalPosition.z
