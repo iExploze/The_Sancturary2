@@ -177,7 +177,7 @@ namespace TheSancturary.FusionPrototype
                 SubscribeToOwnerCameraRendering();
                 CacheInputActions();
                 playerInput.ActivateInput();
-                _localLookYaw = transform.eulerAngles.y;
+                _localLookYaw = LookYaw;
                 _localLookPitch = Mathf.Clamp(LookPitch, pitchLimits.x, pitchLimits.y);
                 ApplyOwnerCameraLook();
                 localInteractionTargeting.Initialize(playerCamera, playerInput, this, inventory);
