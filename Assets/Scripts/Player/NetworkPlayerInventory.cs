@@ -39,6 +39,9 @@ namespace TheSancturary.FusionPrototype
 
             _playerInput = playerInput;
             _targeting = targeting;
+            if (GetComponent<TheSancturary.Inventory.PlayerInventory>() != null)
+                return;
+
             _inventoryAction = playerInput.actions.FindActionMap("Player", true).FindAction("Inventory", true);
             EnsureInventoryPanel();
             SetMenuOpen(false);
