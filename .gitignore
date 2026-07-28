@@ -35,6 +35,9 @@
 /.cursor/mcp.json
 /.vscode/mcp.json
 
+# Unity MCP is embedded locally for Ian's Codex workflow, not shared with collaborators.
+/Packages/com.coplaydev.unity-mcp/
+
 # Local Unity test and coverage output. Test source and Unity assets remain tracked.
 /[Tt]est[Rr]esults/
 /[Cc]overage[Rr]esults/
