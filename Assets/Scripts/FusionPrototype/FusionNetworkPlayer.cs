@@ -4,12 +4,13 @@ using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Video;
+using TheSancturary.Inventory;
 
 namespace TheSancturary.FusionPrototype
 {
     [RequireComponent(typeof(NetworkObject), typeof(NetworkCharacterController), typeof(CharacterController))]
     [RequireComponent(typeof(PlayerAnimationDriver))]
-    [RequireComponent(typeof(LocalInteractionTargeting), typeof(NetworkPlayerInventory))]
+    [RequireComponent(typeof(LocalInteractionTargeting), typeof(NetworkPlayerInventory), typeof(PlayerInventory))]
     public sealed class FusionNetworkPlayer : NetworkBehaviour
     {
         private const string OwnerPostProcessingLayerName = "OwnerPostProcessing";
@@ -41,6 +42,7 @@ namespace TheSancturary.FusionPrototype
         [SerializeField] private PlayerAnimationDriver animationDriver;
         [SerializeField] private LocalInteractionTargeting localInteractionTargeting;
         [SerializeField] private NetworkPlayerInventory inventory;
+        [SerializeField] private PlayerInventory gridInventory;
         [SerializeField] private Renderer[] characterRenderers;
         [SerializeField] private AudioSource localAudioSource;
         [SerializeField] private AudioSource spatialAudioSource;
@@ -189,6 +191,7 @@ namespace TheSancturary.FusionPrototype
                 ApplyOwnerCameraLook();
                 localInteractionTargeting.Initialize(playerCamera, playerInput, this, inventory);
                 inventory.InitializeOwner(playerInput, localInteractionTargeting);
+                gridInventory.InitializeOwner(playerInput, playerCamera, localInteractionTargeting);
                 FusionSessionManager.Instance?.RegisterLocalPlayer(this);
                 CreateOwnerVignette();
                 LockCursor();
@@ -215,6 +218,7 @@ namespace TheSancturary.FusionPrototype
             animationDriver ??= GetComponent<PlayerAnimationDriver>();
             localInteractionTargeting ??= GetComponent<LocalInteractionTargeting>();
             inventory ??= GetComponent<NetworkPlayerInventory>();
+            gridInventory ??= GetComponent<PlayerInventory>();
             localAudioSource ??= GetComponent<AudioSource>();
             if (spatialAudioSource == null)
             {
@@ -241,7 +245,7 @@ namespace TheSancturary.FusionPrototype
             if (!HasInputAuthority || playerInput == null || !playerInput.enabled)
                 return;
 
-            if (inventory != null && inventory.IsMenuOpen)
+            if ((inventory != null && inventory.IsMenuOpen) || (gridInventory != null && gridInventory.IsMenuOpen))
                 return;
             HandleCursorDebugging();
             SampleOwnerLook();
@@ -283,7 +287,7 @@ namespace TheSancturary.FusionPrototype
                 return input;
 
             input.LookAngles = new Vector2(_localLookYaw, _localLookPitch);
-            if (inventory != null && inventory.IsMenuOpen)
+            if ((inventory != null && inventory.IsMenuOpen) || (gridInventory != null && gridInventory.IsMenuOpen))
                 return input;
 
             input.Move = Vector2.ClampMagnitude(_moveAction.ReadValue<Vector2>(), 1f);

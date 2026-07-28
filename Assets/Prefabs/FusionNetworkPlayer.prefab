@@ -51,6 +51,9 @@ GameObject:
   - component: {fileID: 1950252639633320911}
   - component: {fileID: 2203274112193757590}
   - component: {fileID: 4952048985873913713}
+  - component: {fileID: 6008705058086688184}
+  - component: {fileID: 3876416893426119887}
+  - component: {fileID: 6973947097866052018}
   m_Layer: 0
   m_Name: FusionNetworkPlayer
   m_TagString: Untagged
@@ -387,6 +390,7 @@ MonoBehaviour:
   animationDriver: {fileID: 1950252639633320911}
   localInteractionTargeting: {fileID: 2203274112193757590}
   inventory: {fileID: 4952048985873913713}
+  gridInventory: {fileID: 6973947097866052018}
   characterRenderers:
   - {fileID: 4607367529537180434}
   - {fileID: 2698025421313357052}
@@ -489,7 +493,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2df94744fd661b24a8ad4e9df8124d4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.LocalInteractionTargeting
-  interactionDistance: 3
+  interactionDistance: 6
   interactionRaycastMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -510,6 +514,58 @@ MonoBehaviour:
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.NetworkPlayerInventory
   _ItemCount: 0
   _Revision: 0
+--- !u!114 &6008705058086688184
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 935648667489386037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 621ad4a63b00ac9439acbb7513b9615e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.PlayerEquipment
+  heldLocalPosition: {x: 0.28, y: -0.25, z: 0.55}
+  heldLocalEulerAngles: {x: 0, y: 0, z: 0}
+  heldLocalScale: {x: 1, y: 1, z: 1}
+--- !u!114 &3876416893426119887
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 935648667489386037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9e1022ee52b3a4295dd8acba41ddf1, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.InventoryUIController
+  actionMapName: Player
+  inventoryActionName: Inventory
+  dropActionName: Drop
+  messageDuration: 2
+  dragThresholdPixels: 8
+--- !u!114 &6973947097866052018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 935648667489386037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7299845204c88f4292955b123452e89, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.PlayerInventory
+  categoryLimits:
+  - category: 5
+    maximum: 1
+  dropDistance: 1.5
+  wallClearance: 0.35
+  dropCollisionMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!1 &3170984722257280242
 GameObject:
   m_ObjectHideFlags: 0
