@@ -1048,7 +1048,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8433369438032822637, guid: 60cf8291e694d944083525dcc688da83, type: 3}
       propertyPath: itemId
-      value: cabinet_key_a
+      value: cabinet_key
       objectReference: {fileID: 0}
     - target: {fileID: 8433369438032822637, guid: 60cf8291e694d944083525dcc688da83, type: 3}
       propertyPath: itemDisplayName
