@@ -37,6 +37,7 @@ namespace TheSancturary.Inventory
         private bool _hasSnapshot;
         private ushort _renderedRevision;
         private ushort _renderedEquippedInstanceId;
+        private ushort _renderedRejectionRevision;
         private InventoryItemInstance _selectedItem;
         private InventoryItemInstance _focusedItem;
         private InventoryItemInstance _movingItem;
@@ -73,6 +74,8 @@ namespace TheSancturary.Inventory
         {
             if (networkInventory == null || !networkInventory.HasInputAuthority)
                 return;
+
+            SynchronizeRejection(networkInventory);
 
             bool equipmentChanged =
                 !_hasSnapshot ||
@@ -130,6 +133,18 @@ namespace TheSancturary.Inventory
             _renderedEquippedInstanceId = networkInventory.EquippedInstanceId;
             _hasSnapshot = true;
             Changed?.Invoke();
+        }
+
+        private void SynchronizeRejection(
+            NetworkPlayerInventory networkInventory)
+        {
+            if (_renderedRejectionRevision ==
+                networkInventory.RejectionRevision)
+                return;
+
+            _renderedRejectionRevision = networkInventory.RejectionRevision;
+            if (_renderedRejectionRevision != 0)
+                ShowRejection(networkInventory.LastRejection);
         }
 
         public InventoryItemInstance GetCell(int row, int column)

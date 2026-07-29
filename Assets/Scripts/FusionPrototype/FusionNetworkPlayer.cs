@@ -116,6 +116,7 @@ namespace TheSancturary.FusionPrototype
         [Networked] private float StaminaRecoveryElapsed { get; set; }
         [Networked] private float TimeSinceDamage { get; set; }
         [Networked] private NetworkButtons PreviousButtons { get; set; }
+        [Networked] private byte PreviousInventoryCommandSequence { get; set; }
         [Networked] private NetworkBool WasGrounded { get; set; }
         [Networked] private float AccumulatedStepDistance { get; set; }
         [Networked] private byte AudioEventSequence { get; set; }
@@ -130,6 +131,7 @@ namespace TheSancturary.FusionPrototype
         private InputAction _attackAction;
         private NetworkBehaviourId _pendingInteractionTarget;
         private bool _interactPressQueued;
+        private byte _nextInventoryCommandSequence;
         private float _localLookYaw;
         private float _localLookPitch;
         private VolumeProfile _runtimeVolumeProfile;
@@ -293,6 +295,23 @@ namespace TheSancturary.FusionPrototype
                 return input;
 
             input.LookAngles = new Vector2(_localLookYaw, _localLookPitch);
+            if (inventory != null &&
+                inventory.TryDequeueInputCommand(
+                    out InventoryInputCommand inventoryCommand))
+            {
+                _nextInventoryCommandSequence++;
+                if (_nextInventoryCommandSequence == 0)
+                    _nextInventoryCommandSequence = 1;
+
+                input.InventoryCommand = (byte)inventoryCommand.Type;
+                input.InventoryCommandSequence =
+                    _nextInventoryCommandSequence;
+                input.InventoryInstanceId = inventoryCommand.InstanceId;
+                input.InventoryColumn = inventoryCommand.Column;
+                input.InventoryRow = inventoryCommand.Row;
+                input.InventoryRotated = inventoryCommand.Rotated;
+            }
+
             if (gridInventory != null && gridInventory.IsMenuOpen)
                 return input;
 
@@ -383,6 +402,23 @@ namespace TheSancturary.FusionPrototype
                 LookPitch = Mathf.Clamp(input.LookAngles.y, pitchLimits.x, pitchLimits.y);
                 pressed = input.Buttons.GetPressed(PreviousButtons);
                 PreviousButtons = input.Buttons;
+
+                if (inventory != null &&
+                    inventory.HasStateAuthority &&
+                    input.InventoryCommand !=
+                    (byte)InventoryInputCommandType.None &&
+                    input.InventoryCommandSequence !=
+                    PreviousInventoryCommandSequence)
+                {
+                    PreviousInventoryCommandSequence =
+                        input.InventoryCommandSequence;
+                    inventory.ProcessInputCommandAuthoritative(
+                        (InventoryInputCommandType)input.InventoryCommand,
+                        input.InventoryInstanceId,
+                        input.InventoryColumn,
+                        input.InventoryRow,
+                        input.InventoryRotated);
+                }
 
                 if (pressed.IsSet(FusionPlayerButton.Interact))
                     ProcessInteractionRequest(input.InteractionTarget);

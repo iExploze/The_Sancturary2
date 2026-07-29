@@ -37,13 +37,18 @@ namespace TheSancturary.FusionPrototype
         [Networked] public ushort EquippedInstanceId { get; private set; }
         [Networked] public NetworkBool FlashlightEnabled { get; private set; }
         [Networked] public ushort Revision { get; private set; }
+        [Networked] public byte LastRejectionCode { get; private set; }
+        [Networked] public ushort RejectionRevision { get; private set; }
 
         private PlayerInventory _projection;
         private PlayerEquipment _equipment;
         private FusionNetworkPlayer _player;
         private bool _catalogValid;
+        private readonly Queue<InventoryInputCommand> _pendingInputCommands = new();
 
         public InventoryItemCatalog Catalog => catalog;
+        public InventoryRequestRejection LastRejection =>
+            (InventoryRequestRejection)LastRejectionCode;
 
         public override void Spawned()
         {
@@ -66,6 +71,7 @@ namespace TheSancturary.FusionPrototype
 
         public override void Despawned(NetworkRunner runner, bool hasState)
         {
+            _pendingInputCommands.Clear();
             _equipment?.ClearPresentation();
         }
 
@@ -187,23 +193,84 @@ namespace TheSancturary.FusionPrototype
             if (!HasInputAuthority)
                 return;
 
-            RPC_RequestMove(
-                instanceId,
-                (byte)Mathf.Clamp(topLeft.x, 0, byte.MaxValue),
-                (byte)Mathf.Clamp(topLeft.y, 0, byte.MaxValue),
-                rotated);
+            _pendingInputCommands.Enqueue(new InventoryInputCommand
+            {
+                Type = InventoryInputCommandType.Move,
+                InstanceId = instanceId,
+                Column = (byte)Mathf.Clamp(topLeft.x, 0, byte.MaxValue),
+                Row = (byte)Mathf.Clamp(topLeft.y, 0, byte.MaxValue),
+                Rotated = rotated
+            });
         }
 
         public void RequestEquip(ushort instanceId)
         {
             if (HasInputAuthority)
-                RPC_RequestEquip(instanceId);
+            {
+                _pendingInputCommands.Enqueue(new InventoryInputCommand
+                {
+                    Type = InventoryInputCommandType.Equip,
+                    InstanceId = instanceId
+                });
+            }
         }
 
         public void RequestDrop(ushort instanceId)
         {
             if (HasInputAuthority)
-                RPC_RequestDrop(instanceId);
+            {
+                _pendingInputCommands.Enqueue(new InventoryInputCommand
+                {
+                    Type = InventoryInputCommandType.Drop,
+                    InstanceId = instanceId
+                });
+            }
+        }
+
+        public bool TryDequeueInputCommand(out InventoryInputCommand command)
+        {
+            if (!HasInputAuthority || _pendingInputCommands.Count == 0)
+            {
+                command = default;
+                return false;
+            }
+
+            command = _pendingInputCommands.Dequeue();
+            return true;
+        }
+
+        public void ProcessInputCommandAuthoritative(
+            InventoryInputCommandType commandType,
+            ushort instanceId,
+            byte column,
+            byte row,
+            NetworkBool rotated)
+        {
+            if (!HasStateAuthority)
+                return;
+
+            switch (commandType)
+            {
+                case InventoryInputCommandType.Move:
+                    ProcessMoveAuthoritative(
+                        instanceId,
+                        column,
+                        row,
+                        rotated);
+                    break;
+                case InventoryInputCommandType.Equip:
+                    ProcessEquipAuthoritative(instanceId);
+                    break;
+                case InventoryInputCommandType.Drop:
+                    ProcessDropAuthoritative(instanceId);
+                    break;
+                case InventoryInputCommandType.None:
+                    break;
+                default:
+                    SendOwnerRejection(
+                        InventoryRequestRejection.InvalidRequest);
+                    break;
+            }
         }
 
         public void ToggleEquippedUseAuthoritative()
@@ -220,11 +287,13 @@ namespace TheSancturary.FusionPrototype
         public void SendOwnerRejection(InventoryRequestRejection rejection)
         {
             if (HasStateAuthority && rejection != InventoryRequestRejection.None)
-                RPC_ReceiveRejection(rejection);
+            {
+                LastRejectionCode = (byte)rejection;
+                RejectionRevision++;
+            }
         }
 
-        [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-        private void RPC_RequestMove(
+        private void ProcessMoveAuthoritative(
             ushort instanceId,
             byte column,
             byte row,
@@ -253,8 +322,7 @@ namespace TheSancturary.FusionPrototype
             Revision++;
         }
 
-        [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-        private void RPC_RequestEquip(ushort instanceId)
+        private void ProcessEquipAuthoritative(ushort instanceId)
         {
             if (instanceId == EquippedInstanceId)
             {
@@ -277,8 +345,7 @@ namespace TheSancturary.FusionPrototype
             Revision++;
         }
 
-        [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-        private void RPC_RequestDrop(ushort instanceId)
+        private void ProcessDropAuthoritative(ushort instanceId)
         {
             int index = FindEntryIndex(instanceId);
             if (index < 0)
@@ -315,13 +382,6 @@ namespace TheSancturary.FusionPrototype
             }
 
             RemoveEntryAt(index, instanceId);
-        }
-
-        [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority)]
-        private void RPC_ReceiveRejection(InventoryRequestRejection rejection)
-        {
-            if (HasInputAuthority)
-                _projection?.ShowRejection(rejection);
         }
 
         private void ResolveReferences()
