@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3691887157227446084}
   - component: {fileID: 2086165343588678209}
   - component: {fileID: 7279401581090338480}
+  - component: {fileID: 5556749396515406885}
   m_Layer: 0
   m_Name: WorldFlashlight
   m_TagString: Untagged
@@ -87,7 +88,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.WorldInventoryItem
   definition: {fileID: 11400000, guid: e0e48eb0d227fca40b775bec6a2e8e4c, type: 2}
+  interactionTarget: {fileID: 2086165343588678209}
+  visualRoot: {fileID: 8860925556934511578}
   labelTransform: {fileID: 4296237778463365947}
+  pickupColliders:
+  - {fileID: 3691887157227446084}
+  _IsCollected:
+    RawValue: 0
+--- !u!114 &5556749396515406885
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1368844624513880782}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 3490695740
+  SendPriority: 1
+  EnableInterpolation: 1
+  Flags: 262146
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 7279401581090338480}
+  ForceRemoteRenderTimeframe: 0
 --- !u!1 &6004527748104171867
 GameObject:
   m_ObjectHideFlags: 0
@@ -265,6 +292,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b694b8ec5c41f6247843a2b67222fda6, type: 3}
+--- !u!1 &8860925556934511578 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 100000, guid: b694b8ec5c41f6247843a2b67222fda6, type: 3}
+  m_PrefabInstance: {fileID: 8860925556934479226}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8860925556934612986 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: b694b8ec5c41f6247843a2b67222fda6, type: 3}

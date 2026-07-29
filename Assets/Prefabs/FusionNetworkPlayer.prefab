@@ -512,7 +512,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5a14d43447965b488c8140bc17e496c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.NetworkPlayerInventory
-  _ItemCount: 0
+  catalog: {fileID: 11400000, guid: c37c67caf50b1ea43933d56abbd7a87e, type: 2}
+  flashlightItemId: flashlight
+  categoryLimits:
+  - category: 5
+    maximum: 1
+  dropDistance: 1.5
+  wallClearance: 0.35
+  dropOriginHeight: 1.35
+  dropCollisionMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  _NextInstanceId: 0
+  _EquippedInstanceId: 0
+  _FlashlightEnabled:
+    RawValue: 0
   _Revision: 0
 --- !u!114 &6008705058086688184
 MonoBehaviour:
@@ -529,6 +543,10 @@ MonoBehaviour:
   heldLocalPosition: {x: 0.28, y: -0.25, z: 0.55}
   heldLocalEulerAngles: {x: 0, y: 0, z: 0}
   heldLocalScale: {x: 1, y: 1, z: 1}
+  thirdPersonHeldAnchor: {fileID: 6730772056222408226}
+  thirdPersonLocalPosition: {x: 0, y: 0, z: 0}
+  thirdPersonLocalEulerAngles: {x: 0, y: 90, z: 0}
+  thirdPersonLocalScale: {x: 1, y: 1, z: 1}
 --- !u!114 &3876416893426119887
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -558,14 +576,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7299845204c88f4292955b123452e89, type: 3}
   m_Name:
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.PlayerInventory
-  categoryLimits:
-  - category: 5
-    maximum: 1
-  dropDistance: 1.5
-  wallClearance: 0.35
-  dropCollisionMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
 --- !u!1 &3170984722257280242
 GameObject:
   m_ObjectHideFlags: 0
@@ -845,6 +855,11 @@ Transform:
 --- !u!137 &5211566571980786821 stripped
 SkinnedMeshRenderer:
   m_CorrespondingSourceObject: {fileID: 904688488343924079, guid: 057d86323f55ed74e8c5506438de870b, type: 3}
+  m_PrefabInstance: {fileID: 4962172170653983210}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &6730772056222408226 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1852576806548013000, guid: 057d86323f55ed74e8c5506438de870b, type: 3}
   m_PrefabInstance: {fileID: 4962172170653983210}
   m_PrefabAsset: {fileID: 0}
 --- !u!137 &7120177165106129061 stripped

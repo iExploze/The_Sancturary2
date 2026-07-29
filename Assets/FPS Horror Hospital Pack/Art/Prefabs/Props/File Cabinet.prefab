@@ -676,7 +676,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.NetworkLockGroup
   needsKey: 1
-  requiredKeyId: cabinet_key_a
+  requiredKeyId: cabinet_key
   requiredKeyDisplayName: Cabinet Key
   consumeKeyOnUnlock: 0
   _IsUnlocked:

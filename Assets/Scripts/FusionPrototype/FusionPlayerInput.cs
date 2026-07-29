@@ -9,7 +9,25 @@ namespace TheSancturary.FusionPrototype
         Sprint,
         Crouch,
         Interact,
+        UseEquipped,
         DebugExhaustion
+    }
+
+    public enum InventoryInputCommandType : byte
+    {
+        None,
+        Move,
+        Equip,
+        Drop
+    }
+
+    public struct InventoryInputCommand
+    {
+        public InventoryInputCommandType Type;
+        public ushort InstanceId;
+        public byte Column;
+        public byte Row;
+        public NetworkBool Rotated;
     }
 
     public struct FusionPlayerInput : INetworkInput
@@ -17,6 +35,12 @@ namespace TheSancturary.FusionPrototype
         public Vector2 Move;
         public Vector2 LookAngles;
         public NetworkBehaviourId InteractionTarget;
+        public byte InventoryCommand;
+        public byte InventoryCommandSequence;
+        public ushort InventoryInstanceId;
+        public byte InventoryColumn;
+        public byte InventoryRow;
+        public NetworkBool InventoryRotated;
         public NetworkButtons Buttons;
     }
 }

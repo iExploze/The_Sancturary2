@@ -1,31 +1,56 @@
+using Fusion;
 using TheSancturary.FusionPrototype;
 using UnityEngine;
 
 namespace TheSancturary.Inventory
 {
+    /// <summary>
+    /// Authoritative shared world item. Scene items retain a replicated collected
+    /// flag for late joiners; dynamically dropped items despawn through Fusion.
+    /// </summary>
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(InteractionTarget))]
-    public sealed class WorldInventoryItem : MonoBehaviour, IInteractable
+    [RequireComponent(typeof(NetworkObject), typeof(InteractionTarget))]
+    public sealed class WorldInventoryItem : NetworkBehaviour,
+        IInteractable,
+        IAuthoritativeInteractable
     {
+        [Header("Item")]
         [SerializeField] private InventoryItemDefinition definition;
+
+        [Header("Presentation")]
+        [SerializeField] private InteractionTarget interactionTarget;
+        [SerializeField] private GameObject visualRoot;
         [SerializeField] private Transform labelTransform;
+        [SerializeField] private Collider[] pickupColliders;
+
+        [Networked] public NetworkBool IsCollected { get; private set; }
+
+        private bool _spawned;
+        private bool _lastRenderedCollected;
 
         public InventoryItemDefinition Definition => definition;
+        public string ItemId => definition != null ? definition.ItemId : string.Empty;
+        public bool IsAvailable => _spawned && !IsCollected;
+        public InteractionTarget PromptTarget => interactionTarget;
 
-        private void Awake()
+        public override void Spawned()
         {
+            ResolveReferences();
             ConfigureInteractionTarget();
+            _spawned = true;
+            _lastRenderedCollected = IsCollected;
+            ApplyCollectedState(_lastRenderedCollected);
             SetTargeted(false);
         }
 
-        private void OnEnable()
+        public override void Render()
         {
-            SetTargeted(false);
-        }
+            bool collected = IsCollected;
+            if (collected == _lastRenderedCollected)
+                return;
 
-        private void OnValidate()
-        {
-            ConfigureInteractionTarget();
+            _lastRenderedCollected = collected;
+            ApplyCollectedState(collected);
         }
 
         public void SetDefinition(InventoryItemDefinition value)
@@ -39,54 +64,133 @@ namespace TheSancturary.Inventory
             string interactionVerb,
             out string actionText)
         {
-            actionText = definition != null ? "F \u2014 Pick up" : null;
-            return definition != null;
+            if (!IsAvailable || definition == null)
+            {
+                actionText = null;
+                return false;
+            }
+
+            actionText = "F \u2014 Pick up";
+            return true;
         }
 
         public bool RequestInteraction(FusionNetworkPlayer requestingPlayer)
         {
-            if (definition == null || requestingPlayer == null)
+            if (!IsAvailable ||
+                requestingPlayer == null ||
+                !requestingPlayer.HasInputAuthority)
                 return false;
 
-            InteractionTarget promptTarget = GetComponent<InteractionTarget>();
-            LocalInteractionTargeting targeting = requestingPlayer.GetComponent<LocalInteractionTargeting>();
-            if (targeting == null || targeting.CurrentTarget != promptTarget)
+            requestingPlayer.RequestInteraction(this);
+            return true;
+        }
+
+        public bool TryInteractAuthoritative(FusionNetworkPlayer requestingPlayer)
+        {
+            if (!HasStateAuthority || requestingPlayer == null)
                 return false;
 
-            PlayerInventory playerInventory = requestingPlayer.GetComponent<PlayerInventory>();
-            if (playerInventory == null || !playerInventory.TryAddItem(definition))
+            NetworkPlayerInventory inventory = requestingPlayer.Inventory;
+            if (!IsAvailable)
+            {
+                inventory?.SendOwnerRejection(
+                    InventoryRequestRejection.ItemTaken);
+                return false;
+            }
+
+            if (inventory == null)
                 return false;
 
-            gameObject.SetActive(false);
-            Destroy(gameObject);
+            if (!inventory.TryCollectAuthoritative(
+                    this,
+                    out InventoryRequestRejection rejection))
+            {
+                inventory.SendOwnerRejection(rejection);
+                return false;
+            }
+
+            if (Object.NetworkTypeId.IsSceneObject)
+            {
+                IsCollected = true;
+                ApplyCollectedState(true);
+            }
+            else
+            {
+                Runner.Despawn(Object);
+            }
+
             return true;
         }
 
         public void SetTargeted(bool targeted)
         {
             if (labelTransform != null)
-                labelTransform.gameObject.SetActive(targeted);
+                labelTransform.gameObject.SetActive(targeted && IsAvailable);
         }
 
         private void LateUpdate()
         {
             Camera camera = Camera.main;
-            if (labelTransform != null && camera != null)
-                labelTransform.rotation = Quaternion.LookRotation(labelTransform.position - camera.transform.position, Vector3.up);
+            if (labelTransform != null &&
+                labelTransform.gameObject.activeInHierarchy &&
+                camera != null)
+            {
+                labelTransform.rotation = Quaternion.LookRotation(
+                    labelTransform.position - camera.transform.position,
+                    Vector3.up);
+            }
+        }
+
+        private void ApplyCollectedState(bool collected)
+        {
+            if (visualRoot != null)
+                visualRoot.SetActive(!collected);
+            if (interactionTarget != null)
+            {
+                interactionTarget.SetStatus(
+                    collected
+                        ? InteractionTargetStatus.Unavailable
+                        : InteractionTargetStatus.Available);
+            }
+
+            if (pickupColliders != null)
+            {
+                for (int index = 0; index < pickupColliders.Length; index++)
+                {
+                    if (pickupColliders[index] != null)
+                        pickupColliders[index].enabled = !collected;
+                }
+            }
+
+            if (collected)
+                SetTargeted(false);
+        }
+
+        private void ResolveReferences()
+        {
+            interactionTarget ??= GetComponent<InteractionTarget>();
+            if (pickupColliders == null || pickupColliders.Length == 0)
+                pickupColliders = GetComponentsInChildren<Collider>(true);
         }
 
         private void ConfigureInteractionTarget()
         {
-            InteractionTarget target = GetComponent<InteractionTarget>();
-            if (target == null)
+            interactionTarget ??= GetComponent<InteractionTarget>();
+            if (interactionTarget == null)
                 return;
 
-            target.Configure(
+            interactionTarget.Configure(
                 definition != null ? definition.DisplayName : "Inventory Item",
                 "Pick up",
                 InteractionTargetStatus.Available,
                 null,
                 this);
+        }
+
+        private void OnValidate()
+        {
+            ResolveReferences();
+            ConfigureInteractionTarget();
         }
     }
 }
