@@ -32,6 +32,7 @@ namespace TheSancturary.Inventory
         [SerializeField] private bool canDrop = true;
         [SerializeField] private GameObject worldPrefab;
         [SerializeField] private GameObject equippedPrefab;
+        [SerializeField] private GameObject thirdPersonEquippedPrefab;
 
         public string DisplayName => displayName;
         public string ItemId => itemId;
@@ -45,6 +46,8 @@ namespace TheSancturary.Inventory
         public bool CanDrop => canDrop;
         public GameObject WorldPrefab => worldPrefab;
         public GameObject EquippedPrefab => equippedPrefab;
+        public GameObject ThirdPersonEquippedPrefab =>
+            thirdPersonEquippedPrefab != null ? thirdPersonEquippedPrefab : equippedPrefab;
 
         private void OnValidate()
         {

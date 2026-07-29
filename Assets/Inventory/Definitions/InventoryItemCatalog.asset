@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 966bf985178432947aea3ad3af48869a, type: 3}
+  m_Name: InventoryItemCatalog
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.InventoryItemCatalog
+  definitions:
+  - {fileID: 11400000, guid: e0e48eb0d227fca40b775bec6a2e8e4c, type: 2}
+  - {fileID: 11400000, guid: 2b8c768b14d445746bf93be8b84551a8, type: 2}
+  - {fileID: 11400000, guid: e39eb8d824ad38d4097dde6a075a54af, type: 2}
+  - {fileID: 11400000, guid: c2977e44ae8de1f4c8ce34c98c3bc770, type: 2}
+  - {fileID: 11400000, guid: 0053cbf55e10e1f4680965f8ebdf069d, type: 2}

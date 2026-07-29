@@ -9,6 +9,7 @@ namespace TheSancturary.FusionPrototype
         Sprint,
         Crouch,
         Interact,
+        UseEquipped,
         DebugExhaustion
     }
 

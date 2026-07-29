@@ -1,16 +1,14 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 
 namespace TheSancturary.Inventory
 {
+    /// <summary>
+    /// Applies replicated flashlight presentation only. Input and authority live
+    /// on FusionNetworkPlayer and NetworkPlayerInventory.
+    /// </summary>
     [DisallowMultipleComponent]
     public sealed class FlashlightController : MonoBehaviour
     {
-        [Header("Input")]
-        [SerializeField] private string actionMapName = "Player";
-        [SerializeField] private string toggleActionName = "Attack";
-
         [Header("Spotlight")]
         [SerializeField] private Light flashlightLight;
         [SerializeField, Min(0.1f)] private float range = 20f;
@@ -19,40 +17,14 @@ namespace TheSancturary.Inventory
         [SerializeField] private Color color = Color.white;
         [SerializeField] private LightShadows shadows = LightShadows.Soft;
 
-        private InputAction _toggleAction;
-        private PlayerInventory _ownerInventory;
-
-        public bool IsLightEnabled => flashlightLight != null && flashlightLight.enabled;
+        public bool IsLightEnabled =>
+            flashlightLight != null && flashlightLight.enabled;
 
         private void Awake()
         {
             ResolveLight();
             ApplySettings();
             SetLightEnabled(false);
-        }
-
-        public void Initialize(PlayerInput playerInput, PlayerInventory ownerInventory)
-        {
-            ResolveLight();
-            ApplySettings();
-            _ownerInventory = ownerInventory;
-            _toggleAction = playerInput != null
-                ? playerInput.actions.FindActionMap(actionMapName, false)?.FindAction(toggleActionName, false)
-                : null;
-            SetLightEnabled(false);
-        }
-
-        private void Update()
-        {
-            if (_toggleAction == null ||
-                _ownerInventory == null ||
-                _ownerInventory.IsMenuOpen ||
-                Cursor.lockState != CursorLockMode.Locked ||
-                EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-                return;
-
-            if (_toggleAction.WasPressedThisFrame())
-                SetLightEnabled(!IsLightEnabled);
         }
 
         public void SetLightEnabled(bool enabled)

@@ -544,6 +544,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Test Pickup - Flashlight
       objectReference: {fileID: 0}
+    - target: {fileID: 5556749396515406885, guid: 1ef7dd4540c114349939a5b9e9b6774f, type: 3}
+      propertyPath: SortKey
+      value: 924346210
+      objectReference: {fileID: 0}
     - target: {fileID: 5929689027116423284, guid: 1ef7dd4540c114349939a5b9e9b6774f, type: 3}
       propertyPath: m_LocalPosition.x
       value: -17.4
@@ -891,6 +895,10 @@ PrefabInstance:
     - target: {fileID: 4299399802393265691, guid: dd8b5e050c2c0264ea14f9fd371e8be9, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4737508910720955700, guid: dd8b5e050c2c0264ea14f9fd371e8be9, type: 3}
+      propertyPath: SortKey
+      value: 3417615033
       objectReference: {fileID: 0}
     - target: {fileID: 7736266574520799799, guid: dd8b5e050c2c0264ea14f9fd371e8be9, type: 3}
       propertyPath: m_Name
@@ -2539,6 +2547,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 884724491}
     m_Modifications:
+    - target: {fileID: 5358423430642577307, guid: 51ab1ad0d7b776c4fa4bc9b0fd7ac0a3, type: 3}
+      propertyPath: SortKey
+      value: 3776024984
+      objectReference: {fileID: 0}
     - target: {fileID: 6598391233309530412, guid: 51ab1ad0d7b776c4fa4bc9b0fd7ac0a3, type: 3}
       propertyPath: m_Name
       value: Test Pickup - TestMediumItem
@@ -4093,6 +4105,10 @@ PrefabInstance:
     - target: {fileID: 1244879661070602042, guid: b575055fc25ac47459a0ce5e4cff5153, type: 3}
       propertyPath: m_Name
       value: Test Pickup - TestSmallItem
+      objectReference: {fileID: 0}
+    - target: {fileID: 1542344194045998461, guid: b575055fc25ac47459a0ce5e4cff5153, type: 3}
+      propertyPath: SortKey
+      value: 2208610381
       objectReference: {fileID: 0}
     - target: {fileID: 8853546016501753421, guid: b575055fc25ac47459a0ce5e4cff5153, type: 3}
       propertyPath: m_LocalPosition.x

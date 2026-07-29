@@ -206,6 +206,7 @@ GameObject:
   - component: {fileID: 6859182625123196026}
   - component: {fileID: 7273344611841537848}
   - component: {fileID: 2812714009824973034}
+  - component: {fileID: 4737508910720955700}
   m_Layer: 0
   m_Name: WorldTestLongItem
   m_TagString: Untagged
@@ -281,4 +282,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.WorldInventoryItem
   definition: {fileID: 11400000, guid: c2977e44ae8de1f4c8ce34c98c3bc770, type: 2}
+  interactionTarget: {fileID: 7273344611841537848}
+  visualRoot: {fileID: 3933557554642519324}
   labelTransform: {fileID: 6284480874660391101}
+  pickupColliders:
+  - {fileID: 6859182625123196026}
+  _IsCollected:
+    RawValue: 0
+--- !u!114 &4737508910720955700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7736266574520799799}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 1561288595
+  SendPriority: 1
+  EnableInterpolation: 1
+  Flags: 262146
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 2812714009824973034}
+  ForceRemoteRenderTimeframe: 0

@@ -127,6 +127,7 @@ namespace TheSancturary.FusionPrototype
         private InputAction _jumpAction;
         private InputAction _sprintAction;
         private InputAction _crouchAction;
+        private InputAction _attackAction;
         private NetworkBehaviourId _pendingInteractionTarget;
         private bool _interactPressQueued;
         private float _localLookYaw;
@@ -190,8 +191,12 @@ namespace TheSancturary.FusionPrototype
                 _localLookPitch = Mathf.Clamp(LookPitch, pitchLimits.x, pitchLimits.y);
                 ApplyOwnerCameraLook();
                 localInteractionTargeting.Initialize(playerCamera, playerInput, this, inventory);
-                inventory.InitializeOwner(playerInput, localInteractionTargeting);
-                gridInventory.InitializeOwner(playerInput, playerCamera, localInteractionTargeting);
+                gridInventory.GetComponent<PlayerEquipment>().InitializeOwner(playerCamera);
+                gridInventory.InitializeOwner(
+                    playerInput,
+                    playerCamera,
+                    localInteractionTargeting,
+                    inventory);
                 FusionSessionManager.Instance?.RegisterLocalPlayer(this);
                 CreateOwnerVignette();
                 LockCursor();
@@ -238,6 +243,7 @@ namespace TheSancturary.FusionPrototype
             _jumpAction = map.FindAction("Jump", true);
             _sprintAction = map.FindAction("Sprint", true);
             _crouchAction = map.FindAction("Crouch", true);
+            _attackAction = map.FindAction("Attack", true);
         }
 
         private void Update()
@@ -245,7 +251,7 @@ namespace TheSancturary.FusionPrototype
             if (!HasInputAuthority || playerInput == null || !playerInput.enabled)
                 return;
 
-            if ((inventory != null && inventory.IsMenuOpen) || (gridInventory != null && gridInventory.IsMenuOpen))
+            if (gridInventory != null && gridInventory.IsMenuOpen)
                 return;
             HandleCursorDebugging();
             SampleOwnerLook();
@@ -287,7 +293,7 @@ namespace TheSancturary.FusionPrototype
                 return input;
 
             input.LookAngles = new Vector2(_localLookYaw, _localLookPitch);
-            if ((inventory != null && inventory.IsMenuOpen) || (gridInventory != null && gridInventory.IsMenuOpen))
+            if (gridInventory != null && gridInventory.IsMenuOpen)
                 return input;
 
             input.Move = Vector2.ClampMagnitude(_moveAction.ReadValue<Vector2>(), 1f);
@@ -296,6 +302,7 @@ namespace TheSancturary.FusionPrototype
             input.Buttons.Set(FusionPlayerButton.Jump, _jumpAction.IsPressed());
             input.Buttons.Set(FusionPlayerButton.Sprint, _sprintAction.IsPressed());
             input.Buttons.Set(FusionPlayerButton.Interact, submitInteraction);
+            input.Buttons.Set(FusionPlayerButton.UseEquipped, _attackAction.IsPressed());
             if (submitInteraction)
             {
                 _interactPressQueued = false;
@@ -379,6 +386,9 @@ namespace TheSancturary.FusionPrototype
 
                 if (pressed.IsSet(FusionPlayerButton.Interact))
                     ProcessInteractionRequest(input.InteractionTarget);
+
+                if (pressed.IsSet(FusionPlayerButton.UseEquipped))
+                    inventory?.ToggleEquippedUseAuthoritative();
 
                 if (pressed.IsSet(FusionPlayerButton.Crouch))
                 {
