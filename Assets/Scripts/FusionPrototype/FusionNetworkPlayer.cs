@@ -160,6 +160,10 @@ namespace TheSancturary.FusionPrototype
 
         public bool IsDeadOrPending => IsDead || Health - _pendingDamage <= 0f;
         public NetworkPlayerInventory Inventory => inventory;
+        public Vector3 ReplicatedViewPosition =>
+            transform.position +
+            Vector3.up *
+            (IsCrouched ? crouchingCameraHeight : standingCameraHeight);
 
         public float AnimationReferenceSpeed => IsCrouched ? crouchSpeed : walkSpeed;
 

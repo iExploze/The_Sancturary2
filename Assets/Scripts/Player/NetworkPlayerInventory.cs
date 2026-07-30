@@ -359,6 +359,7 @@ namespace TheSancturary.FusionPrototype
                 !definition.CanDrop ||
                 definition.WorldPrefab == null ||
                 definition.WorldPrefab.GetComponent<NetworkObject>() == null ||
+                definition.WorldPrefab.GetComponent<NetworkTransform>() == null ||
                 (definition.WorldPrefab.GetComponent<WorldInventoryItem>() == null &&
                  definition.WorldPrefab.GetComponent<NetworkKeyPickup>() == null))
             {
@@ -377,6 +378,18 @@ namespace TheSancturary.FusionPrototype
                 rotation);
             if (spawned == null)
             {
+                SendOwnerRejection(InventoryRequestRejection.InvalidRequest);
+                return;
+            }
+
+            const float positionTolerance = 0.01f;
+            const float rotationTolerance = 1f;
+            if ((spawned.transform.position - position).sqrMagnitude >
+                positionTolerance * positionTolerance ||
+                Quaternion.Angle(spawned.transform.rotation, rotation) >
+                rotationTolerance)
+            {
+                Runner.Despawn(spawned);
                 SendOwnerRejection(InventoryRequestRejection.InvalidRequest);
                 return;
             }
