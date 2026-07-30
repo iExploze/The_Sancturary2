@@ -250,6 +250,12 @@ namespace TheSancturary.Inventory
             _ui?.ShowMessage(message);
         }
 
+        public void ShowMessage(string message)
+        {
+            if (!string.IsNullOrWhiteSpace(message))
+                _ui?.ShowMessage(message);
+        }
+
         private void RestoreMovingItem()
         {
             if (_movingItem == null)

@@ -121,6 +121,7 @@ namespace TheSancturary.FusionPrototype
         [Networked] private float AccumulatedStepDistance { get; set; }
         [Networked] private byte AudioEventSequence { get; set; }
         [Networked] private byte AudioEventCode { get; set; }
+        [Networked] public NetworkBehaviourId CurrentLocker { get; private set; }
 
         private readonly Collider[] _standingHits = new Collider[16];
         private InputAction _moveAction;
@@ -171,6 +172,7 @@ namespace TheSancturary.FusionPrototype
                 Stamina = maximumStamina;
                 Health = maximumHealth;
                 IsDead = false;
+                CurrentLocker = default;
                 LookYaw = transform.eulerAngles.y;
                 WasGrounded = networkController.Grounded;
             }
@@ -344,6 +346,63 @@ namespace TheSancturary.FusionPrototype
 
             _pendingInteractionTarget = targetBehaviour.Id;
             _interactPressQueued = true;
+        }
+
+        public bool TryOccupyLockerAuthoritative(LockerController locker)
+        {
+            if (!HasStateAuthority || locker == null || IsDeadOrPending)
+                return false;
+
+            if (CurrentLocker.IsValid)
+                return CurrentLocker == locker.Id;
+
+            CurrentLocker = locker.Id;
+            return true;
+        }
+
+        public bool IsOccupyingLocker(LockerController locker)
+        {
+            return locker != null && CurrentLocker.IsValid && CurrentLocker == locker.Id;
+        }
+
+        public void ReleaseLockerAuthoritative(LockerController locker)
+        {
+            if (!HasStateAuthority || locker == null || CurrentLocker != locker.Id)
+                return;
+
+            CurrentLocker = default;
+        }
+
+        public void TeleportAuthoritative(Vector3 position)
+        {
+            if (!HasStateAuthority || networkController == null)
+                return;
+
+            networkController.Velocity = Vector3.zero;
+            networkController.Teleport(position);
+        }
+
+        public bool KillInstantlyAuthoritative()
+        {
+            if (!HasStateAuthority || IsDead)
+                return false;
+
+            _pendingDamage = 0;
+            Health = 0f;
+            TimeSinceDamage = 0f;
+            IsDead = true;
+            ReleaseCurrentLockerAfterInvalidation();
+            return true;
+        }
+
+        public void PresentLocalInteractionFeedback(string message, AudioClip sound)
+        {
+            if (!HasInputAuthority)
+                return;
+
+            gridInventory?.ShowMessage(message);
+            if (sound != null && localAudioSource != null)
+                localAudioSource.PlayOneShot(sound);
         }
 
         private void ProcessInteractionRequest(NetworkBehaviourId targetId)
@@ -559,7 +618,24 @@ namespace TheSancturary.FusionPrototype
             Health = Mathf.Max(0f, Health - healthToSubtract);
             TimeSinceDamage = 0f;
             if (Health <= 0f)
+            {
                 IsDead = true;
+                ReleaseCurrentLockerAfterInvalidation();
+            }
+        }
+
+        private void ReleaseCurrentLockerAfterInvalidation()
+        {
+            if (!HasStateAuthority || !CurrentLocker.IsValid || Runner == null)
+                return;
+
+            NetworkBehaviourId lockerId = CurrentLocker;
+            CurrentLocker = default;
+            if (Runner.TryFindBehaviour(lockerId, out NetworkBehaviour behaviour) &&
+                behaviour is LockerController locker)
+            {
+                locker.ReleasePlayerAuthoritative(this);
+            }
         }
 
         public void BeginLocalDeathSequence(VideoClip jumpscareClip)
@@ -974,6 +1050,18 @@ namespace TheSancturary.FusionPrototype
             UnsubscribeFromOwnerCameraRendering();
             if (_runtimeVolumeProfile != null)
                 Destroy(_runtimeVolumeProfile);
+        }
+
+        public override void Despawned(NetworkRunner runner, bool hasState)
+        {
+            if (hasState && CurrentLocker.IsValid &&
+                runner.TryFindBehaviour(CurrentLocker, out NetworkBehaviour behaviour) &&
+                behaviour is LockerController locker)
+            {
+                locker.ReleasePlayerAuthoritative(this);
+            }
+
+            CurrentLocker = default;
         }
     }
 }
