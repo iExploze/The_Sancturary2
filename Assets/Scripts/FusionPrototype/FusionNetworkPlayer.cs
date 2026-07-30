@@ -4,12 +4,13 @@ using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Video;
+using TheSancturary.Inventory;
 
 namespace TheSancturary.FusionPrototype
 {
     [RequireComponent(typeof(NetworkObject), typeof(NetworkCharacterController), typeof(CharacterController))]
     [RequireComponent(typeof(PlayerAnimationDriver))]
-    [RequireComponent(typeof(LocalInteractionTargeting), typeof(NetworkPlayerInventory))]
+    [RequireComponent(typeof(LocalInteractionTargeting), typeof(NetworkPlayerInventory), typeof(PlayerInventory))]
     public sealed class FusionNetworkPlayer : NetworkBehaviour
     {
         private const string OwnerPostProcessingLayerName = "OwnerPostProcessing";
@@ -41,6 +42,7 @@ namespace TheSancturary.FusionPrototype
         [SerializeField] private PlayerAnimationDriver animationDriver;
         [SerializeField] private LocalInteractionTargeting localInteractionTargeting;
         [SerializeField] private NetworkPlayerInventory inventory;
+        [SerializeField] private PlayerInventory gridInventory;
         [SerializeField] private Renderer[] characterRenderers;
         [SerializeField] private AudioSource localAudioSource;
         [SerializeField] private AudioSource spatialAudioSource;
@@ -114,10 +116,12 @@ namespace TheSancturary.FusionPrototype
         [Networked] private float StaminaRecoveryElapsed { get; set; }
         [Networked] private float TimeSinceDamage { get; set; }
         [Networked] private NetworkButtons PreviousButtons { get; set; }
+        [Networked] private byte PreviousInventoryCommandSequence { get; set; }
         [Networked] private NetworkBool WasGrounded { get; set; }
         [Networked] private float AccumulatedStepDistance { get; set; }
         [Networked] private byte AudioEventSequence { get; set; }
         [Networked] private byte AudioEventCode { get; set; }
+        [Networked] public NetworkBehaviourId CurrentLocker { get; private set; }
 
         private readonly Collider[] _standingHits = new Collider[16];
         private InputAction _moveAction;
@@ -125,8 +129,10 @@ namespace TheSancturary.FusionPrototype
         private InputAction _jumpAction;
         private InputAction _sprintAction;
         private InputAction _crouchAction;
+        private InputAction _attackAction;
         private NetworkBehaviourId _pendingInteractionTarget;
         private bool _interactPressQueued;
+        private byte _nextInventoryCommandSequence;
         private float _localLookYaw;
         private float _localLookPitch;
         private VolumeProfile _runtimeVolumeProfile;
@@ -166,6 +172,7 @@ namespace TheSancturary.FusionPrototype
                 Stamina = maximumStamina;
                 Health = maximumHealth;
                 IsDead = false;
+                CurrentLocker = default;
                 LookYaw = transform.eulerAngles.y;
                 WasGrounded = networkController.Grounded;
             }
@@ -188,7 +195,12 @@ namespace TheSancturary.FusionPrototype
                 _localLookPitch = Mathf.Clamp(LookPitch, pitchLimits.x, pitchLimits.y);
                 ApplyOwnerCameraLook();
                 localInteractionTargeting.Initialize(playerCamera, playerInput, this, inventory);
-                inventory.InitializeOwner(playerInput, localInteractionTargeting);
+                gridInventory.GetComponent<PlayerEquipment>().InitializeOwner(playerCamera);
+                gridInventory.InitializeOwner(
+                    playerInput,
+                    playerCamera,
+                    localInteractionTargeting,
+                    inventory);
                 FusionSessionManager.Instance?.RegisterLocalPlayer(this);
                 CreateOwnerVignette();
                 LockCursor();
@@ -215,6 +227,7 @@ namespace TheSancturary.FusionPrototype
             animationDriver ??= GetComponent<PlayerAnimationDriver>();
             localInteractionTargeting ??= GetComponent<LocalInteractionTargeting>();
             inventory ??= GetComponent<NetworkPlayerInventory>();
+            gridInventory ??= GetComponent<PlayerInventory>();
             localAudioSource ??= GetComponent<AudioSource>();
             if (spatialAudioSource == null)
             {
@@ -234,6 +247,7 @@ namespace TheSancturary.FusionPrototype
             _jumpAction = map.FindAction("Jump", true);
             _sprintAction = map.FindAction("Sprint", true);
             _crouchAction = map.FindAction("Crouch", true);
+            _attackAction = map.FindAction("Attack", true);
         }
 
         private void Update()
@@ -241,7 +255,7 @@ namespace TheSancturary.FusionPrototype
             if (!HasInputAuthority || playerInput == null || !playerInput.enabled)
                 return;
 
-            if (inventory != null && inventory.IsMenuOpen)
+            if (gridInventory != null && gridInventory.IsMenuOpen)
                 return;
             HandleCursorDebugging();
             SampleOwnerLook();
@@ -283,7 +297,24 @@ namespace TheSancturary.FusionPrototype
                 return input;
 
             input.LookAngles = new Vector2(_localLookYaw, _localLookPitch);
-            if (inventory != null && inventory.IsMenuOpen)
+            if (inventory != null &&
+                inventory.TryDequeueInputCommand(
+                    out InventoryInputCommand inventoryCommand))
+            {
+                _nextInventoryCommandSequence++;
+                if (_nextInventoryCommandSequence == 0)
+                    _nextInventoryCommandSequence = 1;
+
+                input.InventoryCommand = (byte)inventoryCommand.Type;
+                input.InventoryCommandSequence =
+                    _nextInventoryCommandSequence;
+                input.InventoryInstanceId = inventoryCommand.InstanceId;
+                input.InventoryColumn = inventoryCommand.Column;
+                input.InventoryRow = inventoryCommand.Row;
+                input.InventoryRotated = inventoryCommand.Rotated;
+            }
+
+            if (gridInventory != null && gridInventory.IsMenuOpen)
                 return input;
 
             input.Move = Vector2.ClampMagnitude(_moveAction.ReadValue<Vector2>(), 1f);
@@ -292,6 +323,7 @@ namespace TheSancturary.FusionPrototype
             input.Buttons.Set(FusionPlayerButton.Jump, _jumpAction.IsPressed());
             input.Buttons.Set(FusionPlayerButton.Sprint, _sprintAction.IsPressed());
             input.Buttons.Set(FusionPlayerButton.Interact, submitInteraction);
+            input.Buttons.Set(FusionPlayerButton.UseEquipped, _attackAction.IsPressed());
             if (submitInteraction)
             {
                 _interactPressQueued = false;
@@ -314,6 +346,63 @@ namespace TheSancturary.FusionPrototype
 
             _pendingInteractionTarget = targetBehaviour.Id;
             _interactPressQueued = true;
+        }
+
+        public bool TryOccupyLockerAuthoritative(LockerController locker)
+        {
+            if (!HasStateAuthority || locker == null || IsDeadOrPending)
+                return false;
+
+            if (CurrentLocker.IsValid)
+                return CurrentLocker == locker.Id;
+
+            CurrentLocker = locker.Id;
+            return true;
+        }
+
+        public bool IsOccupyingLocker(LockerController locker)
+        {
+            return locker != null && CurrentLocker.IsValid && CurrentLocker == locker.Id;
+        }
+
+        public void ReleaseLockerAuthoritative(LockerController locker)
+        {
+            if (!HasStateAuthority || locker == null || CurrentLocker != locker.Id)
+                return;
+
+            CurrentLocker = default;
+        }
+
+        public void TeleportAuthoritative(Vector3 position)
+        {
+            if (!HasStateAuthority || networkController == null)
+                return;
+
+            networkController.Velocity = Vector3.zero;
+            networkController.Teleport(position);
+        }
+
+        public bool KillInstantlyAuthoritative()
+        {
+            if (!HasStateAuthority || IsDead)
+                return false;
+
+            _pendingDamage = 0;
+            Health = 0f;
+            TimeSinceDamage = 0f;
+            IsDead = true;
+            ReleaseCurrentLockerAfterInvalidation();
+            return true;
+        }
+
+        public void PresentLocalInteractionFeedback(string message, AudioClip sound)
+        {
+            if (!HasInputAuthority)
+                return;
+
+            gridInventory?.ShowMessage(message);
+            if (sound != null && localAudioSource != null)
+                localAudioSource.PlayOneShot(sound);
         }
 
         private void ProcessInteractionRequest(NetworkBehaviourId targetId)
@@ -373,8 +462,28 @@ namespace TheSancturary.FusionPrototype
                 pressed = input.Buttons.GetPressed(PreviousButtons);
                 PreviousButtons = input.Buttons;
 
+                if (inventory != null &&
+                    inventory.HasStateAuthority &&
+                    input.InventoryCommand !=
+                    (byte)InventoryInputCommandType.None &&
+                    input.InventoryCommandSequence !=
+                    PreviousInventoryCommandSequence)
+                {
+                    PreviousInventoryCommandSequence =
+                        input.InventoryCommandSequence;
+                    inventory.ProcessInputCommandAuthoritative(
+                        (InventoryInputCommandType)input.InventoryCommand,
+                        input.InventoryInstanceId,
+                        input.InventoryColumn,
+                        input.InventoryRow,
+                        input.InventoryRotated);
+                }
+
                 if (pressed.IsSet(FusionPlayerButton.Interact))
                     ProcessInteractionRequest(input.InteractionTarget);
+
+                if (pressed.IsSet(FusionPlayerButton.UseEquipped))
+                    inventory?.ToggleEquippedUseAuthoritative();
 
                 if (pressed.IsSet(FusionPlayerButton.Crouch))
                 {
@@ -509,7 +618,24 @@ namespace TheSancturary.FusionPrototype
             Health = Mathf.Max(0f, Health - healthToSubtract);
             TimeSinceDamage = 0f;
             if (Health <= 0f)
+            {
                 IsDead = true;
+                ReleaseCurrentLockerAfterInvalidation();
+            }
+        }
+
+        private void ReleaseCurrentLockerAfterInvalidation()
+        {
+            if (!HasStateAuthority || !CurrentLocker.IsValid || Runner == null)
+                return;
+
+            NetworkBehaviourId lockerId = CurrentLocker;
+            CurrentLocker = default;
+            if (Runner.TryFindBehaviour(lockerId, out NetworkBehaviour behaviour) &&
+                behaviour is LockerController locker)
+            {
+                locker.ReleasePlayerAuthoritative(this);
+            }
         }
 
         public void BeginLocalDeathSequence(VideoClip jumpscareClip)
@@ -924,6 +1050,18 @@ namespace TheSancturary.FusionPrototype
             UnsubscribeFromOwnerCameraRendering();
             if (_runtimeVolumeProfile != null)
                 Destroy(_runtimeVolumeProfile);
+        }
+
+        public override void Despawned(NetworkRunner runner, bool hasState)
+        {
+            if (hasState && CurrentLocker.IsValid &&
+                runner.TryFindBehaviour(CurrentLocker, out NetworkBehaviour behaviour) &&
+                behaviour is LockerController locker)
+            {
+                locker.ReleasePlayerAuthoritative(this);
+            }
+
+            CurrentLocker = default;
         }
     }
 }

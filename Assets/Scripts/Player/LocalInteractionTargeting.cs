@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using TheSancturary.Inventory;
 
 namespace TheSancturary.FusionPrototype
 {
@@ -13,7 +14,7 @@ namespace TheSancturary.FusionPrototype
     public sealed class LocalInteractionTargeting : MonoBehaviour
     {
         [Header("Targeting")]
-        [SerializeField, Min(0.1f)] private float interactionDistance = 3f;
+        [SerializeField, Min(0.1f)] private float interactionDistance = 6f;
         [SerializeField] private LayerMask interactionRaycastMask = ~0;
 
         [Header("Prompt")]
@@ -30,12 +31,14 @@ namespace TheSancturary.FusionPrototype
         private Text _displayNameText;
         private Text _actionText;
         private InteractionTarget _shownTarget;
+        private WorldInventoryItem _shownWorldItem;
         private string _shownDisplayName;
         private string _shownActionText;
         private bool _inputCaptured;
 
         public float InteractionDistance => interactionDistance;
         public LayerMask InteractionRaycastMask => interactionRaycastMask;
+        public InteractionTarget CurrentTarget => _shownTarget;
 
         public void Initialize(
             Camera playerCamera,
@@ -146,6 +149,7 @@ namespace TheSancturary.FusionPrototype
         private void ShowPrompt(InteractionTarget target, InteractionPrompt prompt)
         {
             EnsurePrompt();
+            SetTargetedWorldItem(target.GetComponentInParent<WorldInventoryItem>());
             if (_shownTarget != target || _shownDisplayName != prompt.DisplayName)
             {
                 _displayNameText.text = prompt.DisplayName;
@@ -165,12 +169,23 @@ namespace TheSancturary.FusionPrototype
 
         private void HidePrompt()
         {
+            SetTargetedWorldItem(null);
             if (_promptRoot != null && _promptRoot.activeSelf)
                 _promptRoot.SetActive(false);
 
             _shownTarget = null;
             _shownDisplayName = null;
             _shownActionText = null;
+        }
+
+        private void SetTargetedWorldItem(WorldInventoryItem worldItem)
+        {
+            if (_shownWorldItem == worldItem)
+                return;
+
+            _shownWorldItem?.SetTargeted(false);
+            _shownWorldItem = worldItem;
+            _shownWorldItem?.SetTargeted(true);
         }
 
         private static Image CreateImage(string name, Transform parent, Color color)

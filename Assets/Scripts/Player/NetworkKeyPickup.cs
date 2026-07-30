@@ -1,4 +1,5 @@
 using Fusion;
+using TheSancturary.Inventory;
 using UnityEngine;
 
 namespace TheSancturary.FusionPrototype
@@ -57,8 +58,7 @@ namespace TheSancturary.FusionPrototype
             string interactionVerb,
             out string actionText)
         {
-            if (!_spawned || IsCollected ||
-                (viewerInventory != null && !viewerInventory.CanAcceptItem(itemId)))
+            if (!_spawned || IsCollected)
             {
                 actionText = null;
                 return false;
@@ -80,14 +80,30 @@ namespace TheSancturary.FusionPrototype
 
         public bool TryInteractAuthoritative(FusionNetworkPlayer requestingPlayer)
         {
-            if (!HasStateAuthority || IsCollected || requestingPlayer == null ||
+            if (!HasStateAuthority || requestingPlayer == null ||
                 requestingPlayer.Inventory == null)
                 return false;
 
-            if (!requestingPlayer.Inventory.TryAddItemAuthoritative(itemId, itemDisplayName))
+            if (IsCollected)
+            {
+                requestingPlayer.Inventory.SendOwnerRejection(
+                    InventoryRequestRejection.ItemTaken);
                 return false;
+            }
 
-            IsCollected = true;
+            if (!requestingPlayer.Inventory.TryAddItemAuthoritative(
+                    itemId,
+                    out InventoryRequestRejection rejection))
+            {
+                requestingPlayer.Inventory.SendOwnerRejection(rejection);
+                return false;
+            }
+
+            if (Object.NetworkTypeId.IsSceneObject)
+                IsCollected = true;
+            else
+                Runner.Despawn(Object);
+
             return true;
         }
 
