@@ -194,7 +194,9 @@ GameObject:
   - component: {fileID: 8433369438032822637}
   - component: {fileID: 5861057779771195935}
   - component: {fileID: 7861659232632845725}
-  m_Layer: 0
+  - component: {fileID: 886602922236395952}
+  - component: {fileID: 4901618929525837026}
+  m_Layer: 9
   m_Name: NetworkCabinetKeyPickup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -277,6 +279,7 @@ MonoBehaviour:
   visualRoot: {fileID: 7223015603695953391}
   pickupColliders:
   - {fileID: 4350481618412779947}
+  worldItemPhysics: {fileID: 4901618929525837026}
   visualRotationSpeed: 35
   _IsCollected:
     RawValue: 0
@@ -315,7 +318,7 @@ MonoBehaviour:
   _autoAOIOverride: 1
   ConfigFlags: 0
   PhysicsSettings:
-    ForecastEnabled: 1
+    ForecastEnabled: 0
     DebugPhysics: 0
     GravityForecast: 2
     MaxExtrapolationTime: 0.15
@@ -337,6 +340,51 @@ MonoBehaviour:
     MinImpactfulCollisionAlignment: 0.3
     ImpactStartCorrectionTime: 0.1
     ImpactCorrectionTimeComplete: 0.3
+--- !u!54 &886602922236395952
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7163068187317807668}
+  serializedVersion: 5
+  m_Mass: 0.12
+  m_LinearDamping: 0.05
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 2
+--- !u!114 &4901618929525837026
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7163068187317807668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f25864692c1fee4b955371b9577f93f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.WorldItemPhysics
+  networkObject: {fileID: 3365895043404442461}
+  body: {fileID: 886602922236395952}
+  physicalColliders:
+  - {fileID: 4350481618412779947}
+  localBoundsCenter: {x: 0, y: 0, z: 0}
+  localBoundsSize: {x: 0.42, y: 0.14, z: 0.72}
 --- !u!1 &7223015603695953391
 GameObject:
   m_ObjectHideFlags: 0
