@@ -16,11 +16,11 @@ namespace TheSancturary.FusionPrototype
         [SerializeField] private Text statusText;
 
         private FusionSessionManager _sessionManager;
+        private bool _boundToSession;
 
         private void Awake()
         {
-            _sessionManager = FusionSessionManager.Instance;
-            if (_sessionManager == null || roomNameText == null || playerSlotTexts == null || playerSlotTexts.Length != FusionSessionManager.MaximumPlayers ||
+            if (roomNameText == null || playerSlotTexts == null || playerSlotTexts.Length != FusionSessionManager.MaximumPlayers ||
                 readyButton == null || readyButtonText == null || startGameButton == null || leaveLobbyButton == null || statusText == null)
             {
                 Debug.LogError("Fusion lobby has missing serialized UI references.", this);
@@ -29,15 +29,15 @@ namespace TheSancturary.FusionPrototype
                 return;
             }
 
-            _sessionManager.StatusChanged += OnStatusChanged;
             readyButton.onClick.AddListener(ToggleReady);
-            startGameButton.onClick.AddListener(_sessionManager.RequestStartGame);
-            leaveLobbyButton.onClick.AddListener(_sessionManager.LeaveSessionAndReturnToMenu);
-            roomNameText.text = _sessionManager.Runner?.SessionInfo.Name ?? "Room";
+            startGameButton.onClick.AddListener(RequestStartGame);
+            leaveLobbyButton.onClick.AddListener(LeaveLobby);
+            TryBindSession();
         }
 
         private void Update()
         {
+            TryBindSession();
             if (_sessionManager == null)
                 return;
 
@@ -58,11 +58,26 @@ namespace TheSancturary.FusionPrototype
             leaveLobbyButton.interactable = !_sessionManager.IsGameplayLoading;
         }
 
+        private void TryBindSession()
+        {
+            if (_boundToSession || FusionSessionManager.Instance == null)
+                return;
+
+            _sessionManager = FusionSessionManager.Instance;
+            _sessionManager.StatusChanged += OnStatusChanged;
+            roomNameText.text = _sessionManager.Runner?.SessionInfo.Name ?? "Room";
+            _boundToSession = true;
+        }
+
         private void ToggleReady()
         {
             FusionLobbyPlayerState local = _sessionManager?.GetLobbyPlayers().FirstOrDefault(player => player.Object.HasInputAuthority);
             local?.ToggleReady();
         }
+
+        private void RequestStartGame() => _sessionManager?.RequestStartGame();
+
+        private void LeaveLobby() => _sessionManager?.LeaveSessionAndReturnToMenu();
 
         private void OnStatusChanged(string message, bool isError)
         {
@@ -74,10 +89,11 @@ namespace TheSancturary.FusionPrototype
         {
             if (_sessionManager == null)
                 return;
-            _sessionManager.StatusChanged -= OnStatusChanged;
+            if (_boundToSession)
+                _sessionManager.StatusChanged -= OnStatusChanged;
             readyButton.onClick.RemoveListener(ToggleReady);
-            startGameButton.onClick.RemoveListener(_sessionManager.RequestStartGame);
-            leaveLobbyButton.onClick.RemoveListener(_sessionManager.LeaveSessionAndReturnToMenu);
+            startGameButton.onClick.RemoveListener(RequestStartGame);
+            leaveLobbyButton.onClick.RemoveListener(LeaveLobby);
         }
     }
 }
