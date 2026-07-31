@@ -411,6 +411,7 @@ namespace TheSancturary.FusionPrototype
         public void ForceEjectFromLockerAuthoritative(LockerController locker, Vector3 exitPosition, Quaternion exitRotation)
         {
             FinishLeavingLockerAuthoritative(locker, exitPosition, exitRotation);
+            KillInstantlyAuthoritative();
         }
 
         public void ClearLockerStateAuthoritative(LockerController locker)
