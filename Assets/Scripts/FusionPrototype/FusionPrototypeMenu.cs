@@ -1,6 +1,9 @@
 using Fusion;
 using UnityEngine;
 using UnityEngine.UI;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace TheSancturary.FusionPrototype
 {
@@ -9,6 +12,11 @@ namespace TheSancturary.FusionPrototype
     {
         [SerializeField] private NetworkObject canonicalPlayerPrefab;
         [SerializeField] private NetworkObject lobbyPlayerStatePrefab;
+#if UNITY_EDITOR
+        [SerializeField, Tooltip("Scene the host loads after every connected player is ready. It must be enabled in Build Settings.")]
+        private SceneAsset gameplayScene;
+#endif
+        [SerializeField, HideInInspector] private string gameplayScenePath = FusionSessionManager.GameplayScenePath;
         [SerializeField] private InputField roomNameInput;
         [SerializeField] private Button createRoomButton;
         [SerializeField] private Button joinRoomButton;
@@ -23,6 +31,7 @@ namespace TheSancturary.FusionPrototype
 
             roomNameInput.characterLimit = FusionSessionManager.MaximumSessionNameLength;
             _sessionManager = FusionSessionManager.GetOrCreate(canonicalPlayerPrefab, lobbyPlayerStatePrefab);
+            _sessionManager.ConfigureGameplayScene(gameplayScenePath);
             _sessionManager.StatusChanged += OnStatusChanged;
             createRoomButton.onClick.AddListener(CreateRoom);
             joinRoomButton.onClick.AddListener(JoinRoom);
@@ -77,6 +86,14 @@ namespace TheSancturary.FusionPrototype
             createRoomButton.interactable = value;
             joinRoomButton.interactable = value;
         }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (gameplayScene != null)
+                gameplayScenePath = AssetDatabase.GetAssetPath(gameplayScene);
+        }
+#endif
 
         private void OnDestroy()
         {

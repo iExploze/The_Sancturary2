@@ -33,12 +33,13 @@ namespace TheSancturary.FusionPrototype
         private bool _returningToMenu;
         private bool _menuLoadStarted;
         private bool _lobbyReadyToggleQueued;
+        private string _gameplayScenePath = GameplayScenePath;
         private int _nextSpawnIndex;
 
         public static FusionSessionManager Instance { get; private set; }
         public NetworkRunner Runner => _runner;
         public bool IsInLobby => _sceneReady && ActiveScenePath == LobbyScenePath;
-        public bool IsInGameplay => _sceneReady && ActiveScenePath == GameplayScenePath;
+        public bool IsInGameplay => _sceneReady && ActiveScenePath != MenuScenePath && ActiveScenePath != LobbyScenePath;
         public bool IsGameplayLoading => _gameplayLoading;
         public string LastStatus { get; private set; }
         public bool LastStatusIsError { get; private set; }
@@ -134,6 +135,13 @@ namespace TheSancturary.FusionPrototype
                 _lobbyReadyToggleQueued = true;
         }
 
+        /// <summary>Sets the host's next lobby destination. The scene must be enabled in Build Settings.</summary>
+        public void ConfigureGameplayScene(string scenePath)
+        {
+            if (!string.IsNullOrWhiteSpace(scenePath))
+                _gameplayScenePath = scenePath;
+        }
+
         public void RequestStartGame()
         {
             if (!CanStartGame)
@@ -143,8 +151,15 @@ namespace TheSancturary.FusionPrototype
             }
 
             _gameplayLoading = true;
-            PublishStatus("Loading MapLevel for all players...", false);
-            _runner.LoadScene(SceneRef.FromPath(GameplayScenePath), LoadSceneMode.Single);
+            if (SceneUtility.GetBuildIndexByScenePath(_gameplayScenePath) < 0)
+            {
+                _gameplayLoading = false;
+                PublishStatus("The selected gameplay scene must be enabled in Build Settings.", true);
+                return;
+            }
+
+            PublishStatus($"Loading {System.IO.Path.GetFileNameWithoutExtension(_gameplayScenePath)} for all players...", false);
+            _runner.LoadScene(SceneRef.FromPath(_gameplayScenePath), LoadSceneMode.Single);
         }
 
         public async void LeaveSessionAndReturnToMenu()
