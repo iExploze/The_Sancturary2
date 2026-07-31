@@ -341,7 +341,7 @@ namespace TheSancturary.FusionPrototype
             }
 
             EquippedInstanceId = instanceId;
-            FlashlightEnabled = false;
+            FlashlightEnabled = entry.ItemId == flashlightItemId;
             Revision++;
         }
 

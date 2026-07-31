@@ -1,5 +1,6 @@
 using Fusion;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace TheSancturary.FusionPrototype
 {
@@ -14,7 +15,7 @@ namespace TheSancturary.FusionPrototype
                 return;
 
             FusionSessionManager manager = FusionSessionManager.GetOrCreate(canonicalPlayerPrefab);
-            await manager.StartDirectDebugAsync();
+            await manager.StartDirectDebugAsync(SceneManager.GetActiveScene().path);
         }
     }
 }

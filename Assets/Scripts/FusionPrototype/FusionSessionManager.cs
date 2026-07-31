@@ -12,7 +12,7 @@ namespace TheSancturary.FusionPrototype
 {
     public sealed class FusionSessionManager : MonoBehaviour, INetworkRunnerCallbacks
     {
-        public const string GameplayScenePath = "Assets/Scenes/GrayboxPrototype.unity";
+        public const string GameplayScenePath = "Assets/Scenes/MapLevel.unity";
         public const int MaximumPlayers = 4;
 
         private readonly Dictionary<PlayerRef, NetworkObject> _players = new();
@@ -90,17 +90,23 @@ namespace TheSancturary.FusionPrototype
             return StartRunnerAsync(GameMode.Client, NormalizeSessionName(sessionName), MaximumPlayers, false);
         }
 
-        public Task<bool> StartDirectDebugAsync()
+        public Task<bool> StartDirectDebugAsync(string gameplayScenePath)
         {
             if (HasActiveRunner)
                 return Task.FromResult(true);
+
+            if (string.IsNullOrWhiteSpace(gameplayScenePath))
+            {
+                PublishStatus("The active scene must be saved before starting a direct debug session.", true);
+                return Task.FromResult(false);
+            }
 
             GameMode mode = HasFusionAppId ? GameMode.Host : GameMode.Single;
             string session = $"debug-{Application.productName}";
             if (!HasFusionAppId)
                 PublishStatus("Photon App ID is blank; direct Play is using Fusion local single-player mode.", false);
 
-            return StartRunnerAsync(mode, session, 1, true);
+            return StartRunnerAsync(mode, session, 1, true, gameplayScenePath);
         }
 
         public void RegisterLocalPlayer(FusionNetworkPlayer player)
@@ -115,7 +121,12 @@ namespace TheSancturary.FusionPrototype
             return false;
         }
 
-        private async Task<bool> StartRunnerAsync(GameMode mode, string sessionName, int playerCount, bool directDebug)
+        private async Task<bool> StartRunnerAsync(
+            GameMode mode,
+            string sessionName,
+            int playerCount,
+            bool directDebug,
+            string gameplayScenePath = GameplayScenePath)
         {
             if (_starting || HasActiveRunner)
                 return HasActiveRunner;
@@ -137,7 +148,7 @@ namespace TheSancturary.FusionPrototype
             _runner.AddCallbacks(this);
 
             NetworkSceneInfo sceneInfo = new();
-            sceneInfo.AddSceneRef(SceneRef.FromPath(GameplayScenePath), LoadSceneMode.Single);
+            sceneInfo.AddSceneRef(SceneRef.FromPath(gameplayScenePath), LoadSceneMode.Single);
 
             StartGameResult result = await _runner.StartGame(new StartGameArgs
             {
