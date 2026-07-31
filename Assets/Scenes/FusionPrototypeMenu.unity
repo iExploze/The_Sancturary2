@@ -2189,8 +2189,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.FusionPrototypeMenu
   canonicalPlayerPrefab: {fileID: 361827384529308309, guid: 9515172276e5fc6409b9892e5f5bbe76, type: 3}
   lobbyPlayerStatePrefab: {fileID: 5332791655594646094, guid: fb70155a5bee60a4a880e0ff2cbc1f58, type: 3}
-  gameplayScene: {fileID: 102900000, guid: b188eef10e9857d42be1a3024b1a63e4, type: 3}
-  gameplayScenePath: Assets/Scenes/MapLevel.unity
+  gameplayScene: {fileID: 102900000, guid: f4eb6125a6143f4499e545861c6c15d0, type: 3}
+  gameplayScenePath: Assets/Scenes/GrayboxPrototype.unity
   roomNameInput: {fileID: 75326122}
   createRoomButton: {fileID: 797245668}
   joinRoomButton: {fileID: 1739619194}
