@@ -159,9 +159,11 @@ namespace TheSancturary.FusionPrototype
         private float _airborneCharacterControllerHeight;
         private Vector3 _airborneCharacterControllerCenter;
         private bool _lastPresentedLockerHidden;
+        private bool _localPauseInputBlocked;
 
         public bool IsDeadOrPending => IsDead || Health - _pendingDamage <= 0f;
         public bool IsLockerInputLocked => CurrentLocker.IsValid;
+        public bool IsLocalPauseInputBlocked => HasInputAuthority && _localPauseInputBlocked;
         public NetworkPlayerInventory Inventory => inventory;
         public Vector3 ReplicatedViewPosition =>
             transform.position +
@@ -264,9 +266,11 @@ namespace TheSancturary.FusionPrototype
             if (!HasInputAuthority || playerInput == null || !playerInput.enabled)
                 return;
 
+            if (HandlePauseInput())
+                return;
+
             if (gridInventory != null && gridInventory.IsMenuOpen)
                 return;
-            HandleCursorDebugging();
             SampleOwnerLook();
             ApplyOwnerCameraLook();
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -308,6 +312,9 @@ namespace TheSancturary.FusionPrototype
         {
             FusionPlayerInput input = default;
             if (!HasInputAuthority || playerInput == null || !playerInput.enabled)
+                return input;
+
+            if (_localPauseInputBlocked)
                 return input;
 
             input.LookAngles = new Vector2(_localLookYaw, _localLookPitch);
@@ -352,6 +359,34 @@ namespace TheSancturary.FusionPrototype
             input.Buttons.Set(FusionPlayerButton.DebugExhaustion, debugExhaustion);
 #endif
             return input;
+        }
+
+        public void SetLocalPauseInputBlocked(bool blocked)
+        {
+            if (!HasInputAuthority)
+                return;
+
+            _localPauseInputBlocked = blocked;
+            if (blocked)
+            {
+                _interactPressQueued = false;
+                _pendingInteractionTarget = default;
+            }
+        }
+
+        private bool HandlePauseInput()
+        {
+            if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame)
+                return _localPauseInputBlocked;
+
+            if (gridInventory != null && gridInventory.IsMenuOpen)
+            {
+                gridInventory.CloseMenu();
+                return true;
+            }
+
+            GameplayPauseMenu.Instance?.Toggle(this);
+            return true;
         }
 
         public void RequestInteraction(NetworkBehaviour targetBehaviour)
@@ -1084,19 +1119,6 @@ namespace TheSancturary.FusionPrototype
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
-        }
-
-        private static void HandleCursorDebugging()
-        {
-            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-            {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
-            }
-            else if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && Cursor.lockState != CursorLockMode.Locked)
-            {
-                LockCursor();
-            }
         }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
