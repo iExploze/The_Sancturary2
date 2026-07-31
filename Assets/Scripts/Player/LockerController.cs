@@ -268,7 +268,10 @@ namespace TheSancturary.FusionPrototype
                     break;
                 case LockerState.MonsterOpening:
                     if (TryResolveOccupant(out FusionNetworkPlayer ejected) && playerExitPoint != null)
+                    {
                         ejected.ForceEjectFromLockerAuthoritative(this, playerExitPoint.position, playerExitPoint.rotation);
+                        NotifyMonstersLockerEjectionKilled(ejected);
+                    }
                     ClearOccupantAndCloseAuthoritative(LockerState.MonsterClosing);
                     break;
             }
@@ -311,6 +314,12 @@ namespace TheSancturary.FusionPrototype
 
             foreach (GeoMonsterController monster in FindObjectsByType<GeoMonsterController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
                 monster.CancelWitnessedLockerAuthoritative(this, player);
+        }
+
+        private void NotifyMonstersLockerEjectionKilled(FusionNetworkPlayer player)
+        {
+            foreach (GeoMonsterController monster in FindObjectsByType<GeoMonsterController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+                monster.TriggerLockerEjectionJumpscareAuthoritative(this, player);
         }
 
         private bool TryResolveOccupant(out FusionNetworkPlayer player)

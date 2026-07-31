@@ -579,6 +579,23 @@ namespace TheSancturary.Monsters
                 CancelLockerEjectAndResume();
         }
 
+        public void TriggerLockerEjectionJumpscareAuthoritative(
+            LockerController locker,
+            FusionNetworkPlayer player)
+        {
+            if (!HasStateAuthority ||
+                locker == null ||
+                player == null ||
+                WitnessedLocker != locker.Id ||
+                WitnessedLockerPlayer != player.Object.InputAuthority)
+            {
+                return;
+            }
+
+            JumpscareVictim = WitnessedLockerPlayer;
+            JumpscareSequence++;
+        }
+
         private void CancelLockerEjectAndResume()
         {
             PlayerRef previousPlayer = WitnessedLockerPlayer;
