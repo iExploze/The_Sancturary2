@@ -31,8 +31,14 @@ namespace TheSancturary.FusionPrototype
         [Header("Door")]
         [SerializeField] private Vector3 openDoorLocalEulerAngles;
         [SerializeField] private Vector3 closedDoorLocalEulerAngles = Vector3.zero;
-        [SerializeField, Min(0.05f)] private float openingDuration = 0.65f;
-        [SerializeField, Min(0.05f)] private float closingDuration = 0.65f;
+        [SerializeField, Min(0.05f)] private float openingDuration = 0.25f;
+        [SerializeField, Min(0.05f)] private float closingDuration = 0.25f;
+
+        [Header("Door Audio")]
+        [SerializeField] private AudioSource doorAudioSource;
+        [SerializeField] private AudioClip doorOpenSound;
+        [SerializeField] private AudioClip doorCloseSound;
+        [SerializeField, Range(0f, 1f)] private float doorAudioVolume = 0.85f;
 
         [Header("Occupied Feedback")]
         [SerializeField] private AudioClip occupiedInteractionSound;
@@ -49,6 +55,7 @@ namespace TheSancturary.FusionPrototype
         private Quaternion _openRotation;
         private Quaternion _closedRotation;
         private ushort _lastPresentedFeedbackSequence;
+        private bool _lastPresentedDoorTargetOpen;
         private bool _spawned;
 
         public InteractionTarget PromptTarget => externalInteractionTarget;
@@ -80,6 +87,7 @@ namespace TheSancturary.FusionPrototype
 
             _spawned = true;
             _lastPresentedFeedbackSequence = FeedbackSequence;
+            _lastPresentedDoorTargetOpen = DoorTargetOpen;
             ApplyDoorRotation(DoorTargetOpen);
         }
 
@@ -124,6 +132,12 @@ namespace TheSancturary.FusionPrototype
 
         public override void Render()
         {
+            if (DoorTargetOpen != _lastPresentedDoorTargetOpen)
+            {
+                _lastPresentedDoorTargetOpen = DoorTargetOpen;
+                PlayDoorSound(DoorTargetOpen);
+            }
+
             if (FeedbackSequence == _lastPresentedFeedbackSequence)
                 return;
 
@@ -317,6 +331,14 @@ namespace TheSancturary.FusionPrototype
         private void ResolveReferences()
         {
             externalInteractionTarget ??= GetComponent<InteractionTarget>();
+            doorAudioSource ??= GetComponent<AudioSource>();
+        }
+
+        private void PlayDoorSound(bool opening)
+        {
+            AudioClip sound = opening ? doorOpenSound : doorCloseSound;
+            if (doorAudioSource != null && sound != null)
+                doorAudioSource.PlayOneShot(sound, doorAudioVolume);
         }
 
         private void CaptureDoorRotations()
