@@ -187,7 +187,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 228ae839e55b13546be8cc085b7287a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.LockerInsideTrigger
-  locker: {fileID: 9116469969165552496}
 --- !u!1 &37811044
 GameObject:
   m_ObjectHideFlags: 0
