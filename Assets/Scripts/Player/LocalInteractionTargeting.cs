@@ -14,7 +14,7 @@ namespace TheSancturary.FusionPrototype
     public sealed class LocalInteractionTargeting : MonoBehaviour
     {
         [Header("Targeting")]
-        [SerializeField, Min(0.1f)] private float interactionDistance = 6f;
+        [SerializeField, Min(0.1f)] private float interactionDistance = 2f;
         [SerializeField] private LayerMask interactionRaycastMask = ~0;
 
         [Header("Prompt")]
