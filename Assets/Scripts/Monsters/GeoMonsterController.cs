@@ -16,7 +16,7 @@ namespace TheSancturary.Monsters
             IdleScan,
             Patrol,
             Chase,
-            LockerKill,
+            LockerEject,
             Attack
         }
 
@@ -62,8 +62,8 @@ namespace TheSancturary.Monsters
         [SerializeField] private int attackDamage = 50;
         [SerializeField] private VideoClip jumpscareVideo;
 
-        [Header("Witnessed Locker Kill")]
-        [SerializeField, Min(0.1f)] private float lockerKillRange = 1.8f;
+        [Header("Witnessed Locker Ejection")]
+        [SerializeField, Min(0.1f)] private float lockerEjectRange = 1.8f;
 
         [Header("Audio")]
         [SerializeField] private AudioSource movementAudioSource;
@@ -174,8 +174,8 @@ namespace TheSancturary.Monsters
                 case GeoMonsterState.Chase:
                     UpdateAuthorityChase();
                     break;
-                case GeoMonsterState.LockerKill:
-                    UpdateAuthorityLockerKill();
+                case GeoMonsterState.LockerEject:
+                    UpdateAuthorityLockerEject();
                     break;
                 case GeoMonsterState.Attack:
                     UpdateAuthorityAttack();
@@ -320,39 +320,58 @@ namespace TheSancturary.Monsters
                 ClearTargetAndScan();
         }
 
-        private void UpdateAuthorityLockerKill()
+        private void UpdateAuthorityLockerEject()
         {
             if (!TryResolveWitnessedLocker(out LockerController locker) ||
-                !TryResolveLivingPlayer(WitnessedLockerPlayer, out FusionNetworkPlayer player) ||
-                !locker.IsPlayerInside(player))
+                !TryResolveLivingPlayer(WitnessedLockerPlayer, out FusionNetworkPlayer player))
             {
-                CancelLockerKillAndResume();
+                CancelLockerEjectAndResume();
                 return;
             }
 
-            Transform attackPoint = locker.MonsterAttackPoint;
-            if (attackPoint == null)
+            if (!locker.IsCurrentOccupant(WitnessedLockerPlayer))
             {
-                CancelLockerKillAndResume();
+                if (locker.CurrentState == LockerController.LockerState.MonsterClosing)
+                {
+                    PlayerRef ejectedPlayer = WitnessedLockerPlayer;
+                    ClearWitnessedLocker();
+                    TargetPlayer = ejectedPlayer;
+                    EnterAuthorityState(GeoMonsterState.Chase);
+                }
+                else
+                    CancelLockerEjectAndResume();
                 return;
             }
 
-            _agent.SetDestination(attackPoint.position);
-            if (HorizontalDistance(transform.position, attackPoint.position) > lockerKillRange)
+            if (locker.CurrentState == LockerController.LockerState.MonsterOpening ||
+                locker.CurrentState == LockerController.LockerState.MonsterClosing)
                 return;
 
-            PlayerRef victim = WitnessedLockerPlayer;
-            if (!player.KillInstantlyAuthoritative())
+            if (locker.CurrentState != LockerController.LockerState.Occupied || !player.IsHiddenInLocker)
             {
-                CancelLockerKillAndResume();
+                CancelLockerEjectAndResume();
                 return;
             }
 
-            ClearWitnessedLocker();
-            TargetPlayer = PlayerRef.None;
-            JumpscareVictim = victim;
-            JumpscareSequence++;
-            ClearTargetAndScan();
+            Transform interactionPoint = locker.MonsterInteractionPoint;
+            if (interactionPoint == null)
+            {
+                CancelLockerEjectAndResume();
+                return;
+            }
+
+            NavMeshPath path = new();
+            if (!_agent.CalculatePath(interactionPoint.position, path) || path.status != NavMeshPathStatus.PathComplete)
+            {
+                CancelLockerEjectAndResume();
+                return;
+            }
+
+            _agent.SetPath(path);
+            if (HorizontalDistance(transform.position, interactionPoint.position) > lockerEjectRange)
+                return;
+
+            locker.BeginMonsterEjectAuthoritative(player);
         }
 
         private void EnterAuthorityState(GeoMonsterState newState)
@@ -383,13 +402,13 @@ namespace TheSancturary.Monsters
                     _agent.speed = chaseSpeed;
                     _agent.stoppingDistance = Mathf.Max(0.05f, attackRange * 0.8f);
                     break;
-                case GeoMonsterState.LockerKill:
+                case GeoMonsterState.LockerEject:
                     StateTimer = TickTimer.None;
                     LostTargetTimer = TickTimer.None;
                     RetargetTimer = TickTimer.None;
                     _agent.isStopped = false;
                     _agent.speed = chaseSpeed;
-                    _agent.stoppingDistance = Mathf.Max(0.05f, lockerKillRange * 0.8f);
+                    _agent.stoppingDistance = Mathf.Max(0.05f, lockerEjectRange * 0.8f);
                     break;
                 case GeoMonsterState.Attack:
                     StateTimer = TickTimer.CreateFromSeconds(Runner, attackDuration);
@@ -483,7 +502,7 @@ namespace TheSancturary.Monsters
 
         private bool CanSee(FusionNetworkPlayer player, bool requireFieldOfView)
         {
-            if (player == null || player.IsDeadOrPending)
+            if (player == null || player.IsDeadOrPending || player.IsHiddenInLocker)
                 return false;
 
             Vector3 targetPoint = player.transform.position + Vector3.up * 1.1f;
@@ -503,7 +522,7 @@ namespace TheSancturary.Monsters
 
         private bool HasChaseLineOfSight(FusionNetworkPlayer player)
         {
-            if (player == null)
+            if (player == null || player.IsHiddenInLocker)
                 return false;
             Vector3 targetPoint = player.transform.position + Vector3.up * 1.1f;
             if ((targetPoint - detectionOrigin.position).sqrMagnitude > detectionDistance * detectionDistance * 2.25f)
@@ -525,7 +544,7 @@ namespace TheSancturary.Monsters
 
             PlayerRef enteringPlayerRef = enteringPlayer.Object.InputAuthority;
             if (TargetPlayer != enteringPlayerRef ||
-                !locker.IsPlayerInside(enteringPlayer) ||
+                !locker.IsOccupying(enteringPlayer) ||
                 !HasChaseLineOfSight(enteringPlayer))
             {
                 return;
@@ -534,7 +553,7 @@ namespace TheSancturary.Monsters
             WitnessedLocker = locker.Id;
             WitnessedLockerPlayer = enteringPlayerRef;
             TargetPlayer = enteringPlayerRef;
-            EnterAuthorityState(GeoMonsterState.LockerKill);
+            EnterAuthorityState(GeoMonsterState.LockerEject);
         }
 
         public void CancelWitnessedLockerAuthoritative(
@@ -549,10 +568,12 @@ namespace TheSancturary.Monsters
                 return;
             }
 
-            CancelLockerKillAndResume();
+            if (CurrentState != GeoMonsterState.LockerEject ||
+                locker.CurrentState != LockerController.LockerState.MonsterClosing)
+                CancelLockerEjectAndResume();
         }
 
-        private void CancelLockerKillAndResume()
+        private void CancelLockerEjectAndResume()
         {
             PlayerRef previousPlayer = WitnessedLockerPlayer;
             ClearWitnessedLocker();
@@ -670,7 +691,7 @@ namespace TheSancturary.Monsters
         {
             bool moving = (CurrentState == GeoMonsterState.Patrol ||
                     CurrentState == GeoMonsterState.Chase ||
-                    CurrentState == GeoMonsterState.LockerKill) &&
+                    CurrentState == GeoMonsterState.LockerEject) &&
                 !_agent.isStopped &&
                 _agent.velocity.sqrMagnitude > 0.04f;
             if (!moving)
@@ -681,7 +702,7 @@ namespace TheSancturary.Monsters
 
             FootstepElapsed += Runner.DeltaTime;
             float interval = CurrentState == GeoMonsterState.Chase ||
-                CurrentState == GeoMonsterState.LockerKill
+                CurrentState == GeoMonsterState.LockerEject
                     ? runFootstepInterval
                     : walkFootstepInterval;
             if (FootstepElapsed < interval)
@@ -697,7 +718,7 @@ namespace TheSancturary.Monsters
         {
             if ((CurrentState != GeoMonsterState.Patrol &&
                     CurrentState != GeoMonsterState.Chase &&
-                    CurrentState != GeoMonsterState.LockerKill) ||
+                    CurrentState != GeoMonsterState.LockerEject) ||
                 _agent.isStopped)
             {
                 _agent.nextPosition = transform.position;
@@ -712,7 +733,7 @@ namespace TheSancturary.Monsters
             }
 
             float configuredSpeed = CurrentState == GeoMonsterState.Chase ||
-                CurrentState == GeoMonsterState.LockerKill
+                CurrentState == GeoMonsterState.LockerEject
                     ? chaseSpeed
                     : patrolSpeed;
             Vector3 movement = Vector3.ClampMagnitude(velocity, configuredSpeed) * Runner.DeltaTime;
@@ -749,7 +770,7 @@ namespace TheSancturary.Monsters
                 GeoMonsterState.IdleScan => IdleScanState,
                 GeoMonsterState.Patrol => WalkState,
                 GeoMonsterState.Chase => RunState,
-                GeoMonsterState.LockerKill => RunState,
+                GeoMonsterState.LockerEject => RunState,
                 GeoMonsterState.Attack => AttackState,
                 _ => IdleScanState
             };

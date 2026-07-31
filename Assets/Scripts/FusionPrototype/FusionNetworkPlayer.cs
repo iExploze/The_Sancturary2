@@ -122,6 +122,7 @@ namespace TheSancturary.FusionPrototype
         [Networked] private byte AudioEventSequence { get; set; }
         [Networked] private byte AudioEventCode { get; set; }
         [Networked] public NetworkBehaviourId CurrentLocker { get; private set; }
+        [Networked] public NetworkBool IsHiddenInLocker { get; private set; }
 
         private readonly Collider[] _standingHits = new Collider[16];
         private InputAction _moveAction;
@@ -157,8 +158,10 @@ namespace TheSancturary.FusionPrototype
         private bool _airborneCharacterControllerHasClearedGround;
         private float _airborneCharacterControllerHeight;
         private Vector3 _airborneCharacterControllerCenter;
+        private bool _lastPresentedLockerHidden;
 
         public bool IsDeadOrPending => IsDead || Health - _pendingDamage <= 0f;
+        public bool IsLockerInputLocked => CurrentLocker.IsValid;
         public NetworkPlayerInventory Inventory => inventory;
         public Vector3 ReplicatedViewPosition =>
             transform.position +
@@ -177,6 +180,7 @@ namespace TheSancturary.FusionPrototype
                 Health = maximumHealth;
                 IsDead = false;
                 CurrentLocker = default;
+                IsHiddenInLocker = false;
                 LookYaw = transform.eulerAngles.y;
                 WasGrounded = networkController.Grounded;
             }
@@ -188,6 +192,7 @@ namespace TheSancturary.FusionPrototype
             localInteractionTargeting.enabled = isOwner;
             SetCharacterVisibility(true);
             SetCharacterRenderingSuppressed(false);
+            _lastPresentedLockerHidden = IsHiddenInLocker;
             animationDriver.Initialize();
 
             if (isOwner)
@@ -290,7 +295,12 @@ namespace TheSancturary.FusionPrototype
 
         private void ApplyOwnerCameraLook()
         {
-            if (cameraRoot != null)
+            if (cameraRoot == null)
+                return;
+
+            if (TryGetLockerViewAnchor(out Transform viewAnchor))
+                cameraRoot.SetPositionAndRotation(viewAnchor.position, Quaternion.Euler(_localLookPitch, _localLookYaw, 0f));
+            else
                 cameraRoot.rotation = Quaternion.Euler(_localLookPitch, _localLookYaw, 0f);
         }
 
@@ -301,7 +311,7 @@ namespace TheSancturary.FusionPrototype
                 return input;
 
             input.LookAngles = new Vector2(_localLookYaw, _localLookPitch);
-            if (inventory != null &&
+            if (!IsLockerInputLocked && inventory != null &&
                 inventory.TryDequeueInputCommand(
                     out InventoryInputCommand inventoryCommand))
             {
@@ -321,21 +331,22 @@ namespace TheSancturary.FusionPrototype
             if (gridInventory != null && gridInventory.IsMenuOpen)
                 return input;
 
-            input.Move = Vector2.ClampMagnitude(_moveAction.ReadValue<Vector2>(), 1f);
+            if (!IsLockerInputLocked)
+                input.Move = Vector2.ClampMagnitude(_moveAction.ReadValue<Vector2>(), 1f);
             bool submitInteraction = _interactPressQueued && _pendingInteractionTarget.IsValid;
             input.InteractionTarget = submitInteraction ? _pendingInteractionTarget : default;
-            input.Buttons.Set(FusionPlayerButton.Jump, _jumpAction.IsPressed());
-            input.Buttons.Set(FusionPlayerButton.Sprint, _sprintAction.IsPressed());
+            input.Buttons.Set(FusionPlayerButton.Jump, !IsLockerInputLocked && _jumpAction.IsPressed());
+            input.Buttons.Set(FusionPlayerButton.Sprint, !IsLockerInputLocked && _sprintAction.IsPressed());
             input.Buttons.Set(FusionPlayerButton.Interact, submitInteraction);
-            input.Buttons.Set(FusionPlayerButton.UseEquipped, _attackAction.IsPressed());
+            input.Buttons.Set(FusionPlayerButton.UseEquipped, !IsLockerInputLocked && _attackAction.IsPressed());
             if (submitInteraction)
             {
                 _interactPressQueued = false;
                 _pendingInteractionTarget = default;
             }
 
-            bool keyboardCrouch = Keyboard.current != null && Keyboard.current.leftCtrlKey.isPressed;
-            input.Buttons.Set(FusionPlayerButton.Crouch, _crouchAction.IsPressed() || keyboardCrouch);
+            bool keyboardCrouch = !IsLockerInputLocked && Keyboard.current != null && Keyboard.current.leftCtrlKey.isPressed;
+            input.Buttons.Set(FusionPlayerButton.Crouch, !IsLockerInputLocked && (_crouchAction.IsPressed() || keyboardCrouch));
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             bool debugExhaustion = Keyboard.current != null && Keyboard.current.f7Key.isPressed;
             input.Buttons.Set(FusionPlayerButton.DebugExhaustion, debugExhaustion);
@@ -352,28 +363,62 @@ namespace TheSancturary.FusionPrototype
             _interactPressQueued = true;
         }
 
-        public bool TryOccupyLockerAuthoritative(LockerController locker)
+        public bool TryReserveLockerAuthoritative(LockerController locker)
         {
             if (!HasStateAuthority || locker == null || IsDeadOrPending)
                 return false;
 
             if (CurrentLocker.IsValid)
-                return CurrentLocker == locker.Id;
+                return false;
 
             CurrentLocker = locker.Id;
+            IsHiddenInLocker = false;
             return true;
         }
 
-        public bool IsOccupyingLocker(LockerController locker)
+        public bool IsUsingLocker(LockerController locker)
         {
             return locker != null && CurrentLocker.IsValid && CurrentLocker == locker.Id;
         }
 
-        public void ReleaseLockerAuthoritative(LockerController locker)
+        public bool TryGetHiddenLocker(out LockerController locker)
         {
-            if (!HasStateAuthority || locker == null || CurrentLocker != locker.Id)
+            locker = null;
+            return IsHiddenInLocker && CurrentLocker.IsValid && Runner != null &&
+                Runner.TryFindBehaviour(CurrentLocker, out NetworkBehaviour behaviour) &&
+                (locker = behaviour as LockerController) != null;
+        }
+
+        public void FinishEnteringLockerAuthoritative(LockerController locker, Vector3 hiddenPosition)
+        {
+            if (!HasStateAuthority || !IsUsingLocker(locker) || IsDeadOrPending)
                 return;
 
+            TeleportAuthoritative(hiddenPosition);
+            IsHiddenInLocker = true;
+        }
+
+        public void FinishLeavingLockerAuthoritative(LockerController locker, Vector3 exitPosition, Quaternion exitRotation)
+        {
+            if (!HasStateAuthority || !IsUsingLocker(locker))
+                return;
+
+            TeleportAuthoritative(exitPosition, exitRotation);
+            IsHiddenInLocker = false;
+            CurrentLocker = default;
+        }
+
+        public void ForceEjectFromLockerAuthoritative(LockerController locker, Vector3 exitPosition, Quaternion exitRotation)
+        {
+            FinishLeavingLockerAuthoritative(locker, exitPosition, exitRotation);
+        }
+
+        public void ClearLockerStateAuthoritative(LockerController locker)
+        {
+            if (!HasStateAuthority || !IsUsingLocker(locker))
+                return;
+
+            IsHiddenInLocker = false;
             CurrentLocker = default;
         }
 
@@ -384,6 +429,13 @@ namespace TheSancturary.FusionPrototype
 
             networkController.Velocity = Vector3.zero;
             networkController.Teleport(position);
+        }
+
+        public void TeleportAuthoritative(Vector3 position, Quaternion rotation)
+        {
+            TeleportAuthoritative(position);
+            transform.rotation = rotation;
+            LookYaw = rotation.eulerAngles.y;
         }
 
         public bool KillInstantlyAuthoritative()
@@ -423,6 +475,12 @@ namespace TheSancturary.FusionPrototype
 
         private bool ValidateInteractionRequest(IAuthoritativeInteractable interactable)
         {
+            if (interactable is LockerController locker && IsHiddenInLocker && IsUsingLocker(locker))
+                return true;
+
+            if (IsLockerInputLocked)
+                return false;
+
             InteractionTarget requestedTarget = interactable.PromptTarget;
             if (requestedTarget == null || !requestedTarget.isActiveAndEnabled ||
                 localInteractionTargeting == null || cameraRoot == null)
@@ -466,7 +524,7 @@ namespace TheSancturary.FusionPrototype
                 pressed = input.Buttons.GetPressed(PreviousButtons);
                 PreviousButtons = input.Buttons;
 
-                if (inventory != null &&
+                if (!IsLockerInputLocked && inventory != null &&
                     inventory.HasStateAuthority &&
                     input.InventoryCommand !=
                     (byte)InventoryInputCommandType.None &&
@@ -486,10 +544,10 @@ namespace TheSancturary.FusionPrototype
                 if (pressed.IsSet(FusionPlayerButton.Interact))
                     ProcessInteractionRequest(input.InteractionTarget);
 
-                if (pressed.IsSet(FusionPlayerButton.UseEquipped))
+                if (!IsLockerInputLocked && pressed.IsSet(FusionPlayerButton.UseEquipped))
                     inventory?.ToggleEquippedUseAuthoritative();
 
-                if (pressed.IsSet(FusionPlayerButton.Crouch))
+                if (!IsLockerInputLocked && pressed.IsSet(FusionPlayerButton.Crouch))
                 {
                     if (IsCrouched || CanStand())
                     {
@@ -497,6 +555,15 @@ namespace TheSancturary.FusionPrototype
                         EmitAudioEvent(IsCrouched ? MovementAudioEvent.Crouch : MovementAudioEvent.Stand);
                     }
                 }
+            }
+
+            if (IsLockerInputLocked)
+            {
+                IsSprinting = false;
+                networkController.Velocity = Vector3.zero;
+                networkController.Move(Vector3.zero);
+                UpdateCharacterControllerHeight(networkController.Grounded);
+                return;
             }
 
             Vector2 moveInput = Vector2.ClampMagnitude(input.Move, 1f);
@@ -638,7 +705,7 @@ namespace TheSancturary.FusionPrototype
             if (Runner.TryFindBehaviour(lockerId, out NetworkBehaviour behaviour) &&
                 behaviour is LockerController locker)
             {
-                locker.ReleasePlayerAuthoritative(this);
+                locker.ReleaseInvalidOccupantAuthoritative(this);
             }
         }
 
@@ -791,6 +858,12 @@ namespace TheSancturary.FusionPrototype
 
         public override void Render()
         {
+            if (IsHiddenInLocker != _lastPresentedLockerHidden)
+            {
+                _lastPresentedLockerHidden = IsHiddenInLocker;
+                SetCharacterVisibility(!IsHiddenInLocker);
+            }
+
             animationDriver.RenderAnimation(Time.deltaTime);
 
             if (AudioEventSequence != _lastAudioEventSequence)
@@ -802,6 +875,7 @@ namespace TheSancturary.FusionPrototype
             if (!HasInputAuthority)
                 return;
 
+            gridInventory?.SetLockerInputLocked(IsLockerInputLocked);
             RenderOwnerCamera();
             RenderOwnerVignette();
         }
@@ -865,6 +939,17 @@ namespace TheSancturary.FusionPrototype
 
         private void RenderOwnerCamera()
         {
+            if (TryGetLockerViewAnchor(out Transform viewAnchor))
+            {
+                _currentCameraHeight = 0f;
+                cameraRoot.SetPositionAndRotation(
+                    viewAnchor.position,
+                    Quaternion.Euler(_localLookPitch, _localLookYaw, 0f));
+                cameraMotion.localPosition = Vector3.zero;
+                cameraMotion.localRotation = Quaternion.identity;
+                return;
+            }
+
             float targetHeight = IsCrouched ? crouchingCameraHeight : standingCameraHeight;
             _currentCameraHeight = Mathf.SmoothDamp(_currentCameraHeight, targetHeight, ref _cameraHeightVelocity, 1f / crouchTransitionSpeed);
             cameraRoot.localPosition = Vector3.up * _currentCameraHeight;
@@ -883,6 +968,18 @@ namespace TheSancturary.FusionPrototype
                 0f);
             cameraMotion.localPosition = Vector3.Lerp(cameraMotion.localPosition, bob * _bobBlend, bobBlendSpeed * Time.deltaTime);
             cameraMotion.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(_bobTime * 0.5f) * amount.x * 12f * _bobBlend);
+        }
+
+        private bool TryGetLockerViewAnchor(out Transform viewAnchor)
+        {
+            viewAnchor = null;
+            if (!IsHiddenInLocker || !CurrentLocker.IsValid || Runner == null ||
+                !Runner.TryFindBehaviour(CurrentLocker, out NetworkBehaviour behaviour) ||
+                behaviour is not LockerController locker)
+                return false;
+
+            viewAnchor = locker.PlayerViewAnchor;
+            return viewAnchor != null;
         }
 
         private void CreateOwnerVignette()
@@ -1062,10 +1159,11 @@ namespace TheSancturary.FusionPrototype
                 runner.TryFindBehaviour(CurrentLocker, out NetworkBehaviour behaviour) &&
                 behaviour is LockerController locker)
             {
-                locker.ReleasePlayerAuthoritative(this);
+                locker.ReleaseInvalidOccupantAuthoritative(this);
             }
 
             CurrentLocker = default;
+            IsHiddenInLocker = false;
         }
     }
 }
