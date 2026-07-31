@@ -15,6 +15,7 @@ namespace TheSancturary.FusionPrototype
         private static readonly int MoveYHash = Animator.StringToHash("MoveY");
         private static readonly int CrouchedHash = Animator.StringToHash("Crouched");
         private static readonly int DeadHash = Animator.StringToHash("Dead");
+        private static readonly int DeathStateHash = Animator.StringToHash("Base Layer.Death");
         private static readonly int IsAirborneHash = Animator.StringToHash("IsAirborne");
         private static readonly int JumpTakeoffHash = Animator.StringToHash("JumpTakeoff");
         private static readonly int LandingImpactHash = Animator.StringToHash("LandingImpact");
@@ -34,6 +35,7 @@ namespace TheSancturary.FusionPrototype
         private bool _initialized;
         private bool _reportedMissingReferences;
         private bool _deathLatched;
+        private bool _deathAnimationStarted;
         private bool _hasGroundSample;
         private bool _wasGrounded;
         private bool _confirmedAirborne;
@@ -89,6 +91,13 @@ namespace TheSancturary.FusionPrototype
             if (player.IsDead || player.Health <= 0f)
                 _deathLatched = true;
             bool dead = _deathLatched;
+
+            if (dead && !_deathAnimationStarted)
+            {
+                animator.SetBool(DeadHash, true);
+                animator.Play(DeathStateHash, 0, 0f);
+                _deathAnimationStarted = true;
+            }
 
             float safeDeltaTime = Mathf.Max(0f, deltaTime);
             UpdateAirborneAnimation(safeDeltaTime, dead);
@@ -184,6 +193,7 @@ namespace TheSancturary.FusionPrototype
         {
             _hasGroundSample = false;
             _wasGrounded = false;
+            _deathAnimationStarted = false;
             _confirmedAirborne = false;
             _jumpTakeoff = false;
             _landingImpact = false;
