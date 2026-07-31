@@ -390,6 +390,9 @@ namespace TheSancturary.FusionPrototype
 
         private async Task ReturnToMainMenuOnceAsync()
         {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
             if (_menuLoadStarted)
                 return;
             _menuLoadStarted = true;
