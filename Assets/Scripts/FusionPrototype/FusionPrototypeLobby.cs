@@ -71,8 +71,7 @@ namespace TheSancturary.FusionPrototype
 
         private void ToggleReady()
         {
-            FusionLobbyPlayerState local = _sessionManager?.GetLobbyPlayers().FirstOrDefault(player => player.Object.HasInputAuthority);
-            local?.ToggleReady();
+            _sessionManager?.RequestToggleLobbyReady();
         }
 
         private void RequestStartGame() => _sessionManager?.RequestStartGame();

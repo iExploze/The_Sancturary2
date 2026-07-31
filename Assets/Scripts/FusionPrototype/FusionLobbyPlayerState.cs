@@ -8,6 +8,7 @@ namespace TheSancturary.FusionPrototype
         [Networked] public int Slot { get; private set; }
         [Networked] public NetworkBool Ready { get; private set; }
         [Networked] public NetworkBool IsHost { get; private set; }
+        [Networked] private NetworkButtons PreviousButtons { get; set; }
         public PlayerRef Player => Object.InputAuthority;
 
         public void SetSlotAuthoritative(int slot, bool isHost)
@@ -19,16 +20,15 @@ namespace TheSancturary.FusionPrototype
             }
         }
 
-        public void ToggleReady()
+        public override void FixedUpdateNetwork()
         {
-            if (HasInputAuthority)
-                RPC_SetReady(!Ready);
-        }
+            if (!HasStateAuthority || !GetInput(out FusionPlayerInput input))
+                return;
 
-        [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-        private void RPC_SetReady(NetworkBool ready)
-        {
-            Ready = ready;
+            NetworkButtons pressed = input.Buttons.GetPressed(PreviousButtons);
+            PreviousButtons = input.Buttons;
+            if (pressed.IsSet(FusionPlayerButton.LobbyReady))
+                Ready = !Ready;
         }
     }
 }

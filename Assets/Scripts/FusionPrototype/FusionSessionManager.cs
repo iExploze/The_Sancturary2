@@ -32,6 +32,7 @@ namespace TheSancturary.FusionPrototype
         private bool _gameplayLoading;
         private bool _returningToMenu;
         private bool _menuLoadStarted;
+        private bool _lobbyReadyToggleQueued;
         private int _nextSpawnIndex;
 
         public static FusionSessionManager Instance { get; private set; }
@@ -126,6 +127,12 @@ namespace TheSancturary.FusionPrototype
 
         public bool CanStartGame => IsHost && IsInLobby && !_gameplayLoading &&
                                     LobbyRules.AreAllReady(_runner?.ActivePlayers, GetLobbyPlayers());
+
+        public void RequestToggleLobbyReady()
+        {
+            if (IsInLobby && !_gameplayLoading)
+                _lobbyReadyToggleQueued = true;
+        }
 
         public void RequestStartGame()
         {
@@ -304,6 +311,15 @@ namespace TheSancturary.FusionPrototype
 
         public void OnInput(NetworkRunner runner, NetworkInput input)
         {
+            if (IsInLobby)
+            {
+                FusionPlayerInput lobbyInput = default;
+                lobbyInput.Buttons.Set(FusionPlayerButton.LobbyReady, _lobbyReadyToggleQueued);
+                _lobbyReadyToggleQueued = false;
+                input.Set(lobbyInput);
+                return;
+            }
+
             if (_localPlayer != null && _localPlayer.HasInputAuthority)
                 input.Set(_localPlayer.BuildNetworkInput());
         }
@@ -346,6 +362,7 @@ namespace TheSancturary.FusionPrototype
             _localPlayer = null;
             _sceneReady = false;
             _gameplayLoading = false;
+            _lobbyReadyToggleQueued = false;
             _starting = false;
             _nextSpawnIndex = 0;
             if (_runner != null)
