@@ -14,7 +14,7 @@ namespace TheSancturary.FusionPrototype
     public sealed class LocalInteractionTargeting : MonoBehaviour
     {
         [Header("Targeting")]
-        [SerializeField, Min(0.1f)] private float interactionDistance = 6f;
+        [SerializeField, Min(0.1f)] private float interactionDistance = 2f;
         [SerializeField] private LayerMask interactionRaycastMask = ~0;
 
         [Header("Prompt")]
@@ -77,6 +77,18 @@ namespace TheSancturary.FusionPrototype
                 return;
             }
 
+            if (_requestingPlayer != null && _requestingPlayer.TryGetHiddenLocker(out LockerController hiddenLocker))
+            {
+                PresentHiddenLockerPrompt(hiddenLocker);
+                return;
+            }
+
+            if (_requestingPlayer != null && _requestingPlayer.IsLockerInputLocked)
+            {
+                HidePrompt();
+                return;
+            }
+
             Ray ray = new(_playerCamera.transform.position, _playerCamera.transform.forward);
             if (!Physics.Raycast(ray, out RaycastHit hit, interactionDistance, interactionRaycastMask, QueryTriggerInteraction.Ignore))
             {
@@ -96,6 +108,23 @@ namespace TheSancturary.FusionPrototype
                 _interactAction.WasPressedThisFrame() &&
                 target.RequestInteraction(_requestingPlayer))
                 HidePrompt();
+        }
+
+        private void PresentHiddenLockerPrompt(LockerController locker)
+        {
+            if (locker == null || locker.PromptTarget == null ||
+                !locker.TryGetActionText(_inventory, "Leave", out string actionText))
+            {
+                HidePrompt();
+                return;
+            }
+
+            ShowPrompt(locker.PromptTarget, new InteractionPrompt(locker.PromptTarget.DisplayName, actionText));
+            if (_interactAction != null && _interactAction.WasPressedThisFrame())
+            {
+                _requestingPlayer.RequestInteraction(locker);
+                HidePrompt();
+            }
         }
 
         private bool CanShowPrompt()
