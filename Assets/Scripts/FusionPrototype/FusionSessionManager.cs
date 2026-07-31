@@ -12,7 +12,7 @@ namespace TheSancturary.FusionPrototype
 {
     public sealed class FusionSessionManager : MonoBehaviour, INetworkRunnerCallbacks
     {
-        public const string GameplayScenePath = "Assets/Scenes/GrayboxPrototype.unity";
+        public const string GameplayScenePath = "Assets/Scenes/MapLevel.unity";
         public const int MaximumPlayers = 4;
 
         private readonly Dictionary<PlayerRef, NetworkObject> _players = new();

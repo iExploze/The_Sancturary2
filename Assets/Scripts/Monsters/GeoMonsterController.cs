@@ -25,7 +25,8 @@ namespace TheSancturary.Monsters
             None,
             WalkFootstep,
             RunFootstep,
-            Attack
+            Attack,
+            SpottedLaugh
         }
 
         private const float ScanDuration = 1.633f;
@@ -69,6 +70,8 @@ namespace TheSancturary.Monsters
         [SerializeField] private AudioSource attackAudioSource;
         [SerializeField] private AudioClip[] footstepClips;
         [SerializeField] private AudioClip attackClip;
+        [SerializeField] private AudioClip[] spottedLaughClips;
+        [SerializeField] private AudioClip chaseScreamClip;
         [SerializeField, Min(0.05f)] private float walkFootstepInterval = 0.62f;
         [SerializeField, Min(0.05f)] private float runFootstepInterval = 0.34f;
 
@@ -100,6 +103,8 @@ namespace TheSancturary.Monsters
         private float _renderStateElapsed;
         private bool _presentationInitialized;
         private bool _warnedMissingReferences;
+        private AudioSource _vocalBoostSource;
+        private AudioSource _vocalHalfBoostSource;
 
         public Transform CurrentTarget
         {
@@ -116,6 +121,8 @@ namespace TheSancturary.Monsters
             ResolveReferences();
             ConfigureAudioSource(movementAudioSource, true);
             ConfigureAudioSource(attackAudioSource);
+            _vocalBoostSource = CreateVocalBoostSource(1f);
+            _vocalHalfBoostSource = CreateVocalBoostSource(0.5f);
         }
 
         public override void Spawned()
@@ -183,6 +190,7 @@ namespace TheSancturary.Monsters
         {
             PresentState(false);
             PresentAudioEvents();
+            PresentChaseScream();
             PresentJumpscareEvent();
 
             if (CurrentState == GeoMonsterState.IdleScan)
@@ -419,6 +427,7 @@ namespace TheSancturary.Monsters
 
             TargetPlayer = bestPlayer;
             LostTargetTimer = TickTimer.None;
+            EmitAudioEvent(MonsterAudioEvent.SpottedLaugh);
             EnterAuthorityState(GeoMonsterState.Chase);
             return true;
         }
@@ -749,6 +758,8 @@ namespace TheSancturary.Monsters
                 ? Mathf.Clamp01(_renderStateElapsed / GetStateDuration(CurrentState))
                 : 0f;
             animator.CrossFade(stateHash, transitionDuration, 0, normalizedStart);
+            if (CurrentState != GeoMonsterState.Chase)
+                StopChaseScream();
         }
 
         private void PresentAudioEvents()
@@ -758,6 +769,19 @@ namespace TheSancturary.Monsters
 
             _lastPresentedAudioSequence = AudioEventSequence;
             MonsterAudioEvent audioEvent = (MonsterAudioEvent)AudioEventCode;
+            if (audioEvent == MonsterAudioEvent.SpottedLaugh)
+            {
+                if (attackAudioSource != null && spottedLaughClips != null && spottedLaughClips.Length > 0)
+                {
+                    int laughClipIndex = AudioEventSequence % spottedLaughClips.Length;
+                    AudioClip laughClip = spottedLaughClips[laughClipIndex];
+                    attackAudioSource.PlayOneShot(laughClip);
+                    _vocalBoostSource?.PlayOneShot(laughClip);
+                    _vocalHalfBoostSource?.PlayOneShot(laughClip);
+                }
+                return;
+            }
+
             if (audioEvent == MonsterAudioEvent.Attack)
             {
                 if (attackAudioSource != null && attackClip != null)
@@ -773,6 +797,35 @@ namespace TheSancturary.Monsters
             bool running = audioEvent == MonsterAudioEvent.RunFootstep;
             movementAudioSource.pitch = running ? 1.05f : 0.92f;
             movementAudioSource.PlayOneShot(clip, running ? 1f : 0.78f);
+        }
+
+        private void PresentChaseScream()
+        {
+            if (attackAudioSource == null ||
+                CurrentState != GeoMonsterState.Chase ||
+                chaseScreamClip == null ||
+                attackAudioSource.isPlaying)
+                return;
+
+            attackAudioSource.clip = chaseScreamClip;
+            attackAudioSource.loop = true;
+            attackAudioSource.Play();
+            PlayLoopingVocalBoost(_vocalBoostSource, chaseScreamClip);
+            PlayLoopingVocalBoost(_vocalHalfBoostSource, chaseScreamClip);
+        }
+
+        private void StopChaseScream()
+        {
+            if (attackAudioSource == null)
+                return;
+            if (attackAudioSource.clip == chaseScreamClip)
+            {
+                attackAudioSource.Stop();
+                attackAudioSource.clip = null;
+            }
+            attackAudioSource.loop = false;
+            StopLoopingVocalBoost(_vocalBoostSource);
+            StopLoopingVocalBoost(_vocalHalfBoostSource);
         }
 
         private void PresentJumpscareEvent()
@@ -861,6 +914,46 @@ namespace TheSancturary.Monsters
                 : AudioRolloffMode.Logarithmic;
             source.minDistance = 1.5f;
             source.maxDistance = 22f;
+        }
+
+        private AudioSource CreateVocalBoostSource(float volumeScale)
+        {
+            if (attackAudioSource == null)
+                return null;
+
+            AudioSource source = gameObject.AddComponent<AudioSource>();
+            source.outputAudioMixerGroup = attackAudioSource.outputAudioMixerGroup;
+            source.playOnAwake = false;
+            source.volume = attackAudioSource.volume * volumeScale;
+            source.pitch = attackAudioSource.pitch;
+            source.spatialBlend = attackAudioSource.spatialBlend;
+            source.rolloffMode = attackAudioSource.rolloffMode;
+            source.minDistance = attackAudioSource.minDistance;
+            source.maxDistance = attackAudioSource.maxDistance;
+            source.dopplerLevel = attackAudioSource.dopplerLevel;
+            source.spread = attackAudioSource.spread;
+            source.reverbZoneMix = attackAudioSource.reverbZoneMix;
+            return source;
+        }
+
+        private static void PlayLoopingVocalBoost(AudioSource source, AudioClip clip)
+        {
+            if (source == null)
+                return;
+
+            source.clip = clip;
+            source.loop = true;
+            source.Play();
+        }
+
+        private static void StopLoopingVocalBoost(AudioSource source)
+        {
+            if (source == null)
+                return;
+
+            source.Stop();
+            source.clip = null;
+            source.loop = false;
         }
 
         private static float HorizontalDistance(Vector3 a, Vector3 b)
