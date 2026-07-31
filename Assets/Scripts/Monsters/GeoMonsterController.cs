@@ -343,7 +343,13 @@ namespace TheSancturary.Monsters
                 return;
             }
 
-            if (locker.CurrentState == LockerController.LockerState.MonsterOpening ||
+            // Witnessing is recorded when the player reserves the locker, before the
+            // door animation moves their body to hidden storage. Keep this authoritative
+            // intent alive through those entry transitions instead of falling back to
+            // ordinary chase line-of-sight loss after the player disappears.
+            if (locker.CurrentState == LockerController.LockerState.EnteringOpening ||
+                locker.CurrentState == LockerController.LockerState.EnteringClosing ||
+                locker.CurrentState == LockerController.LockerState.MonsterOpening ||
                 locker.CurrentState == LockerController.LockerState.MonsterClosing)
                 return;
 
