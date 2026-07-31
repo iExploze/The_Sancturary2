@@ -46,13 +46,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6c81263e0a524947b94b58c9864bc83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.FlashlightController
-  actionMapName: Player
-  toggleActionName: Attack
   flashlightLight: {fileID: 6325327900093728760}
-  range: 20
-  spotAngle: 55
-  intensity: 8
-  color: {r: 1, g: 1, b: 1, a: 1}
+  range: 100
+  spotAngle: 75
+  innerSpotAngle: 50
+  intensity: 7
+  color: {r: 0.92, g: 0.96, b: 1, a: 1}
   shadows: 2
 --- !u!1 &5811036652391442137
 GameObject:
@@ -96,11 +95,11 @@ Light:
   m_Enabled: 0
   serializedVersion: 12
   m_Type: 0
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 8
-  m_Range: 20
-  m_SpotAngle: 55
-  m_InnerSpotAngle: 36
+  m_Color: {r: 0.92, g: 0.96, b: 1, a: 1}
+  m_Intensity: 7
+  m_Range: 100
+  m_SpotAngle: 75
+  m_InnerSpotAngle: 50
   m_CookieSize2D: {x: 0.5, y: 0.5}
   m_Shadows:
     m_Type: 2

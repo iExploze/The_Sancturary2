@@ -11,9 +11,10 @@ namespace TheSancturary.Inventory
     {
         [Header("Spotlight")]
         [SerializeField] private Light flashlightLight;
-        [SerializeField, Min(0.1f)] private float range = 20f;
-        [SerializeField, Range(20f, 90f)] private float spotAngle = 55f;
-        [SerializeField, Min(0f)] private float intensity = 8f;
+        [SerializeField, Min(0.1f)] private float range = 100f;
+        [SerializeField, Range(20f, 90f)] private float spotAngle = 75f;
+        [SerializeField, Range(0f, 90f)] private float innerSpotAngle = 50f;
+        [SerializeField, Min(0f)] private float intensity = 7f;
         [SerializeField] private Color color = Color.white;
         [SerializeField] private LightShadows shadows = LightShadows.Soft;
 
@@ -43,6 +44,7 @@ namespace TheSancturary.Inventory
             flashlightLight.color = color;
             flashlightLight.range = range;
             flashlightLight.spotAngle = spotAngle;
+            flashlightLight.innerSpotAngle = Mathf.Min(innerSpotAngle, spotAngle);
             flashlightLight.intensity = intensity;
             flashlightLight.shadows = shadows;
         }

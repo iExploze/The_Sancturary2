@@ -114,7 +114,7 @@ namespace TheSancturary.Monsters
         private void Awake()
         {
             ResolveReferences();
-            ConfigureAudioSource(movementAudioSource);
+            ConfigureAudioSource(movementAudioSource, true);
             ConfigureAudioSource(attackAudioSource);
         }
 
@@ -850,13 +850,15 @@ namespace TheSancturary.Monsters
             return valid;
         }
 
-        private static void ConfigureAudioSource(AudioSource source)
+        private static void ConfigureAudioSource(AudioSource source, bool hardStopAtMaxDistance = false)
         {
             if (source == null)
                 return;
             source.playOnAwake = false;
             source.spatialBlend = 1f;
-            source.rolloffMode = AudioRolloffMode.Logarithmic;
+            source.rolloffMode = hardStopAtMaxDistance
+                ? AudioRolloffMode.Linear
+                : AudioRolloffMode.Logarithmic;
             source.minDistance = 1.5f;
             source.maxDistance = 22f;
         }
