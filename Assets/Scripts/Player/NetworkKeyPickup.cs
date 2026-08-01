@@ -30,6 +30,7 @@ namespace TheSancturary.FusionPrototype
         public InteractionTarget PromptTarget => interactionTarget;
         public string ItemId => itemId;
         public string ItemDisplayName => itemDisplayName;
+        public bool IsAvailable => _spawned && !IsCollected;
 
         public override void Spawned()
         {
