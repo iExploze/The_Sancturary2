@@ -22,6 +22,7 @@ namespace TheSancturary.Inventory
         [SerializeField] private GameObject visualRoot;
         [SerializeField] private Transform labelTransform;
         [SerializeField] private Collider[] pickupColliders;
+        [SerializeField] private WorldItemPhysics worldItemPhysics;
 
         [Networked] public NetworkBool IsCollected { get; private set; }
 
@@ -143,6 +144,8 @@ namespace TheSancturary.Inventory
 
         private void ApplyCollectedState(bool collected)
         {
+            worldItemPhysics?.ApplyAvailableState(!collected);
+
             if (visualRoot != null)
                 visualRoot.SetActive(!collected);
             if (interactionTarget != null)
@@ -169,6 +172,7 @@ namespace TheSancturary.Inventory
         private void ResolveReferences()
         {
             interactionTarget ??= GetComponent<InteractionTarget>();
+            worldItemPhysics ??= GetComponent<WorldItemPhysics>();
             if (pickupColliders == null || pickupColliders.Length == 0)
                 pickupColliders = GetComponentsInChildren<Collider>(true);
         }

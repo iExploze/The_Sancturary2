@@ -256,6 +256,16 @@ namespace TheSancturary.Inventory
                 _ui?.ShowMessage(message);
         }
 
+        public void SetLockerInputLocked(bool locked)
+        {
+            _ui?.SetLockerInputLocked(locked);
+        }
+
+        public void CloseMenu()
+        {
+            _ui?.SetOpen(false);
+        }
+
         private void RestoreMovingItem()
         {
             if (_movingItem == null)

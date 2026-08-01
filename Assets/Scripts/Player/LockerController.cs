@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Fusion;
 using TheSancturary.Monsters;
 using UnityEngine;
@@ -11,53 +10,59 @@ namespace TheSancturary.FusionPrototype
     {
         public enum LockerState : byte
         {
-            ClosedEmpty,
-            OpenEmpty,
-            ClosingOccupied,
-            ClosedOccupied,
-            OpeningOccupied,
-            OpenOccupied
+            ClosedFree,
+            EnteringOpening,
+            EnteringClosing,
+            Occupied,
+            ExitingOpening,
+            ExitingClosing,
+            MonsterOpening,
+            MonsterClosing
         }
 
         [Header("Required References")]
-        [SerializeField] private InteractionTarget interactionTarget;
+        [SerializeField] private InteractionTarget externalInteractionTarget;
         [SerializeField] private Transform door;
-        [SerializeField] private Collider insideTrigger;
-        [SerializeField] private Transform monsterAttackPoint;
-        [SerializeField] private Transform playerRejectPoint;
+        [SerializeField] private Transform playerViewAnchor;
+        [SerializeField] private Transform playerHiddenStorageAnchor;
+        [SerializeField] private Transform playerExitPoint;
+        [SerializeField] private Transform monsterInteractionPoint;
 
         [Header("Door")]
         [SerializeField] private Vector3 openDoorLocalEulerAngles;
         [SerializeField] private Vector3 closedDoorLocalEulerAngles = Vector3.zero;
-        [SerializeField, Min(0.05f)] private float openingDuration = 0.65f;
-        [SerializeField, Min(0.05f)] private float closingDuration = 0.65f;
+        [SerializeField, Min(0.05f)] private float openingDuration = 0.25f;
+        [SerializeField, Min(0.05f)] private float closingDuration = 0.25f;
+
+        [Header("Door Audio")]
+        [SerializeField] private AudioSource doorAudioSource;
+        [SerializeField] private AudioClip doorOpenSound;
+        [SerializeField] private AudioClip doorCloseSound;
+        [SerializeField, Range(0f, 1f)] private float doorAudioVolume = 0.85f;
 
         [Header("Occupied Feedback")]
         [SerializeField] private AudioClip occupiedInteractionSound;
         [SerializeField] private string occupiedInteractionMessage = "This locker is occupied.";
 
-        [Header("Rejection")]
-        [SerializeField, Min(0.05f)] private float rejectionCooldown = 0.5f;
-
         [Networked] public LockerState CurrentState { get; private set; }
         [Networked] public NetworkBool DoorTargetOpen { get; private set; }
         [Networked] public NetworkBool DoorIsAnimating { get; private set; }
         [Networked] public PlayerRef OccupantPlayer { get; private set; }
-        [Networked] public PlayerRef SecondOccupantPlayer { get; private set; }
         [Networked] private TickTimer DoorMotionTimer { get; set; }
         [Networked] private PlayerRef FeedbackPlayer { get; set; }
         [Networked] private ushort FeedbackSequence { get; set; }
 
-        private readonly List<PlayerRef> _playersInside = new();
-        private readonly Dictionary<PlayerRef, float> _nextRejectionTime = new();
         private Quaternion _openRotation;
         private Quaternion _closedRotation;
         private ushort _lastPresentedFeedbackSequence;
+        private bool _lastPresentedDoorTargetOpen;
         private bool _spawned;
 
-        public InteractionTarget PromptTarget => interactionTarget;
-        public Transform MonsterAttackPoint => monsterAttackPoint;
+        public InteractionTarget PromptTarget => externalInteractionTarget;
+        public Transform PlayerViewAnchor => playerViewAnchor;
+        public Transform MonsterInteractionPoint => monsterInteractionPoint;
         public PlayerRef CurrentOccupant => OccupantPlayer;
+        public bool IsTransitioning => CurrentState != LockerState.ClosedFree && CurrentState != LockerState.Occupied;
 
         private void Awake()
         {
@@ -70,28 +75,27 @@ namespace TheSancturary.FusionPrototype
         {
             ResolveReferences();
             CaptureDoorRotations();
-
             if (HasStateAuthority)
             {
-                CurrentState = LockerState.ClosedEmpty;
+                CurrentState = LockerState.ClosedFree;
                 DoorTargetOpen = false;
                 DoorIsAnimating = false;
                 OccupantPlayer = PlayerRef.None;
-                SecondOccupantPlayer = PlayerRef.None;
                 DoorMotionTimer = TickTimer.None;
                 FeedbackPlayer = PlayerRef.None;
             }
 
             _spawned = true;
             _lastPresentedFeedbackSequence = FeedbackSequence;
+            _lastPresentedDoorTargetOpen = DoorTargetOpen;
             ApplyDoorRotation(DoorTargetOpen);
         }
 
         public override void Despawned(NetworkRunner runner, bool hasState)
         {
+            if (hasState && HasStateAuthority && TryResolveOccupant(out FusionNetworkPlayer player))
+                player.ClearLockerStateAuthoritative(this);
             _spawned = false;
-            _playersInside.Clear();
-            _nextRejectionTime.Clear();
         }
 
         public override void FixedUpdateNetwork()
@@ -99,28 +103,20 @@ namespace TheSancturary.FusionPrototype
             if (!HasStateAuthority)
                 return;
 
-            for (int index = _playersInside.Count - 1; index >= 0; index--)
+            if (OccupantPlayer != PlayerRef.None &&
+                (!TryResolveOccupant(out FusionNetworkPlayer occupant) ||
+                 occupant.IsDeadOrPending ||
+                 !occupant.IsUsingLocker(this)))
             {
-                PlayerRef playerRef = _playersInside[index];
-                if (TryResolvePlayer(playerRef, out FusionNetworkPlayer player) &&
-                    !player.IsDeadOrPending &&
-                    player.IsOccupyingLocker(this))
-                {
-                    continue;
-                }
-
-                _playersInside.RemoveAt(index);
-                player?.ReleaseLockerAuthoritative(this);
-                NotifyMonstersOccupantCleared(playerRef);
+                ReleaseInvalidOccupantAuthoritative(occupant);
             }
-            SynchronizeOccupantsAndState();
 
             if (!DoorIsAnimating || !DoorMotionTimer.ExpiredOrNotRunning(Runner))
                 return;
 
             DoorIsAnimating = false;
             DoorMotionTimer = TickTimer.None;
-            SynchronizeOccupantsAndState();
+            AdvanceDoorTransitionAuthoritative();
         }
 
         private void Update()
@@ -130,53 +126,36 @@ namespace TheSancturary.FusionPrototype
 
             Quaternion target = DoorTargetOpen ? _openRotation : _closedRotation;
             float duration = DoorTargetOpen ? openingDuration : closingDuration;
-            float angle = Quaternion.Angle(_closedRotation, _openRotation);
-            float degreesPerSecond = angle / Mathf.Max(0.05f, duration);
-            door.localRotation = Quaternion.RotateTowards(
-                door.localRotation,
-                target,
-                degreesPerSecond * Time.deltaTime);
+            float degreesPerSecond = Quaternion.Angle(_closedRotation, _openRotation) / Mathf.Max(0.05f, duration);
+            door.localRotation = Quaternion.RotateTowards(door.localRotation, target, degreesPerSecond * Time.deltaTime);
         }
 
         public override void Render()
         {
+            if (DoorTargetOpen != _lastPresentedDoorTargetOpen)
+            {
+                _lastPresentedDoorTargetOpen = DoorTargetOpen;
+                PlayDoorSound(DoorTargetOpen);
+            }
+
             if (FeedbackSequence == _lastPresentedFeedbackSequence)
                 return;
 
             _lastPresentedFeedbackSequence = FeedbackSequence;
             if (TryResolvePlayer(FeedbackPlayer, out FusionNetworkPlayer player))
-            {
-                player.PresentLocalInteractionFeedback(
-                    occupiedInteractionMessage,
-                    occupiedInteractionSound);
-            }
+                player.PresentLocalInteractionFeedback(occupiedInteractionMessage, occupiedInteractionSound);
         }
 
-        public bool TryGetActionText(
-            NetworkPlayerInventory viewerInventory,
-            string interactionVerb,
-            out string actionText)
+        public bool TryGetActionText(NetworkPlayerInventory viewerInventory, string interactionVerb, out string actionText)
         {
-            if (!_spawned || door == null)
+            FusionNetworkPlayer viewer = viewerInventory != null ? viewerInventory.GetComponent<FusionNetworkPlayer>() : null;
+            if (viewer != null && viewer.IsUsingLocker(this))
             {
-                actionText = null;
-                return false;
+                actionText = CurrentState == LockerState.Occupied ? "F — Leave" : "Occupied";
+                return true;
             }
 
-            FusionNetworkPlayer viewerPlayer = viewerInventory != null
-                ? viewerInventory.GetComponent<FusionNetworkPlayer>()
-                : null;
-            bool occupiedByAnother =
-                (OccupantPlayer != PlayerRef.None || SecondOccupantPlayer != PlayerRef.None) &&
-                (viewerPlayer == null || !viewerPlayer.IsOccupyingLocker(this));
-            string verb = occupiedByAnother
-                ? "Check"
-                : DoorTargetOpen
-                    ? "Close"
-                    : string.IsNullOrWhiteSpace(interactionVerb)
-                        ? "Open"
-                        : interactionVerb;
-            actionText = $"F \u2014 {verb}";
+            actionText = CurrentState == LockerState.ClosedFree ? "F — Hide" : "Occupied";
             return true;
         }
 
@@ -191,130 +170,120 @@ namespace TheSancturary.FusionPrototype
 
         public bool TryInteractAuthoritative(FusionNetworkPlayer requestingPlayer)
         {
-            if (!HasStateAuthority || requestingPlayer == null || requestingPlayer.IsDeadOrPending)
+            if (!HasStateAuthority || requestingPlayer == null || requestingPlayer.IsDeadOrPending ||
+                requestingPlayer.Object.InputAuthority == PlayerRef.None)
                 return false;
 
-            PlayerRef requestingPlayerRef = requestingPlayer.Object.InputAuthority;
-            bool hasPlayersInside = _playersInside.Count > 0;
-            bool requesterIsInside = _playersInside.Contains(requestingPlayerRef);
-            if (hasPlayersInside && !requesterIsInside)
+            PlayerRef requester = requestingPlayer.Object.InputAuthority;
+            if (OccupantPlayer == requester)
             {
-                FeedbackPlayer = requestingPlayerRef;
-                FeedbackSequence++;
-                if (FeedbackSequence == 0)
-                    FeedbackSequence = 1;
+                if (CurrentState != LockerState.Occupied || !requestingPlayer.IsHiddenInLocker)
+                    return false;
+
+                CurrentState = LockerState.ExitingOpening;
+                SetDoorTargetAuthoritative(true, openingDuration);
+                return true;
+            }
+
+            if (CurrentState != LockerState.ClosedFree || OccupantPlayer != PlayerRef.None ||
+                !requestingPlayer.TryReserveLockerAuthoritative(this))
+            {
+                PresentOccupiedFeedbackAuthoritative(requester);
                 return false;
             }
 
-            bool open = !DoorTargetOpen;
-            if (!open)
-                RejectExcessPlayersAuthoritative();
-
-            if (_playersInside.Count > 0)
-                SetOccupiedDoorTargetAuthoritative(open);
-            else
-                SetEmptyDoorTargetAuthoritative(open);
+            // This happens while the player is still visible at the external interaction point.
+            OccupantPlayer = requester;
+            CurrentState = LockerState.EnteringOpening;
+            SetDoorTargetAuthoritative(true, openingDuration);
+            NotifyMonstersEntryAccepted(requestingPlayer);
             return true;
-        }
-
-        public void NotifyPlayerEnteredAuthoritative(FusionNetworkPlayer player)
-        {
-            if (!HasStateAuthority || player == null || player.IsDeadOrPending)
-                return;
-
-            PlayerRef playerRef = player.Object.InputAuthority;
-            if (playerRef == PlayerRef.None || _playersInside.Contains(playerRef))
-                return;
-
-            if (!player.TryOccupyLockerAuthoritative(this))
-            {
-                RejectPlayerAuthoritative(player);
-                return;
-            }
-
-            _playersInside.Add(playerRef);
-            SynchronizeOccupantsAndState();
-
-            GeoMonsterController[] monsters = FindObjectsByType<GeoMonsterController>(
-                FindObjectsInactive.Exclude,
-                FindObjectsSortMode.None);
-            for (int i = 0; i < monsters.Length; i++)
-                monsters[i].TryWitnessLockerEntryAuthoritative(this, player);
-
-            if (!DoorTargetOpen && _playersInside.Count > 2)
-                RejectExcessPlayersAuthoritative();
-        }
-
-        public void NotifyPlayerExitedAuthoritative(FusionNetworkPlayer player)
-        {
-            if (!HasStateAuthority || player == null)
-                return;
-
-            PlayerRef playerRef = player.Object.InputAuthority;
-            if (!_playersInside.Contains(playerRef))
-                return;
-
-            ReleasePlayerAuthoritative(player);
-        }
-
-        public bool IsPlayerInside(FusionNetworkPlayer player)
-        {
-            return HasStateAuthority &&
-                player != null &&
-                _playersInside.Contains(player.Object.InputAuthority);
         }
 
         public bool IsCurrentOccupant(PlayerRef playerRef)
         {
-            return playerRef != PlayerRef.None &&
-                (OccupantPlayer == playerRef || SecondOccupantPlayer == playerRef);
+            return playerRef != PlayerRef.None && OccupantPlayer == playerRef;
         }
 
-        public void ReleasePlayerAuthoritative(FusionNetworkPlayer player)
+        public bool IsOccupying(FusionNetworkPlayer player)
         {
-            if (!HasStateAuthority || player == null)
+            return player != null && IsCurrentOccupant(player.Object.InputAuthority) && player.IsUsingLocker(this);
+        }
+
+        public bool BeginMonsterEjectAuthoritative(FusionNetworkPlayer player)
+        {
+            if (!HasStateAuthority || player == null || CurrentState != LockerState.Occupied || !IsOccupying(player))
+                return false;
+
+            CurrentState = LockerState.MonsterOpening;
+            SetDoorTargetAuthoritative(true, openingDuration);
+            return true;
+        }
+
+        public void ReleaseInvalidOccupantAuthoritative(FusionNetworkPlayer player)
+        {
+            if (!HasStateAuthority)
                 return;
 
-            PlayerRef releasedPlayer = player.Object.InputAuthority;
-            if (!_playersInside.Remove(releasedPlayer))
-                return;
-
-            player.ReleaseLockerAuthoritative(this);
-            NotifyMonstersOccupantCleared(releasedPlayer);
-            SynchronizeOccupantsAndState();
+            PlayerRef released = OccupantPlayer;
+            if (player != null)
+            {
+                if (playerExitPoint != null)
+                    player.FinishLeavingLockerAuthoritative(this, playerExitPoint.position, playerExitPoint.rotation);
+                else
+                    player.ClearLockerStateAuthoritative(this);
+            }
+            OccupantPlayer = PlayerRef.None;
+            NotifyMonstersOccupantCleared(released);
+            CurrentState = LockerState.ExitingClosing;
+            SetDoorTargetAuthoritative(false, closingDuration);
         }
 
-        public void Configure(
-            InteractionTarget configuredInteractionTarget,
-            Transform configuredDoor,
-            Collider configuredInsideTrigger,
-            Transform configuredMonsterAttackPoint,
-            Transform configuredPlayerRejectPoint,
-            Vector3 configuredOpenDoorLocalEulerAngles,
-            Vector3 configuredClosedDoorLocalEulerAngles)
+        private void AdvanceDoorTransitionAuthoritative()
         {
-            interactionTarget = configuredInteractionTarget;
-            door = configuredDoor;
-            insideTrigger = configuredInsideTrigger;
-            monsterAttackPoint = configuredMonsterAttackPoint;
-            playerRejectPoint = configuredPlayerRejectPoint;
-            openDoorLocalEulerAngles = configuredOpenDoorLocalEulerAngles;
-            closedDoorLocalEulerAngles = configuredClosedDoorLocalEulerAngles;
-            CaptureDoorRotations();
+            switch (CurrentState)
+            {
+                case LockerState.EnteringOpening:
+                    if (!TryResolveOccupant(out FusionNetworkPlayer entering) || playerHiddenStorageAnchor == null)
+                    {
+                        ReleaseInvalidOccupantAuthoritative(entering);
+                        return;
+                    }
+
+                    entering.FinishEnteringLockerAuthoritative(this, playerHiddenStorageAnchor.position);
+                    CurrentState = LockerState.EnteringClosing;
+                    SetDoorTargetAuthoritative(false, closingDuration);
+                    break;
+                case LockerState.EnteringClosing:
+                    CurrentState = LockerState.Occupied;
+                    break;
+                case LockerState.ExitingOpening:
+                    if (TryResolveOccupant(out FusionNetworkPlayer exiting) && playerExitPoint != null)
+                        exiting.FinishLeavingLockerAuthoritative(this, playerExitPoint.position, playerExitPoint.rotation);
+                    ClearOccupantAndCloseAuthoritative(LockerState.ExitingClosing);
+                    break;
+                case LockerState.ExitingClosing:
+                case LockerState.MonsterClosing:
+                    CurrentState = LockerState.ClosedFree;
+                    break;
+                case LockerState.MonsterOpening:
+                    if (TryResolveOccupant(out FusionNetworkPlayer ejected) && playerExitPoint != null)
+                    {
+                        ejected.ForceEjectFromLockerAuthoritative(this, playerExitPoint.position, playerExitPoint.rotation);
+                        NotifyMonstersLockerEjectionKilled(ejected);
+                    }
+                    ClearOccupantAndCloseAuthoritative(LockerState.MonsterClosing);
+                    break;
+            }
         }
 
-        private void SetEmptyDoorTargetAuthoritative(bool open)
+        private void ClearOccupantAndCloseAuthoritative(LockerState closingState)
         {
-            CurrentState = open ? LockerState.OpenEmpty : LockerState.ClosedEmpty;
-            SetDoorTargetAuthoritative(open, open ? openingDuration : closingDuration);
-        }
-
-        private void SetOccupiedDoorTargetAuthoritative(bool open)
-        {
-            CurrentState = open
-                ? LockerState.OpeningOccupied
-                : LockerState.ClosingOccupied;
-            SetDoorTargetAuthoritative(open, open ? openingDuration : closingDuration);
+            PlayerRef released = OccupantPlayer;
+            OccupantPlayer = PlayerRef.None;
+            NotifyMonstersOccupantCleared(released);
+            CurrentState = closingState;
+            SetDoorTargetAuthoritative(false, closingDuration);
         }
 
         private void SetDoorTargetAuthoritative(bool open, float duration)
@@ -324,84 +293,45 @@ namespace TheSancturary.FusionPrototype
             DoorMotionTimer = TickTimer.CreateFromSeconds(Runner, Mathf.Max(0.05f, duration));
         }
 
-        private void RejectPlayerAuthoritative(
-            FusionNetworkPlayer player,
-            bool ignoreCooldown = false)
+        private void PresentOccupiedFeedbackAuthoritative(PlayerRef player)
         {
-            if (playerRejectPoint == null || player == null)
-                return;
-
-            PlayerRef playerRef = player.Object.InputAuthority;
-            float now = Time.time;
-            if (!ignoreCooldown &&
-                _nextRejectionTime.TryGetValue(playerRef, out float nextTime) &&
-                now < nextTime)
-                return;
-
-            _nextRejectionTime[playerRef] = now + rejectionCooldown;
-            player.TeleportAuthoritative(playerRejectPoint.position);
+            FeedbackPlayer = player;
+            FeedbackSequence++;
+            if (FeedbackSequence == 0)
+                FeedbackSequence = 1;
         }
 
-        private void RejectExcessPlayersAuthoritative()
+        private void NotifyMonstersEntryAccepted(FusionNetworkPlayer player)
         {
-            while (_playersInside.Count > 2)
-            {
-                int lastIndex = _playersInside.Count - 1;
-                PlayerRef rejectedPlayerRef = _playersInside[lastIndex];
-                _playersInside.RemoveAt(lastIndex);
-                if (TryResolvePlayer(rejectedPlayerRef, out FusionNetworkPlayer rejectedPlayer))
-                {
-                    rejectedPlayer.ReleaseLockerAuthoritative(this);
-                    RejectPlayerAuthoritative(rejectedPlayer, true);
-                }
-
-                NotifyMonstersOccupantCleared(rejectedPlayerRef);
-            }
-
-            SynchronizeOccupantsAndState();
+            foreach (GeoMonsterController monster in FindObjectsByType<GeoMonsterController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+                monster.TryWitnessLockerEntryAuthoritative(this, player);
         }
 
-        private void SynchronizeOccupantsAndState()
+        private void NotifyMonstersOccupantCleared(PlayerRef player)
         {
-            OccupantPlayer = _playersInside.Count > 0
-                ? _playersInside[0]
-                : PlayerRef.None;
-            SecondOccupantPlayer = _playersInside.Count > 1
-                ? _playersInside[1]
-                : PlayerRef.None;
-
-            bool occupied = _playersInside.Count > 0;
-            if (DoorIsAnimating && occupied)
-            {
-                CurrentState = DoorTargetOpen
-                    ? LockerState.OpeningOccupied
-                    : LockerState.ClosingOccupied;
+            if (player == PlayerRef.None)
                 return;
-            }
 
-            CurrentState = DoorTargetOpen
-                ? occupied ? LockerState.OpenOccupied : LockerState.OpenEmpty
-                : occupied ? LockerState.ClosedOccupied : LockerState.ClosedEmpty;
+            foreach (GeoMonsterController monster in FindObjectsByType<GeoMonsterController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+                monster.CancelWitnessedLockerAuthoritative(this, player);
         }
 
-        private void NotifyMonstersOccupantCleared(PlayerRef releasedPlayer)
+        private void NotifyMonstersLockerEjectionKilled(FusionNetworkPlayer player)
         {
-            GeoMonsterController[] monsters = FindObjectsByType<GeoMonsterController>(
-                FindObjectsInactive.Exclude,
-                FindObjectsSortMode.None);
-            for (int i = 0; i < monsters.Length; i++)
-                monsters[i].CancelWitnessedLockerAuthoritative(this, releasedPlayer);
+            foreach (GeoMonsterController monster in FindObjectsByType<GeoMonsterController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+                monster.TriggerLockerEjectionJumpscareAuthoritative(this, player);
+        }
+
+        private bool TryResolveOccupant(out FusionNetworkPlayer player)
+        {
+            return TryResolvePlayer(OccupantPlayer, out player);
         }
 
         private bool TryResolvePlayer(PlayerRef playerRef, out FusionNetworkPlayer player)
         {
             player = null;
-            if (playerRef == PlayerRef.None ||
-                Runner == null ||
-                !Runner.TryGetPlayerObject(playerRef, out NetworkObject playerObject))
-            {
+            if (playerRef == PlayerRef.None || Runner == null || !Runner.TryGetPlayerObject(playerRef, out NetworkObject playerObject))
                 return false;
-            }
 
             player = playerObject.GetComponent<FusionNetworkPlayer>();
             return player != null;
@@ -409,12 +339,15 @@ namespace TheSancturary.FusionPrototype
 
         private void ResolveReferences()
         {
-            interactionTarget ??= GetComponent<InteractionTarget>();
-            if (insideTrigger == null)
-            {
-                LockerInsideTrigger relay = GetComponentInChildren<LockerInsideTrigger>(true);
-                insideTrigger = relay != null ? relay.GetComponent<Collider>() : null;
-            }
+            externalInteractionTarget ??= GetComponent<InteractionTarget>();
+            doorAudioSource ??= GetComponent<AudioSource>();
+        }
+
+        private void PlayDoorSound(bool opening)
+        {
+            AudioClip sound = opening ? doorOpenSound : doorCloseSound;
+            if (doorAudioSource != null && sound != null)
+                doorAudioSource.PlayOneShot(sound, doorAudioVolume);
         }
 
         private void CaptureDoorRotations()
@@ -431,17 +364,18 @@ namespace TheSancturary.FusionPrototype
 
         private void OnDrawGizmosSelected()
         {
-            if (monsterAttackPoint != null)
-            {
-                Gizmos.color = new Color(0.9f, 0.15f, 0.1f, 0.9f);
-                Gizmos.DrawWireSphere(monsterAttackPoint.position, 0.18f);
-            }
+            DrawAnchorGizmo(monsterInteractionPoint, new Color(0.9f, 0.15f, 0.1f, 0.9f));
+            DrawAnchorGizmo(playerExitPoint, new Color(0.1f, 0.75f, 1f, 0.9f));
+            DrawAnchorGizmo(playerHiddenStorageAnchor, new Color(0.8f, 0.35f, 1f, 0.9f));
+        }
 
-            if (playerRejectPoint != null)
-            {
-                Gizmos.color = new Color(0.1f, 0.75f, 1f, 0.9f);
-                Gizmos.DrawWireSphere(playerRejectPoint.position, 0.18f);
-            }
+        private static void DrawAnchorGizmo(Transform anchor, Color color)
+        {
+            if (anchor == null)
+                return;
+            Gizmos.color = color;
+            Gizmos.DrawWireSphere(anchor.position, 0.18f);
+            Gizmos.DrawLine(anchor.position, anchor.position + anchor.forward * 0.35f);
         }
     }
 }

@@ -113,7 +113,7 @@ CharacterController:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 512
   m_LayerOverridePriority: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
@@ -419,7 +419,7 @@ MonoBehaviour:
   characterControllerRestoreDuration: 0.1
   standingCollisionMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 4294966783
   maximumStamina: 100
   jumpStaminaCost: 5
   staminaDrainRate: 20
@@ -467,6 +467,8 @@ MonoBehaviour:
     Object:
       Raw: 0
     Behaviour: 0
+  _IsHiddenInLocker:
+    RawValue: 0
 --- !u!114 &1950252639633320911
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -497,7 +499,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2df94744fd661b24a8ad4e9df8124d4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.LocalInteractionTargeting
-  interactionDistance: 6
+  interactionDistance: 2
   interactionRaycastMask:
     serializedVersion: 2
     m_Bits: 4294967295

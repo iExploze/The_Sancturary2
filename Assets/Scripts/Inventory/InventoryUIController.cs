@@ -40,6 +40,7 @@ namespace TheSancturary.Inventory
         private Vector2 _dragPointerOffset;
         private Vector2Int _dragCandidate;
         private bool _dragCandidateValid;
+        private bool _lockerInputLocked;
 
         public bool IsOpen => _panel != null && _panel.activeSelf;
 
@@ -68,13 +69,13 @@ namespace TheSancturary.Inventory
             if (!_initialized)
                 return;
 
-            if (_inventoryAction != null && _inventoryAction.WasPressedThisFrame())
+            if (!_lockerInputLocked && _inventoryAction != null && _inventoryAction.WasPressedThisFrame())
                 SetOpen(!IsOpen);
 
             bool fallbackDropPressed = _dropAction == null &&
                                        Keyboard.current != null &&
                                        Keyboard.current.gKey.wasPressedThisFrame;
-            if (IsOpen && ((_dropAction != null && _dropAction.WasPressedThisFrame()) || fallbackDropPressed))
+            if (!_lockerInputLocked && IsOpen && ((_dropAction != null && _dropAction.WasPressedThisFrame()) || fallbackDropPressed))
             {
                 CancelActiveDrag();
                 _inventory.DropSelected();
@@ -90,6 +91,13 @@ namespace TheSancturary.Inventory
             _messageText.text = message;
             _messageRoot.SetActive(true);
             _messageHideTime = Time.unscaledTime + messageDuration;
+        }
+
+        public void SetLockerInputLocked(bool locked)
+        {
+            _lockerInputLocked = locked;
+            if (locked && IsOpen)
+                SetOpen(false);
         }
 
         public void SetOpen(bool open)

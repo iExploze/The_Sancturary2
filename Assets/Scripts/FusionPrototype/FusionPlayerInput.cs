@@ -10,6 +10,7 @@ namespace TheSancturary.FusionPrototype
         Crouch,
         Interact,
         UseEquipped,
+        LobbyReady,
         DebugExhaustion
     }
 
@@ -35,6 +36,7 @@ namespace TheSancturary.FusionPrototype
         public Vector2 Move;
         public Vector2 LookAngles;
         public NetworkBehaviourId InteractionTarget;
+        public byte InteractionCommandSequence;
         public byte InventoryCommand;
         public byte InventoryCommandSequence;
         public ushort InventoryInstanceId;

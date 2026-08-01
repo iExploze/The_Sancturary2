@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/Scenes/FusionPrototypeMenu.unity
     guid: 30c5d5fb93d0e7044bcb87135bcbf278
   - enabled: 1
+    path: Assets/Scenes/FusionPrototypeLobby.unity
+    guid: cadf0d4061a361c4d9d0eee9bc006f4d
+  - enabled: 1
     path: Assets/Scenes/GrayboxPrototype.unity
     guid: f4eb6125a6143f4499e545861c6c15d0
   - enabled: 1
