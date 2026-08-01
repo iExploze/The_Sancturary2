@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -15,6 +16,11 @@ namespace TheSancturary.FusionPrototype
     {
         private const string OwnerPostProcessingLayerName = "OwnerPostProcessing";
         private const float AirborneCharacterControllerHeightReduction = 0.5f;
+        // Covers modest interpolation and transit drift without turning nearby
+        // walls or objects outside the player's aim into valid targets.
+        private const float InteractionDistanceTolerance = 0.35f;
+        private const float InteractionAimToleranceDegrees = 12f;
+        private const float InteractionSurfaceTolerance = 0.05f;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         private const float LookYawMismatchThreshold = 10f;
         private const float LookYawMismatchDuration = 0.5f;
@@ -29,6 +35,25 @@ namespace TheSancturary.FusionPrototype
             Land,
             Crouch,
             Stand
+        }
+
+        private enum InteractionRejectionReason : byte
+        {
+            None,
+            InvalidPlayer,
+            PlayerUnavailable,
+            InvalidTargetId,
+            TargetNotFound,
+            WrongRunner,
+            TargetNotSpawned,
+            UnsupportedTarget,
+            TargetUnavailable,
+            MissingPromptTarget,
+            MissingCollider,
+            TooFar,
+            LookingAway,
+            LineOfSightBlocked,
+            TargetRejected
         }
 
         [Header("Required References")]
@@ -116,6 +141,7 @@ namespace TheSancturary.FusionPrototype
         [Networked] private float StaminaRecoveryElapsed { get; set; }
         [Networked] private float TimeSinceDamage { get; set; }
         [Networked] private NetworkButtons PreviousButtons { get; set; }
+        [Networked] private byte PreviousInteractionCommandSequence { get; set; }
         [Networked] private byte PreviousInventoryCommandSequence { get; set; }
         [Networked] private NetworkBool WasGrounded { get; set; }
         [Networked] private float AccumulatedStepDistance { get; set; }
@@ -131,8 +157,10 @@ namespace TheSancturary.FusionPrototype
         private InputAction _sprintAction;
         private InputAction _crouchAction;
         private InputAction _attackAction;
-        private NetworkBehaviourId _pendingInteractionTarget;
-        private bool _interactPressQueued;
+        private readonly Queue<NetworkBehaviourId> _pendingInteractionTargets = new();
+        private NetworkBehaviourId _submittedInteractionTarget;
+        private byte _submittedInteractionCommandSequence;
+        private byte _nextInteractionCommandSequence;
         private byte _nextInventoryCommandSequence;
         private float _localLookYaw;
         private float _localLookPitch;
@@ -340,17 +368,24 @@ namespace TheSancturary.FusionPrototype
 
             if (!IsLockerInputLocked)
                 input.Move = Vector2.ClampMagnitude(_moveAction.ReadValue<Vector2>(), 1f);
-            bool submitInteraction = _interactPressQueued && _pendingInteractionTarget.IsValid;
-            input.InteractionTarget = submitInteraction ? _pendingInteractionTarget : default;
+            if (_pendingInteractionTargets.Count > 0)
+            {
+                _submittedInteractionTarget = _pendingInteractionTargets.Dequeue();
+                _nextInteractionCommandSequence++;
+                if (_nextInteractionCommandSequence == 0)
+                    _nextInteractionCommandSequence = 1;
+                _submittedInteractionCommandSequence =
+                    _nextInteractionCommandSequence;
+            }
+
+            // Repeat the latest command in subsequent inputs. The state authority
+            // consumes each sequence once, so a missing input tick cannot erase a tap.
+            input.InteractionTarget = _submittedInteractionTarget;
+            input.InteractionCommandSequence =
+                _submittedInteractionCommandSequence;
             input.Buttons.Set(FusionPlayerButton.Jump, !IsLockerInputLocked && _jumpAction.IsPressed());
             input.Buttons.Set(FusionPlayerButton.Sprint, !IsLockerInputLocked && _sprintAction.IsPressed());
-            input.Buttons.Set(FusionPlayerButton.Interact, submitInteraction);
             input.Buttons.Set(FusionPlayerButton.UseEquipped, !IsLockerInputLocked && _attackAction.IsPressed());
-            if (submitInteraction)
-            {
-                _interactPressQueued = false;
-                _pendingInteractionTarget = default;
-            }
 
             bool keyboardCrouch = !IsLockerInputLocked && Keyboard.current != null && Keyboard.current.leftCtrlKey.isPressed;
             input.Buttons.Set(FusionPlayerButton.Crouch, !IsLockerInputLocked && (_crouchAction.IsPressed() || keyboardCrouch));
@@ -368,10 +403,7 @@ namespace TheSancturary.FusionPrototype
 
             _localPauseInputBlocked = blocked;
             if (blocked)
-            {
-                _interactPressQueued = false;
-                _pendingInteractionTarget = default;
-            }
+                ClearInteractionCommands();
         }
 
         private bool HandlePauseInput()
@@ -394,8 +426,14 @@ namespace TheSancturary.FusionPrototype
             if (!HasInputAuthority || targetBehaviour == null || !targetBehaviour.Id.IsValid)
                 return;
 
-            _pendingInteractionTarget = targetBehaviour.Id;
-            _interactPressQueued = true;
+            _pendingInteractionTargets.Enqueue(targetBehaviour.Id);
+        }
+
+        private void ClearInteractionCommands()
+        {
+            _pendingInteractionTargets.Clear();
+            _submittedInteractionTarget = default;
+            _submittedInteractionCommandSequence = 0;
         }
 
         public bool TryReserveLockerAuthoritative(LockerController locker)
@@ -502,11 +540,246 @@ namespace TheSancturary.FusionPrototype
             if (!HasStateAuthority ||
                 inventory == null ||
                 !Runner.TryFindBehaviour(targetId, out NetworkBehaviour resolvedBehaviour) ||
-                resolvedBehaviour is not IAuthoritativeInteractable interactable ||
-                !ValidateInteractionRequest(interactable))
+                resolvedBehaviour is not IAuthoritativeInteractable interactable)
                 return;
 
-            interactable.TryInteractAuthoritative(this);
+            bool isItemInteraction = resolvedBehaviour is WorldInventoryItem ||
+                                     resolvedBehaviour is NetworkKeyPickup;
+            if (!isItemInteraction)
+            {
+                if (ValidateInteractionRequest(interactable))
+                    interactable.TryInteractAuthoritative(this);
+                return;
+            }
+
+            if (!TryValidateItemInteractionRequest(
+                    targetId,
+                    out resolvedBehaviour,
+                    out interactable,
+                    out InteractionRejectionReason rejection,
+                    out float interactionDistance,
+                    out string blockingCollider))
+            {
+                LogInteractionRejection(
+                    targetId,
+                    resolvedBehaviour,
+                    rejection,
+                    interactionDistance,
+                    blockingCollider);
+                return;
+            }
+
+            if (!interactable.TryInteractAuthoritative(this))
+            {
+                LogInteractionRejection(
+                    targetId,
+                    resolvedBehaviour,
+                    InteractionRejectionReason.TargetRejected,
+                    interactionDistance,
+                    blockingCollider);
+            }
+        }
+
+        private bool TryValidateItemInteractionRequest(
+            NetworkBehaviourId targetId,
+            out NetworkBehaviour resolvedBehaviour,
+            out IAuthoritativeInteractable interactable,
+            out InteractionRejectionReason rejection,
+            out float interactionDistance,
+            out string blockingCollider)
+        {
+            resolvedBehaviour = null;
+            interactable = null;
+            rejection = InteractionRejectionReason.None;
+            interactionDistance = -1f;
+            blockingCollider = null;
+
+            NetworkObject playerObject = Object;
+            if (inventory == null || playerObject == null ||
+                !playerObject.IsValid || !playerObject.IsInSimulation ||
+                playerObject.Runner != Runner ||
+                playerObject.InputAuthority == PlayerRef.None ||
+                !Runner.TryGetPlayerObject(
+                    playerObject.InputAuthority,
+                    out NetworkObject registeredPlayerObject) ||
+                registeredPlayerObject != playerObject)
+            {
+                rejection = InteractionRejectionReason.InvalidPlayer;
+                return false;
+            }
+
+            if (IsDead)
+            {
+                rejection = InteractionRejectionReason.PlayerUnavailable;
+                return false;
+            }
+
+            if (!targetId.IsValid)
+            {
+                rejection = InteractionRejectionReason.InvalidTargetId;
+                return false;
+            }
+
+            if (!Runner.TryFindBehaviour(
+                    targetId,
+                    out resolvedBehaviour))
+            {
+                rejection = InteractionRejectionReason.TargetNotFound;
+                return false;
+            }
+
+            NetworkObject targetObject = resolvedBehaviour.Object;
+            if (targetObject == null || targetObject.Runner != Runner)
+            {
+                rejection = InteractionRejectionReason.WrongRunner;
+                return false;
+            }
+
+            if (!targetObject.IsValid || !targetObject.IsInSimulation ||
+                !targetObject.HasStateAuthority)
+            {
+                rejection = InteractionRejectionReason.TargetNotSpawned;
+                return false;
+            }
+
+            if (resolvedBehaviour is not IAuthoritativeInteractable resolvedInteractable ||
+                resolvedBehaviour is not WorldInventoryItem &&
+                resolvedBehaviour is not NetworkKeyPickup)
+            {
+                rejection = InteractionRejectionReason.UnsupportedTarget;
+                return false;
+            }
+
+            interactable = resolvedInteractable;
+            bool itemAvailable = resolvedBehaviour switch
+            {
+                WorldInventoryItem worldItem => worldItem.IsAvailable,
+                NetworkKeyPickup keyPickup => keyPickup.IsAvailable,
+                _ => false
+            };
+            if (!itemAvailable)
+            {
+                rejection = InteractionRejectionReason.TargetUnavailable;
+                return false;
+            }
+
+            if (IsLockerInputLocked)
+            {
+                rejection = InteractionRejectionReason.PlayerUnavailable;
+                return false;
+            }
+
+            InteractionTarget requestedTarget = interactable.PromptTarget;
+            if (requestedTarget == null ||
+                !requestedTarget.isActiveAndEnabled ||
+                localInteractionTargeting == null)
+            {
+                rejection = InteractionRejectionReason.MissingPromptTarget;
+                return false;
+            }
+
+            Vector3 origin = ReplicatedViewPosition;
+            Vector3 direction =
+                Quaternion.Euler(LookPitch, LookYaw, 0f) * Vector3.forward;
+            float maximumDistance =
+                localInteractionTargeting.InteractionDistance +
+                InteractionDistanceTolerance;
+            Collider[] targetColliders =
+                requestedTarget.GetComponentsInChildren<Collider>(true);
+            Collider closestCollider = null;
+            Vector3 closestPoint = default;
+            float closestDistanceSquared = float.PositiveInfinity;
+            bool forwardRayHitTarget = false;
+            RaycastHit forwardTargetHit = default;
+            Ray authoritativeViewRay = new(origin, direction);
+
+            for (int index = 0; index < targetColliders.Length; index++)
+            {
+                Collider targetCollider = targetColliders[index];
+                if (targetCollider == null || !targetCollider.enabled ||
+                    !targetCollider.gameObject.activeInHierarchy ||
+                    targetCollider.GetComponentInParent<InteractionTarget>() !=
+                    requestedTarget)
+                    continue;
+
+                Vector3 point = targetCollider.ClosestPoint(origin);
+                float distanceSquared = (point - origin).sqrMagnitude;
+                if (distanceSquared < closestDistanceSquared)
+                {
+                    closestDistanceSquared = distanceSquared;
+                    closestPoint = point;
+                    closestCollider = targetCollider;
+                }
+
+                if (targetCollider.Raycast(
+                        authoritativeViewRay,
+                        out RaycastHit targetHit,
+                        maximumDistance) &&
+                    (!forwardRayHitTarget ||
+                     targetHit.distance < forwardTargetHit.distance))
+                {
+                    forwardRayHitTarget = true;
+                    forwardTargetHit = targetHit;
+                }
+            }
+
+            if (closestCollider == null)
+            {
+                rejection = InteractionRejectionReason.MissingCollider;
+                return false;
+            }
+
+            interactionDistance = Mathf.Sqrt(closestDistanceSquared);
+            if (interactionDistance > maximumDistance)
+            {
+                rejection = InteractionRejectionReason.TooFar;
+                return false;
+            }
+
+            Vector3 validationPoint = forwardRayHitTarget
+                ? forwardTargetHit.point
+                : closestPoint;
+            Vector3 toTarget = validationPoint - origin;
+            float validationRayDistance = toTarget.magnitude;
+            if (validationRayDistance > InteractionSurfaceTolerance &&
+                Vector3.Angle(direction, toTarget) >
+                InteractionAimToleranceDegrees)
+            {
+                rejection = InteractionRejectionReason.LookingAway;
+                return false;
+            }
+
+            if (validationRayDistance <= InteractionSurfaceTolerance)
+                return true;
+
+            RaycastHit[] sightHits = Physics.RaycastAll(
+                origin,
+                toTarget / validationRayDistance,
+                validationRayDistance + InteractionSurfaceTolerance,
+                localInteractionTargeting.InteractionRaycastMask,
+                QueryTriggerInteraction.Ignore);
+            System.Array.Sort(
+                sightHits,
+                (first, second) => first.distance.CompareTo(second.distance));
+            for (int index = 0; index < sightHits.Length; index++)
+            {
+                Collider hitCollider = sightHits[index].collider;
+                if (hitCollider == null ||
+                    hitCollider.transform.IsChildOf(transform))
+                    continue;
+
+                InteractionTarget hitTarget =
+                    hitCollider.GetComponentInParent<InteractionTarget>();
+                if (hitTarget == requestedTarget)
+                    return true;
+
+                blockingCollider = hitCollider.name;
+                rejection = InteractionRejectionReason.LineOfSightBlocked;
+                return false;
+            }
+
+            rejection = InteractionRejectionReason.LineOfSightBlocked;
+            return false;
         }
 
         private bool ValidateInteractionRequest(IAuthoritativeInteractable interactable)
@@ -536,6 +809,38 @@ namespace TheSancturary.FusionPrototype
 
             InteractionTarget hitTarget = hit.collider.GetComponentInParent<InteractionTarget>();
             return hitTarget == requestedTarget;
+        }
+
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+        private void LogInteractionRejection(
+            NetworkBehaviourId targetId,
+            NetworkBehaviour resolvedBehaviour,
+            InteractionRejectionReason rejection,
+            float interactionDistance,
+            string blockingCollider)
+        {
+            string resolvedName = resolvedBehaviour != null
+                ? $"{resolvedBehaviour.GetType().Name}/{resolvedBehaviour.name}"
+                : "unresolved";
+            NetworkObject targetObject = resolvedBehaviour != null
+                ? resolvedBehaviour.Object
+                : null;
+            string targetAuthority = targetObject != null && targetObject.IsValid
+                ? $"state={targetObject.StateAuthority}, input={targetObject.InputAuthority}"
+                : "detached";
+            PlayerRef requester = Object != null && Object.IsValid
+                ? Object.InputAuthority
+                : PlayerRef.None;
+            Vector3 origin = ReplicatedViewPosition;
+            Vector3 direction =
+                Quaternion.Euler(LookPitch, LookYaw, 0f) * Vector3.forward;
+            Debug.LogWarning(
+                $"Fusion interaction rejected: reason={rejection}, requester={requester}, " +
+                $"targetId={targetId}, target={resolvedName}, " +
+                $"targetAuthority={targetAuthority}, distance={interactionDistance:F2}, " +
+                $"origin={origin}, direction={direction}, blocker={blockingCollider ?? "none"}.",
+                this);
         }
 
         public override void FixedUpdateNetwork()
@@ -577,8 +882,14 @@ namespace TheSancturary.FusionPrototype
                         input.InventoryRotated);
                 }
 
-                if (pressed.IsSet(FusionPlayerButton.Interact))
+                if (input.InteractionCommandSequence != 0 &&
+                    input.InteractionCommandSequence !=
+                    PreviousInteractionCommandSequence)
+                {
+                    PreviousInteractionCommandSequence =
+                        input.InteractionCommandSequence;
                     ProcessInteractionRequest(input.InteractionTarget);
+                }
 
                 if (!IsLockerInputLocked && pressed.IsSet(FusionPlayerButton.UseEquipped))
                     inventory?.ToggleEquippedUseAuthoritative();
