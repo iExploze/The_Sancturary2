@@ -807,7 +807,10 @@ namespace TheSancturary.FusionPrototype
                     QueryTriggerInteraction.Ignore))
                 return false;
 
-            InteractionTarget hitTarget = hit.collider.GetComponentInParent<InteractionTarget>();
+            InteractionTarget hitTarget =
+                InteractionTarget.ResolveFromCollider(
+                    hit.collider,
+                    new Ray(origin, direction));
             return hitTarget == requestedTarget;
         }
 

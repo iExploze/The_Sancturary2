@@ -8,7 +8,8 @@ namespace TheSancturary.FusionPrototype
 {
     /// <summary>
     /// Finds the local player's current interaction target and renders a minimal local-only prompt.
-    /// The first collider hit by the ray must resolve to an InteractionTarget on itself or a parent.
+    /// The first collider hit by the ray resolves either to its own parent target or
+    /// to the best-aimed collider-free target beneath a shared furniture collider.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class LocalInteractionTargeting : MonoBehaviour
@@ -96,7 +97,7 @@ namespace TheSancturary.FusionPrototype
                 return;
             }
 
-            InteractionTarget target = hit.collider.GetComponentInParent<InteractionTarget>();
+            InteractionTarget target = InteractionTarget.ResolveFromCollider(hit.collider, ray);
             if (target == null || !target.TryGetPrompt(_inventory, out InteractionPrompt prompt))
             {
                 HidePrompt();
