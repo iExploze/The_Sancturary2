@@ -31,6 +31,9 @@ namespace TheSancturary.FusionPrototype
         [SerializeField, Min(0.1f)] private float dropOriginHeight = 1.35f;
         [SerializeField] private LayerMask dropCollisionMask = ~0;
 
+        private const float DropPlacementStep = 0.15f;
+        private const float DropBoundsPadding = 0.02f;
+
         [Networked, Capacity(MaximumItems)]
         public NetworkArray<NetworkInventoryEntry> Entries => default;
         [Networked] public ushort NextInstanceId { get; private set; }
@@ -360,6 +363,8 @@ namespace TheSancturary.FusionPrototype
                 definition.WorldPrefab == null ||
                 definition.WorldPrefab.GetComponent<NetworkObject>() == null ||
                 definition.WorldPrefab.GetComponent<NetworkTransform>() == null ||
+                definition.WorldPrefab.GetComponent<Rigidbody>() == null ||
+                definition.WorldPrefab.GetComponent<WorldItemPhysics>() is not { HasValidLocalBounds: true } ||
                 (definition.WorldPrefab.GetComponent<WorldInventoryItem>() == null &&
                  definition.WorldPrefab.GetComponent<NetworkKeyPickup>() == null))
             {
@@ -367,11 +372,18 @@ namespace TheSancturary.FusionPrototype
                 return;
             }
 
-            Vector3 position = FindDropPosition();
             Quaternion rotation = Quaternion.Euler(
                 0f,
                 _player != null ? _player.LookYaw : transform.eulerAngles.y,
                 0f);
+            WorldItemPhysics prefabPhysics =
+                definition.WorldPrefab.GetComponent<WorldItemPhysics>();
+            if (!TryFindDropPosition(prefabPhysics, rotation, out Vector3 position))
+            {
+                SendOwnerRejection(InventoryRequestRejection.InvalidRequest);
+                return;
+            }
+
             NetworkObject spawned = Runner.Spawn(
                 definition.WorldPrefab,
                 position,
@@ -381,6 +393,17 @@ namespace TheSancturary.FusionPrototype
                 SendOwnerRejection(InventoryRequestRejection.InvalidRequest);
                 return;
             }
+
+            WorldItemPhysics spawnedPhysics =
+                spawned.GetComponent<WorldItemPhysics>();
+            if (spawnedPhysics == null)
+            {
+                Runner.Despawn(spawned);
+                SendOwnerRejection(InventoryRequestRejection.InvalidRequest);
+                return;
+            }
+
+            spawnedPhysics.PrepareForDrop();
 
             const float positionTolerance = 0.01f;
             const float rotationTolerance = 1f;
@@ -649,73 +672,108 @@ namespace TheSancturary.FusionPrototype
             Revision++;
         }
 
-        private Vector3 FindDropPosition()
+        private bool TryFindDropPosition(
+            WorldItemPhysics itemPhysics,
+            Quaternion rotation,
+            out Vector3 position)
         {
+            position = default;
+            if (itemPhysics == null || !itemPhysics.HasValidLocalBounds)
+                return false;
+
             float yaw = _player != null ? _player.LookYaw : transform.eulerAngles.y;
             Vector3 forward = Quaternion.Euler(0f, yaw, 0f) * Vector3.forward;
-            Vector3 origin = transform.position + Vector3.up * dropOriginHeight;
-            Vector3 candidate =
-                transform.position +
-                forward * dropDistance +
-                Vector3.up * 0.1f;
-
-            if (TryFindBlockingHit(
-                    origin,
-                    candidate + Vector3.up * 0.45f,
-                    out RaycastHit wallHit))
-                candidate = wallHit.point - forward * wallClearance;
-
-            Vector3 groundOrigin = candidate + Vector3.up * 1.5f;
-            RaycastHit[] groundHits = Physics.RaycastAll(
-                groundOrigin,
-                Vector3.down,
-                4f,
-                dropCollisionMask,
-                QueryTriggerInteraction.Ignore);
-            float closestDistance = float.PositiveInfinity;
-            for (int index = 0; index < groundHits.Length; index++)
+            Bounds bounds = itemPhysics.LocalBounds;
+            Vector3 halfExtents = bounds.extents + Vector3.one * DropBoundsPadding;
+            Vector3 rotatedCenterOffset = rotation * bounds.center;
+            float playerRadius = 0.32f;
+            if (TryGetComponent(out CharacterController controller))
             {
-                RaycastHit hit = groundHits[index];
-                if (hit.collider.transform.IsChildOf(transform) ||
-                    hit.distance >= closestDistance)
-                    continue;
-
-                closestDistance = hit.distance;
-                candidate.y = hit.point.y;
+                playerRadius = controller.radius * Mathf.Max(
+                    transform.lossyScale.x,
+                    transform.lossyScale.z);
             }
 
-            return candidate;
+            float forwardExtent =
+                Mathf.Abs(Vector3.Dot(forward, rotation * Vector3.right)) * halfExtents.x +
+                Mathf.Abs(Vector3.Dot(forward, rotation * Vector3.up)) * halfExtents.y +
+                Mathf.Abs(Vector3.Dot(forward, rotation * Vector3.forward)) * halfExtents.z;
+            float minimumDistance = playerRadius + forwardExtent + wallClearance;
+            if (minimumDistance > dropDistance)
+                return false;
+
+            Vector3 releaseBase = transform.position + Vector3.up * dropOriginHeight;
+            Vector3 pathStartCenter =
+                releaseBase + forward * minimumDistance + rotatedCenterOffset;
+            for (float distance = dropDistance;
+                 distance + 0.001f >= minimumDistance;
+                 distance -= DropPlacementStep)
+            {
+                Vector3 candidate = releaseBase + forward * distance;
+                Vector3 candidateCenter = candidate + rotatedCenterOffset;
+                if (!IsDropVolumeClear(candidateCenter, halfExtents, rotation) ||
+                    !IsDropPathClear(
+                        pathStartCenter,
+                        candidateCenter,
+                        halfExtents,
+                        rotation))
+                    continue;
+
+                position = candidate;
+                return true;
+            }
+
+            return false;
         }
 
-        private bool TryFindBlockingHit(
-            Vector3 start,
-            Vector3 end,
-            out RaycastHit closestHit)
+        private bool IsDropVolumeClear(
+            Vector3 center,
+            Vector3 halfExtents,
+            Quaternion rotation)
         {
-            Vector3 delta = end - start;
+            Collider[] overlaps = Physics.OverlapBox(
+                center,
+                halfExtents,
+                rotation,
+                dropCollisionMask,
+                QueryTriggerInteraction.Ignore);
+            for (int index = 0; index < overlaps.Length; index++)
+            {
+                Collider overlap = overlaps[index];
+                if (overlap != null && !overlap.transform.IsChildOf(transform))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private bool IsDropPathClear(
+            Vector3 startCenter,
+            Vector3 endCenter,
+            Vector3 halfExtents,
+            Quaternion rotation)
+        {
+            Vector3 delta = endCenter - startCenter;
             float distance = delta.magnitude;
-            RaycastHit[] hits = Physics.RaycastAll(
-                start,
-                delta.normalized,
+            if (distance <= 0.001f)
+                return true;
+
+            RaycastHit[] hits = Physics.BoxCastAll(
+                startCenter,
+                halfExtents,
+                delta / distance,
+                rotation,
                 distance,
                 dropCollisionMask,
                 QueryTriggerInteraction.Ignore);
-            closestHit = default;
-            float closestDistance = float.PositiveInfinity;
-            bool found = false;
             for (int index = 0; index < hits.Length; index++)
             {
-                RaycastHit hit = hits[index];
-                if (hit.collider.transform.IsChildOf(transform) ||
-                    hit.distance >= closestDistance)
-                    continue;
-
-                found = true;
-                closestDistance = hit.distance;
-                closestHit = hit;
+                Collider collider = hits[index].collider;
+                if (collider != null && !collider.transform.IsChildOf(transform))
+                    return false;
             }
 
-            return found;
+            return true;
         }
     }
 }

@@ -113,7 +113,7 @@ CharacterController:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 512
   m_LayerOverridePriority: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
@@ -419,7 +419,7 @@ MonoBehaviour:
   characterControllerRestoreDuration: 0.1
   standingCollisionMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 4294966783
   maximumStamina: 100
   jumpStaminaCost: 5
   staminaDrainRate: 20

@@ -19,6 +19,7 @@ namespace TheSancturary.FusionPrototype
         [SerializeField] private InteractionTarget interactionTarget;
         [SerializeField] private GameObject visualRoot;
         [SerializeField] private Collider[] pickupColliders;
+        [SerializeField] private WorldItemPhysics worldItemPhysics;
         [SerializeField] private float visualRotationSpeed = 35f;
 
         [Networked] public NetworkBool IsCollected { get; private set; }
@@ -29,9 +30,11 @@ namespace TheSancturary.FusionPrototype
         public InteractionTarget PromptTarget => interactionTarget;
         public string ItemId => itemId;
         public string ItemDisplayName => itemDisplayName;
+        public bool IsAvailable => _spawned && !IsCollected;
 
         public override void Spawned()
         {
+            ResolveReferences();
             _spawned = true;
             _lastRenderedCollected = IsCollected;
             ApplyCollectedState(_lastRenderedCollected);
@@ -100,7 +103,10 @@ namespace TheSancturary.FusionPrototype
             }
 
             if (Object.NetworkTypeId.IsSceneObject)
+            {
                 IsCollected = true;
+                ApplyCollectedState(true);
+            }
             else
                 Runner.Despawn(Object);
 
@@ -125,6 +131,8 @@ namespace TheSancturary.FusionPrototype
 
         private void ApplyCollectedState(bool collected)
         {
+            worldItemPhysics?.ApplyAvailableState(!collected);
+
             if (visualRoot != null)
                 visualRoot.SetActive(!collected);
 
@@ -140,6 +148,15 @@ namespace TheSancturary.FusionPrototype
         private void OnValidate()
         {
             itemId = NetworkLockGroup.NormalizeId(itemId);
+            ResolveReferences();
+        }
+
+        private void ResolveReferences()
+        {
+            interactionTarget ??= GetComponent<InteractionTarget>();
+            worldItemPhysics ??= GetComponent<WorldItemPhysics>();
+            if (pickupColliders == null || pickupColliders.Length == 0)
+                pickupColliders = GetComponentsInChildren<Collider>(true);
         }
     }
 }
