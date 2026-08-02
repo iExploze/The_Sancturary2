@@ -7,6 +7,7 @@ namespace TheSancturary.FusionPrototype
     public sealed class DebugSessionBootstrap : MonoBehaviour
     {
         [SerializeField] private NetworkObject canonicalPlayerPrefab;
+        [SerializeField] private NetworkObject lobbyPlayerStatePrefab;
 
         private async void Start()
         {
@@ -14,7 +15,9 @@ namespace TheSancturary.FusionPrototype
             if (FusionSessionManager.HasActiveRunner)
                 return;
 
-            FusionSessionManager manager = FusionSessionManager.GetOrCreate(canonicalPlayerPrefab);
+            FusionSessionManager manager = FusionSessionManager.GetOrCreate(
+                canonicalPlayerPrefab,
+                lobbyPlayerStatePrefab);
             await manager.StartDirectDebugAsync(SceneManager.GetActiveScene().path);
         }
     }

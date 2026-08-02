@@ -70,6 +70,15 @@ namespace TheSancturary.FusionPrototype
             _initialized = true;
         }
 
+        public void ResetAfterRespawn()
+        {
+            ResolveReferences();
+            _deathLatched = false;
+            ResetAirborneState();
+            if (animator != null)
+                animator.SetBool(DeadHash, false);
+        }
+
         public void RenderAnimation(float deltaTime)
         {
             if (!_initialized)

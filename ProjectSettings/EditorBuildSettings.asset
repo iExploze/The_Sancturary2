@@ -12,6 +12,12 @@ EditorBuildSettings:
     path: Assets/Scenes/FusionPrototypeLobby.unity
     guid: cadf0d4061a361c4d9d0eee9bc006f4d
   - enabled: 1
+    path: Assets/Scenes/Reference Playable.unity
+    guid: 7da5f1ae79c077244ad8a46ed8d3f632
+  - enabled: 1
+    path: Assets/Scenes/FusionPrototypeEscape.unity
+    guid: 567ce41ca26e14044a1a8c3b9e34eeea
+  - enabled: 1
     path: Assets/Scenes/GrayboxPrototype.unity
     guid: f4eb6125a6143f4499e545861c6c15d0
   - enabled: 1
