@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sancturary Environment Dressing"
+  short_description: "Dress existing maps with hospital assets"
+  default_prompt: "Use $sancturary-environment-dressing to improve one existing room without changing its layout or gameplay."
