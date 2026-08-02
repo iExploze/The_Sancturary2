@@ -11,12 +11,12 @@ GameObject:
   - component: {fileID: 6036925707470125524}
   - component: {fileID: 5793963688269171740}
   - component: {fileID: 3520486771175663430}
-  - component: {fileID: 8846041052267608863}
   - component: {fileID: 1594194392027491272}
   - component: {fileID: 472443114983997775}
   - component: {fileID: 7421249201260776552}
   - component: {fileID: 5445842984685636691}
   - component: {fileID: 6259121819986163485}
+  - component: {fileID: 6491530050076833055}
   m_Layer: 0
   m_Name: Aid Kit Box
   m_TagString: Untagged
@@ -97,28 +97,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &8846041052267608863
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1746324080909893217}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 103526302015670707, guid: 7ab7399813fb7d1468b4b067a9b4a16d, type: 3}
 --- !u!114 &1594194392027491272
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -296,6 +274,27 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!65 &6491530050076833055
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1746324080909893217}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.33695507, y: 0.5533467, z: 0.17040724}
+  m_Center: {x: 0.0000009536743, y: -0.000000059604645, z: 0.085183874}
 --- !u!1 &6464719441186118432
 GameObject:
   m_ObjectHideFlags: 0
@@ -307,7 +306,6 @@ GameObject:
   - component: {fileID: 8815788016830742947}
   - component: {fileID: 2730222135013917142}
   - component: {fileID: 5059897317417059888}
-  - component: {fileID: 348971832117680693}
   m_Layer: 0
   m_Name: Aid Kit Door
   m_TagString: Untagged
@@ -387,25 +385,3 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &348971832117680693
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6464719441186118432}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -5777401036816191528, guid: 7ab7399813fb7d1468b4b067a9b4a16d, type: 3}

@@ -69,6 +69,43 @@ namespace TheSancturary.FusionPrototype
         public InteractionTargetStatus Status => status;
         public string RequiredKeyDisplayName => requiredKeyDisplayName;
 
+        /// <summary>
+        /// Resolves an interaction from a shared parent collider. This lets moving
+        /// doors and drawers remain collider-free while the stationary furniture
+        /// body supplies the single physical collider.
+        /// </summary>
+        public static InteractionTarget ResolveFromCollider(Collider collider, Ray aimRay)
+        {
+            if (collider == null)
+                return null;
+
+            InteractionTarget directTarget = collider.GetComponentInParent<InteractionTarget>();
+            if (directTarget != null)
+                return directTarget;
+
+            InteractionTarget[] candidates =
+                collider.GetComponentsInChildren<InteractionTarget>(true);
+            InteractionTarget bestTarget = null;
+            float bestScore = float.PositiveInfinity;
+            for (int index = 0; index < candidates.Length; index++)
+            {
+                InteractionTarget candidate = candidates[index];
+                if (candidate == null || !candidate.isActiveAndEnabled ||
+                    candidate.status == InteractionTargetStatus.Unavailable ||
+                    HasInteractionTargetAncestor(candidate.transform, collider.transform))
+                    continue;
+
+                float score = GetAimScore(candidate, aimRay);
+                if (score >= bestScore)
+                    continue;
+
+                bestScore = score;
+                bestTarget = candidate;
+            }
+
+            return bestTarget;
+        }
+
         private void Awake()
         {
             ResolveInteractable();
@@ -152,6 +189,54 @@ namespace TheSancturary.FusionPrototype
         private void ResolveInteractable()
         {
             _interactable = interactionBehaviour as IInteractable;
+        }
+
+        private static bool HasInteractionTargetAncestor(
+            Transform candidate,
+            Transform interactionRoot)
+        {
+            Transform current = candidate.parent;
+            while (current != null && current != interactionRoot)
+            {
+                if (current.GetComponent<InteractionTarget>() != null)
+                    return true;
+
+                current = current.parent;
+            }
+
+            return false;
+        }
+
+        private static float GetAimScore(InteractionTarget target, Ray aimRay)
+        {
+            Renderer[] renderers = target.GetComponentsInChildren<Renderer>(true);
+            float bestScore = float.PositiveInfinity;
+            Vector3 direction = aimRay.direction.normalized;
+            for (int index = 0; index < renderers.Length; index++)
+            {
+                Renderer renderer = renderers[index];
+                if (renderer == null || !renderer.enabled ||
+                    !renderer.gameObject.activeInHierarchy ||
+                    renderer.GetComponentInParent<InteractionTarget>() != target)
+                    continue;
+
+                float distanceAlongRay = Mathf.Max(
+                    0f,
+                    Vector3.Dot(renderer.bounds.center - aimRay.origin, direction));
+                float score = renderer.bounds.SqrDistance(
+                    aimRay.origin + direction * distanceAlongRay);
+                if (score < bestScore)
+                    bestScore = score;
+            }
+
+            if (!float.IsPositiveInfinity(bestScore))
+                return bestScore;
+
+            float fallbackDistance = Mathf.Max(
+                0f,
+                Vector3.Dot(target.transform.position - aimRay.origin, direction));
+            return (target.transform.position -
+                    (aimRay.origin + direction * fallbackDistance)).sqrMagnitude;
         }
 
         private void RebuildPromptText()

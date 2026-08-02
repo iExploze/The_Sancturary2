@@ -1,0 +1,118 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+
+model = "gpt-5.6-sol"
+model_reasoning_effort = "medium"
+service_tier = "priority"
+
+notify = [
+  "C:\\Users\\User\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\fb8898c05a62885e\\bin\\node_modules\\@oai\\sky\\bin\\windows\\codex-computer-use.exe",
+  "turn-ended",
+]
+
+[marketplaces.openai-bundled]
+last_updated = "2026-08-01T22:02:00Z"
+source_type = "local"
+source = '\\?\C:\Users\User\.codex\.tmp\bundled-marketplaces\openai-bundled'
+
+[marketplaces.openai-primary-runtime]
+last_updated = "2026-08-01T21:51:38Z"
+source_type = "local"
+source = '\\?\C:\Users\User\.cache\codex-runtimes\codex-primary-runtime\plugins\openai-primary-runtime'
+
+[plugins."chrome@openai-bundled"]
+enabled = true
+
+[plugins."documents@openai-primary-runtime"]
+enabled = false
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = false
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = false
+
+[plugins."computer-use@openai-bundled"]
+enabled = true
+
+[plugins."visualize@openai-bundled"]
+enabled = true
+
+[plugins."pdf@openai-primary-runtime"]
+enabled = true
+
+[plugins."template-creator@openai-primary-runtime"]
+enabled = true
+
+[plugins."browser@openai-bundled"]
+enabled = true
+
+[plugins."sites@openai-bundled"]
+enabled = true
+
+[features]
+js_repl = false
+rmcp_client = true
+memories = false
+chronicle = false
+
+[mcp_servers.node_repl]
+args = []
+command = 'C:\Users\User\AppData\Local\OpenAI\Codex\runtimes\cua_node\fb8898c05a62885e\bin\node_repl.exe'
+startup_timeout_sec = 120
+
+[mcp_servers.node_repl.env]
+NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
+NODE_REPL_NODE_MODULE_DIRS = 'C:\Users\User\AppData\Local\OpenAI\Codex\runtimes\cua_node\fb8898c05a62885e\bin\node_modules'
+NODE_REPL_NODE_PATH = 'C:\Users\User\AppData\Local\OpenAI\Codex\runtimes\cua_node\fb8898c05a62885e\bin\node.exe'
+NODE_REPL_TRUSTED_CODE_PATHS = 'C:\Users\User\.codex'
+CODEX_HOME = 'C:\Users\User\.codex'
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "c5e8b73f10ecc47ad1be38f14ba6b79cd3af06fcd86637f7b6b857ae209a686e,f204d340535055781952b10ed396de20b842f00a19e430852f7e121ad1ce91f6"
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
+NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
+BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
+BROWSER_USE_CODEX_APP_VERSION = "26.727.51351"
+SKY_CUA_NATIVE_PIPE = "1"
+SKY_CUA_NATIVE_PIPE_DIRECTORY = '\\.\pipe\codex-computer-use-507dfa63-a7d1-4cd0-b46e-87b3402fd7ac'
+CODEX_CLI_PATH = 'C:\Users\User\AppData\Local\OpenAI\Codex\bin\d7e8094cfb76a267\codex.exe'
+
+[mcp_servers.unityMCP]
+url = "http://127.0.0.1:8080/mcp"
+enabled = true
+required = false
+startup_timeout_sec = 30
+tool_timeout_sec = 180
+default_tools_approval_mode = "auto"
+
+[mcp_servers.unityMCP.tools.execute_code]
+approval_mode = "approve"
+
+[mcp_servers.unityMCP.tools.refresh_unity]
+approval_mode = "approve"
+
+[desktop]
+conversationDetailMode = "STEPS_COMMANDS"
+ambient-suggestions-enabled = true
+followUpQueueMode = "queue"
+appearanceTheme = "dark"
+
+[desktop.open-in-target-preferences]
+global = "visualStudio"
+
+[windows]
+sandbox = "elevated"
+
+[projects."e:\\camerahorror"]
+trust_level = "trusted"
+
+[projects."E:\\Github\\The_Sancturary2"]
+trust_level = "trusted"
+
+[shell_environment_policy.set]
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "c5e8b73f10ecc47ad1be38f14ba6b79cd3af06fcd86637f7b6b857ae209a686e,f204d340535055781952b10ed396de20b842f00a19e430852f7e121ad1ce91f6"
+NODE_REPL_TRUSTED_CODE_PATHS = 'C:\Users\User\.codex'
+
+[memories]
+generate_memories = false
+use_memories = false
