@@ -15,7 +15,7 @@ namespace TheSancturary.FusionPrototype
     {
         public const string MenuScenePath = "Assets/Scenes/FusionPrototypeMenu.unity";
         public const string LobbyScenePath = "Assets/Scenes/FusionPrototypeLobby.unity";
-        public const string GameplayScenePath = "Assets/Scenes/MapLevel.unity";
+        public const string GameplayScenePath = "Assets/Scenes/GrayboxPrototype.unity";
         public const int MaximumPlayers = 4;
         public const int MaximumSessionNameLength = 32;
 
