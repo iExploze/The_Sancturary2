@@ -133,6 +133,7 @@ namespace TheSancturary.FusionPrototype
         [Networked] public float Stamina { get; private set; }
         [Networked] public float Health { get; private set; }
         [Networked] public NetworkBool IsDead { get; private set; }
+        [Networked] public TickTimer RespawnTimer { get; private set; }
         [Networked] public NetworkBool IsCrouched { get; private set; }
         [Networked] public NetworkBool IsSprinting { get; private set; }
         [Networked] public float LookYaw { get; private set; }
@@ -187,7 +188,9 @@ namespace TheSancturary.FusionPrototype
         private float _airborneCharacterControllerHeight;
         private Vector3 _airborneCharacterControllerCenter;
         private bool _lastPresentedLockerHidden;
+        private bool _lastPresentedDead;
         private bool _localPauseInputBlocked;
+        private LevelRespawnSettings _respawnSettings;
 
         public bool IsDeadOrPending => IsDead || Health - _pendingDamage <= 0f;
         public bool IsLockerInputLocked => CurrentLocker.IsValid;
@@ -209,6 +212,7 @@ namespace TheSancturary.FusionPrototype
                 Stamina = maximumStamina;
                 Health = maximumHealth;
                 IsDead = false;
+                RespawnTimer = TickTimer.None;
                 CurrentLocker = default;
                 IsHiddenInLocker = false;
                 LookYaw = transform.eulerAngles.y;
@@ -252,6 +256,7 @@ namespace TheSancturary.FusionPrototype
             spatialAudioSource.rolloffMode = AudioRolloffMode.Logarithmic;
             _lastAudioEventSequence = AudioEventSequence;
             _lastRenderedHealth = Health;
+            _lastPresentedDead = IsDead;
             _currentCameraHeight = standingCameraHeight;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             LogNetworkDiagnostics();
@@ -267,6 +272,7 @@ namespace TheSancturary.FusionPrototype
             localInteractionTargeting ??= GetComponent<LocalInteractionTargeting>();
             inventory ??= GetComponent<NetworkPlayerInventory>();
             gridInventory ??= GetComponent<PlayerInventory>();
+            _respawnSettings ??= FindFirstObjectByType<LevelRespawnSettings>();
             localAudioSource ??= GetComponent<AudioSource>();
             if (spatialAudioSource == null)
             {
@@ -853,6 +859,12 @@ namespace TheSancturary.FusionPrototype
 
             if (IsDead)
             {
+                if (HasStateAuthority && RespawnTimer.Expired(Runner))
+                    TryRespawnAuthoritative();
+
+                if (!IsDead)
+                    return;
+
                 IsSprinting = false;
                 networkController.Move(Vector3.zero);
                 UpdateCharacterControllerHeight(networkController.Grounded);
@@ -1041,8 +1053,41 @@ namespace TheSancturary.FusionPrototype
             if (Health <= 0f)
             {
                 IsDead = true;
+                if (_respawnSettings != null)
+                {
+                    RespawnTimer = TickTimer.CreateFromSeconds(
+                        Runner,
+                        _respawnSettings.RespawnDelaySeconds);
+                }
                 ReleaseCurrentLockerAfterInvalidation();
             }
+        }
+
+        private bool TryRespawnAuthoritative()
+        {
+            if (!HasStateAuthority || _respawnSettings == null ||
+                !_respawnSettings.TryGetSpawnPoint(Object.InputAuthority, out Vector3 position, out Quaternion rotation))
+                return false;
+
+            _pendingDamage = 0;
+            Health = maximumHealth;
+            Stamina = maximumStamina;
+            IsDead = false;
+            IsCrouched = false;
+            IsSprinting = false;
+            SprintLocked = false;
+            StaminaRecoveryElapsed = 0f;
+            TimeSinceDamage = 0f;
+            CurrentLocker = default;
+            IsHiddenInLocker = false;
+            RespawnTimer = TickTimer.None;
+            PreviousButtons = default;
+            networkController.Velocity = Vector3.zero;
+            networkController.Teleport(position, rotation);
+            LookYaw = rotation.eulerAngles.y;
+            LookPitch = 0f;
+            WasGrounded = false;
+            return true;
         }
 
         private void ReleaseCurrentLockerAfterInvalidation()
@@ -1208,6 +1253,13 @@ namespace TheSancturary.FusionPrototype
 
         public override void Render()
         {
+            if (IsDead != _lastPresentedDead)
+            {
+                _lastPresentedDead = IsDead;
+                if (!IsDead)
+                    PresentRespawn();
+            }
+
             if (IsHiddenInLocker != _lastPresentedLockerHidden)
             {
                 _lastPresentedLockerHidden = IsHiddenInLocker;
@@ -1228,6 +1280,26 @@ namespace TheSancturary.FusionPrototype
             gridInventory?.SetLockerInputLocked(IsLockerInputLocked);
             RenderOwnerCamera();
             RenderOwnerVignette();
+        }
+
+        private void PresentRespawn()
+        {
+            animationDriver?.ResetAfterRespawn();
+            if (!HasInputAuthority)
+                return;
+
+            DisposeDeathVideoPlayer();
+            _deathSequenceStarted = false;
+            _pendingInteractionTargets.Clear();
+            localInteractionTargeting?.SetInputCaptured(false);
+            if (playerInput != null)
+            {
+                playerInput.enabled = true;
+                playerInput.ActivateInput();
+            }
+            _damagePulse = 0f;
+            _lastRenderedHealth = Health;
+            LockCursor();
         }
 
         private void SetCharacterVisibility(bool visible)

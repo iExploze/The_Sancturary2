@@ -16,6 +16,7 @@ namespace TheSancturary.FusionPrototype
         public const string MenuScenePath = "Assets/Scenes/FusionPrototypeMenu.unity";
         public const string LobbyScenePath = "Assets/Scenes/FusionPrototypeLobby.unity";
         public const string GameplayScenePath = "Assets/Scenes/GrayboxPrototype.unity";
+        public const string EscapeScenePath = "Assets/Scenes/FusionPrototypeEscape.unity";
         public const int MaximumPlayers = 4;
         public const int MaximumSessionNameLength = 32;
 
@@ -30,6 +31,8 @@ namespace TheSancturary.FusionPrototype
         private bool _sceneReady;
         private bool _starting;
         private bool _gameplayLoading;
+        private bool _escapeLoading;
+        private bool _lobbyLoading;
         private bool _returningToMenu;
         private bool _menuLoadStarted;
         private bool _lobbyReadyToggleQueued;
@@ -39,7 +42,11 @@ namespace TheSancturary.FusionPrototype
         public static FusionSessionManager Instance { get; private set; }
         public NetworkRunner Runner => _runner;
         public bool IsInLobby => _sceneReady && ActiveScenePath == LobbyScenePath;
-        public bool IsInGameplay => _sceneReady && ActiveScenePath != MenuScenePath && ActiveScenePath != LobbyScenePath;
+        public bool IsInEscape => _sceneReady && ActiveScenePath == EscapeScenePath;
+        public bool IsInGameplay => _sceneReady &&
+                                    ActiveScenePath != MenuScenePath &&
+                                    ActiveScenePath != LobbyScenePath &&
+                                    ActiveScenePath != EscapeScenePath;
         public bool IsGameplayLoading => _gameplayLoading;
         public string LastStatus { get; private set; }
         public bool LastStatusIsError { get; private set; }
@@ -160,6 +167,42 @@ namespace TheSancturary.FusionPrototype
 
             PublishStatus($"Loading {System.IO.Path.GetFileNameWithoutExtension(_gameplayScenePath)} for all players...", false);
             _runner.LoadScene(SceneRef.FromPath(_gameplayScenePath), LoadSceneMode.Single);
+        }
+
+        public bool TryLoadEscapeSceneAuthoritative(NetworkRunner requestingRunner)
+        {
+            if (requestingRunner == null || requestingRunner != _runner ||
+                !requestingRunner.IsSceneAuthority || !IsInGameplay || _escapeLoading)
+                return false;
+
+            if (SceneUtility.GetBuildIndexByScenePath(EscapeScenePath) < 0)
+            {
+                PublishStatus("The escape scene must be enabled in Build Settings.", true);
+                return false;
+            }
+
+            _escapeLoading = true;
+            PublishStatus("The exit was opened. Loading the escape screen for all players...", false);
+            requestingRunner.LoadScene(SceneRef.FromPath(EscapeScenePath), LoadSceneMode.Single);
+            return true;
+        }
+
+        public bool TryReturnToLobbyAuthoritative(NetworkRunner requestingRunner)
+        {
+            if (requestingRunner == null || requestingRunner != _runner ||
+                !requestingRunner.IsSceneAuthority || !IsInEscape || _lobbyLoading)
+                return false;
+
+            if (SceneUtility.GetBuildIndexByScenePath(LobbyScenePath) < 0)
+            {
+                PublishStatus("The lobby scene must be enabled in Build Settings.", true);
+                return false;
+            }
+
+            _lobbyLoading = true;
+            PublishStatus("Returning everyone to the lobby...", false);
+            requestingRunner.LoadScene(SceneRef.FromPath(LobbyScenePath), LoadSceneMode.Single);
+            return true;
         }
 
         public async void LeaveSessionAndReturnToMenu()
@@ -341,14 +384,31 @@ namespace TheSancturary.FusionPrototype
 
         public void OnSceneLoadStart(NetworkRunner runner)
         {
+            bool wasInLobby = IsInLobby;
+            bool wasInGameplay = IsInGameplay;
             _sceneReady = false;
             _pendingPlayers.Clear();
-            if (IsInLobby && runner.CanSpawn)
+            if (wasInLobby && runner.CanSpawn)
             {
                 foreach (FusionLobbyPlayerState state in _lobbyPlayers.Values.Where(state => state != null))
                     runner.Despawn(state.Object);
             }
             _lobbyPlayers.Clear();
+
+            if (wasInGameplay && runner.CanSpawn)
+            {
+                foreach (KeyValuePair<PlayerRef, NetworkObject> entry in _gameplayPlayers)
+                {
+                    if (entry.Value == null || !entry.Value.IsValid)
+                        continue;
+
+                    runner.SetPlayerObject(entry.Key, null);
+                    runner.Despawn(entry.Value);
+                }
+            }
+            _gameplayPlayers.Clear();
+            _localPlayer = null;
+            _nextSpawnIndex = 0;
         }
 
         public void OnSceneLoadDone(NetworkRunner runner)
@@ -356,6 +416,10 @@ namespace TheSancturary.FusionPrototype
             _sceneReady = true;
             if (IsInGameplay)
                 _gameplayLoading = false;
+            if (IsInEscape)
+                _escapeLoading = false;
+            if (IsInLobby)
+                _lobbyLoading = false;
             foreach (PlayerRef player in runner.ActivePlayers)
                 _pendingPlayers.Add(player);
             TrySpawnPending(runner);
@@ -377,6 +441,8 @@ namespace TheSancturary.FusionPrototype
             _localPlayer = null;
             _sceneReady = false;
             _gameplayLoading = false;
+            _escapeLoading = false;
+            _lobbyLoading = false;
             _lobbyReadyToggleQueued = false;
             _starting = false;
             _nextSpawnIndex = 0;
