@@ -22,6 +22,17 @@ namespace TheSancturary.FusionPrototype
         [SerializeField] private GameObject openVisual;
         [SerializeField] private GameObject closedCover;
 
+        [Header("Owner-Local Exit Indicator")]
+        [SerializeField] private GameObject exitIndicatorRoot;
+        [SerializeField] private TextMesh exitIndicatorLabel;
+        [SerializeField] private Renderer[] exitIndicatorRenderers;
+        [SerializeField] private Light exitIndicatorLight;
+        [SerializeField] private string exitLabel = "EXIT";
+        [SerializeField] private Color openIndicatorColor = new(0.55f, 1f, 0.72f, 1f);
+        [SerializeField] private Color closedIndicatorColor = new(1f, 0.2f, 0.12f, 1f);
+        [SerializeField, Min(0f)] private float openIndicatorIntensity = 0.55f;
+        [SerializeField, Min(0f)] private float closedIndicatorIntensity = 0.16f;
+
         [Networked] private PlayerRef FeedbackPlayer { get; set; }
         [Networked] private ushort FeedbackSequence { get; set; }
         [Networked] private ushort TransitionAudioSequence { get; set; }
@@ -30,12 +41,15 @@ namespace TheSancturary.FusionPrototype
         private ushort _lastPresentedFeedbackSequence;
         private ushort _lastPresentedTransitionAudioSequence;
         private bool _lastPresentedOpen;
+        private bool _lastIndicatorVisible;
+        private MaterialPropertyBlock _indicatorPropertyBlock;
 
         public InteractionTarget PromptTarget => interactionTarget;
         public NetworkVentEntrance LinkedEntrance => linkedEntrance;
 
         private void Awake()
         {
+            _indicatorPropertyBlock = new MaterialPropertyBlock();
             ResolveReferences();
         }
 
@@ -49,11 +63,13 @@ namespace TheSancturary.FusionPrototype
             _lastPresentedTransitionAudioSequence = TransitionAudioSequence;
             _lastPresentedOpen = linkedEntrance != null && linkedEntrance.IsOpen;
             ApplyPresentation(_lastPresentedOpen);
+            SetIndicatorVisible(false);
         }
 
         public override void Despawned(NetworkRunner runner, bool hasState)
         {
             _spawned = false;
+            SetIndicatorVisible(false);
         }
 
         public override void Render()
@@ -64,6 +80,8 @@ namespace TheSancturary.FusionPrototype
                 _lastPresentedOpen = open;
                 ApplyPresentation(open);
             }
+
+            SetIndicatorVisible(ShouldShowExitIndicator());
 
             if (TransitionAudioSequence != _lastPresentedTransitionAudioSequence)
             {
@@ -134,7 +152,12 @@ namespace TheSancturary.FusionPrototype
             AudioSource configuredAudioSource,
             AudioClip configuredExitSound,
             GameObject configuredOpenVisual = null,
-            GameObject configuredClosedCover = null)
+            GameObject configuredClosedCover = null,
+            GameObject configuredExitIndicatorRoot = null,
+            TextMesh configuredExitIndicatorLabel = null,
+            Renderer[] configuredExitIndicatorRenderers = null,
+            Light configuredExitIndicatorLight = null,
+            string configuredExitLabel = "EXIT")
         {
             interactionTarget = configuredInteractionTarget;
             linkedEntrance = configuredLinkedEntrance;
@@ -143,7 +166,13 @@ namespace TheSancturary.FusionPrototype
             exitSound = configuredExitSound;
             openVisual = configuredOpenVisual;
             closedCover = configuredClosedCover;
+            exitIndicatorRoot = configuredExitIndicatorRoot;
+            exitIndicatorLabel = configuredExitIndicatorLabel;
+            exitIndicatorRenderers = configuredExitIndicatorRenderers;
+            exitIndicatorLight = configuredExitIndicatorLight;
+            exitLabel = configuredExitLabel;
             ApplyPresentation(true);
+            SetIndicatorVisible(false);
         }
 
         private void ResolveReferences()
@@ -158,11 +187,66 @@ namespace TheSancturary.FusionPrototype
                 openVisual.SetActive(open);
             if (closedCover != null)
                 closedCover.SetActive(!open);
+            ApplyIndicatorAppearance(open);
         }
 
         internal void ApplyLinkedPresentation(bool open)
         {
             ApplyPresentation(open);
+        }
+
+        private bool ShouldShowExitIndicator()
+        {
+            if (!_spawned || Runner == null || !Runner.LocalPlayer.IsValid ||
+                !Runner.TryGetPlayerObject(Runner.LocalPlayer, out NetworkObject playerObject))
+                return false;
+
+            FusionNetworkPlayer localPlayer = playerObject.GetComponent<FusionNetworkPlayer>();
+            return localPlayer != null && localPlayer.HasInputAuthority && localPlayer.IsInVent;
+        }
+
+        private void SetIndicatorVisible(bool visible)
+        {
+            if (_lastIndicatorVisible == visible &&
+                (exitIndicatorRoot == null || exitIndicatorRoot.activeSelf == visible))
+                return;
+
+            _lastIndicatorVisible = visible;
+            if (exitIndicatorRoot != null)
+                exitIndicatorRoot.SetActive(visible);
+        }
+
+        private void ApplyIndicatorAppearance(bool open)
+        {
+            _indicatorPropertyBlock ??= new MaterialPropertyBlock();
+            Color color = open ? openIndicatorColor : closedIndicatorColor;
+            if (exitIndicatorLabel != null)
+            {
+                exitIndicatorLabel.text = open ? exitLabel : $"{exitLabel} \u2014 CLOSED";
+                exitIndicatorLabel.color = color;
+            }
+
+            if (exitIndicatorRenderers != null)
+            {
+                for (int index = 0; index < exitIndicatorRenderers.Length; index++)
+                {
+                    Renderer indicatorRenderer = exitIndicatorRenderers[index];
+                    if (indicatorRenderer == null)
+                        continue;
+
+                    indicatorRenderer.GetPropertyBlock(_indicatorPropertyBlock);
+                    _indicatorPropertyBlock.SetColor("_BaseColor", color);
+                    _indicatorPropertyBlock.SetColor("_Color", color);
+                    _indicatorPropertyBlock.SetColor("_EmissionColor", color * (open ? 1.4f : 0.35f));
+                    indicatorRenderer.SetPropertyBlock(_indicatorPropertyBlock);
+                }
+            }
+
+            if (exitIndicatorLight != null)
+            {
+                exitIndicatorLight.color = color;
+                exitIndicatorLight.intensity = open ? openIndicatorIntensity : closedIndicatorIntensity;
+            }
         }
 
         private void PresentBlockedFeedbackAuthoritative(PlayerRef player)
@@ -185,7 +269,17 @@ namespace TheSancturary.FusionPrototype
         private void OnValidate()
         {
             ResolveReferences();
+            if (!Application.isPlaying)
+            {
+                ApplyIndicatorAppearance(true);
+                SetIndicatorVisible(false);
+            }
         }
 #endif
+
+        private void OnDisable()
+        {
+            SetIndicatorVisible(false);
+        }
     }
 }
