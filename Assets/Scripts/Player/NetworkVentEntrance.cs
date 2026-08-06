@@ -99,7 +99,7 @@ namespace TheSancturary.FusionPrototype
                 return false;
             }
 
-            actionText = IsOpen ? "F \u2014 Enter Vent" : "Closed";
+            actionText = IsOpen ? "F \u2014 Enter" : "Closed";
             return true;
         }
 
@@ -198,6 +198,7 @@ namespace TheSancturary.FusionPrototype
                 closedCover.SetActive(!open);
             if (closedBlocker != null)
                 closedBlocker.enabled = !open;
+            correspondingExit?.ApplyLinkedPresentation(open);
         }
 
         private void PresentBlockedFeedbackAuthoritative(PlayerRef player)

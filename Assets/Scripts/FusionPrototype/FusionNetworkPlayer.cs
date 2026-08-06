@@ -34,7 +34,8 @@ namespace TheSancturary.FusionPrototype
             Jump,
             Land,
             Crouch,
-            Stand
+            Stand,
+            VentStep
         }
 
         private enum InteractionRejectionReason : byte
@@ -558,6 +559,11 @@ namespace TheSancturary.FusionPrototype
             ForceCrouchedCharacterControllerAuthoritative();
             TeleportMovementAuthoritative(destinationPosition, destinationRotation);
             IsInVent = false;
+            if (CanStand())
+            {
+                IsCrouched = false;
+                EmitAudioEvent(MovementAudioEvent.Stand);
+            }
             return true;
         }
 
@@ -598,12 +604,15 @@ namespace TheSancturary.FusionPrototype
 
         private void ForceCrouchedCharacterControllerAuthoritative()
         {
+            bool changedStance = !IsCrouched;
             IsCrouched = true;
             IsSprinting = false;
             _airborneCharacterControllerShrunk = false;
             _airborneCharacterControllerHasClearedGround = false;
             characterController.height = crouchingHeight;
             characterController.center = Vector3.up * (crouchingHeight * 0.5f);
+            if (changedStance)
+                EmitAudioEvent(MovementAudioEvent.Crouch);
         }
 
         private void TeleportMovementAuthoritative(Vector3 position)
@@ -1111,7 +1120,9 @@ namespace TheSancturary.FusionPrototype
                 if (AccumulatedStepDistance >= cadence)
                 {
                     AccumulatedStepDistance -= cadence;
-                    EmitAudioEvent(MovementAudioEvent.Footstep);
+                    EmitAudioEvent(IsInVent
+                        ? MovementAudioEvent.VentStep
+                        : MovementAudioEvent.Footstep);
                 }
             }
 
@@ -1601,6 +1612,7 @@ namespace TheSancturary.FusionPrototype
             AudioClip clip = audioEvent switch
             {
                 MovementAudioEvent.Footstep => SelectFootstepClip(),
+                MovementAudioEvent.VentStep => SelectVentMovementClip(),
                 MovementAudioEvent.Jump => jumpClip,
                 MovementAudioEvent.Land => landingClip,
                 MovementAudioEvent.Crouch => crouchClip,
@@ -1611,7 +1623,9 @@ namespace TheSancturary.FusionPrototype
                 return;
 
             AudioSource source = localOwner ? localAudioSource : spatialAudioSource;
-            float stanceVolume = IsInVent ? 0.65f : IsCrouched ? 0.55f : IsSprinting ? 1f : 0.82f;
+            float stanceVolume = audioEvent == MovementAudioEvent.VentStep
+                ? 0.65f
+                : IsCrouched ? 0.55f : IsSprinting ? 1f : 0.82f;
             source.pitch = 0.96f + (AudioEventSequence % 7) * 0.012f;
             float volume = localFootstepVolume * stanceVolume * (localOwner ? 1f : remoteVolumeMultiplier);
             if (audioEvent == MovementAudioEvent.Land)
@@ -1621,12 +1635,16 @@ namespace TheSancturary.FusionPrototype
 
         private AudioClip SelectFootstepClip()
         {
-            if (IsInVent && ventMovementClips != null && ventMovementClips.Length > 0)
-                return ventMovementClips[AudioEventSequence % ventMovementClips.Length];
-
             if (footstepClips == null || footstepClips.Length == 0)
                 return null;
             return footstepClips[AudioEventSequence % footstepClips.Length];
+        }
+
+        private AudioClip SelectVentMovementClip()
+        {
+            if (ventMovementClips == null || ventMovementClips.Length == 0)
+                return null;
+            return ventMovementClips[AudioEventSequence % ventMovementClips.Length];
         }
 
         private static void LockCursor()

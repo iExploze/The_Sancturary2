@@ -18,6 +18,10 @@ namespace TheSancturary.FusionPrototype
         [SerializeField] private AudioClip exitSound;
         [SerializeField] private string blockedMessage = "Vent exit is blocked.";
 
+        [Header("Open State Presentation")]
+        [SerializeField] private GameObject openVisual;
+        [SerializeField] private GameObject closedCover;
+
         [Networked] private PlayerRef FeedbackPlayer { get; set; }
         [Networked] private ushort FeedbackSequence { get; set; }
         [Networked] private ushort TransitionAudioSequence { get; set; }
@@ -25,6 +29,7 @@ namespace TheSancturary.FusionPrototype
         private bool _spawned;
         private ushort _lastPresentedFeedbackSequence;
         private ushort _lastPresentedTransitionAudioSequence;
+        private bool _lastPresentedOpen;
 
         public InteractionTarget PromptTarget => interactionTarget;
         public NetworkVentEntrance LinkedEntrance => linkedEntrance;
@@ -42,6 +47,8 @@ namespace TheSancturary.FusionPrototype
             _spawned = true;
             _lastPresentedFeedbackSequence = FeedbackSequence;
             _lastPresentedTransitionAudioSequence = TransitionAudioSequence;
+            _lastPresentedOpen = linkedEntrance != null && linkedEntrance.IsOpen;
+            ApplyPresentation(_lastPresentedOpen);
         }
 
         public override void Despawned(NetworkRunner runner, bool hasState)
@@ -51,6 +58,13 @@ namespace TheSancturary.FusionPrototype
 
         public override void Render()
         {
+            bool open = linkedEntrance != null && linkedEntrance.IsOpen;
+            if (open != _lastPresentedOpen)
+            {
+                _lastPresentedOpen = open;
+                ApplyPresentation(open);
+            }
+
             if (TransitionAudioSequence != _lastPresentedTransitionAudioSequence)
             {
                 _lastPresentedTransitionAudioSequence = TransitionAudioSequence;
@@ -75,7 +89,7 @@ namespace TheSancturary.FusionPrototype
             }
 
             actionText = linkedEntrance != null && linkedEntrance.IsOpen
-                ? "F \u2014 Exit Vent"
+                ? "F \u2014 Exit"
                 : "Closed";
             return true;
         }
@@ -118,19 +132,37 @@ namespace TheSancturary.FusionPrototype
             NetworkVentEntrance configuredLinkedEntrance,
             Transform[] configuredExteriorArrivalAnchors,
             AudioSource configuredAudioSource,
-            AudioClip configuredExitSound)
+            AudioClip configuredExitSound,
+            GameObject configuredOpenVisual = null,
+            GameObject configuredClosedCover = null)
         {
             interactionTarget = configuredInteractionTarget;
             linkedEntrance = configuredLinkedEntrance;
             exteriorArrivalAnchors = configuredExteriorArrivalAnchors;
             audioSource = configuredAudioSource;
             exitSound = configuredExitSound;
+            openVisual = configuredOpenVisual;
+            closedCover = configuredClosedCover;
+            ApplyPresentation(true);
         }
 
         private void ResolveReferences()
         {
             interactionTarget ??= GetComponent<InteractionTarget>();
             audioSource ??= GetComponent<AudioSource>();
+        }
+
+        private void ApplyPresentation(bool open)
+        {
+            if (openVisual != null)
+                openVisual.SetActive(open);
+            if (closedCover != null)
+                closedCover.SetActive(!open);
+        }
+
+        internal void ApplyLinkedPresentation(bool open)
+        {
+            ApplyPresentation(open);
         }
 
         private void PresentBlockedFeedbackAuthoritative(PlayerRef player)

@@ -17,7 +17,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4256505001152535553
 Transform:
   m_ObjectHideFlags: 0
@@ -241,7 +241,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
   SortKey: 3222294805
   SendPriority: 1
@@ -261,12 +261,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 974ed835efe4e9845800145e42023f38, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.InteractionTarget
   displayName: Vent Exit
   interactionVerb: Exit Vent
   status: 0
-  requiredKeyDisplayName:
+  requiredKeyDisplayName: 
   interactionBehaviour: {fileID: 2168332130916120171}
 --- !u!82 &5476411530537922570
 AudioSource:
@@ -375,7 +375,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 32338cdf1e436af4d961d1434bcf3d0c, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.NetworkVentExit
   interactionTarget: {fileID: 5163680649587792534}
   linkedEntrance: {fileID: 0}
@@ -390,6 +390,8 @@ MonoBehaviour:
   audioSource: {fileID: 5476411530537922570}
   exitSound: {fileID: 8300000, guid: b991e0891e608e74ba9f992a9301a399, type: 3}
   blockedMessage: Vent exit is blocked.
+  openVisual: {fileID: 0}
+  closedCover: {fileID: 1930895684910928080}
 --- !u!1 &2411538740901068303
 GameObject:
   m_ObjectHideFlags: 0
@@ -761,6 +763,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ExitGrate
       objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: 2467f03b21c877d4681e715a7919d7c7, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 2467f03b21c877d4681e715a7919d7c7, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.8
@@ -815,13 +821,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2300000, guid: 2467f03b21c877d4681e715a7919d7c7, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: af68f6e78a41c094fb112bd84a8c38c5, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2467f03b21c877d4681e715a7919d7c7, type: 3}
+--- !u!1 &1930895684910928080 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 100000, guid: 2467f03b21c877d4681e715a7919d7c7, type: 3}
+  m_PrefabInstance: {fileID: 1930895684910896752}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1930895684911025392 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: 2467f03b21c877d4681e715a7919d7c7, type: 3}
@@ -893,7 +904,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2379970, guid: 83d77b35dc0cbce4daa7dca833660677, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: af68f6e78a41c094fb112bd84a8c38c5, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
