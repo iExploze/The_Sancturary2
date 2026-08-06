@@ -441,11 +441,17 @@ MonoBehaviour:
   landingClip: {fileID: 8300000, guid: e3e664b3213e1fc4ca0eb3a1d77e7757, type: 3}
   crouchClip: {fileID: 8300000, guid: 1c865de209a88764bb7852ffd972475a, type: 3}
   standClip: {fileID: 8300000, guid: b7e1e5122a2ce584b85a838fdb668af9, type: 3}
+  ventMovementClips:
+  - {fileID: 8300000, guid: 7cdafdfef67ecb14aa19962f2b530eac, type: 3}
+  - {fileID: 8300000, guid: ba7e44d8db874da489107c31d32ecae3, type: 3}
+  - {fileID: 8300000, guid: 8e78ff55d7e0f8e46beb8937231eab60, type: 3}
+  - {fileID: 8300000, guid: 1d0db8119b9a00348b4a60a2210033b1, type: 3}
   localFootstepVolume: 0.8
   remoteVolumeMultiplier: 0.3
   walkStepDistance: 1.45
   sprintStepDistance: 1.75
   crouchStepDistance: 1.05
+  ventStepDistance: 0.85
   walkBobAmount: {x: 0.018, y: 0.028}
   walkBobFrequency: 8
   sprintBobAmount: {x: 0.045, y: 0.075}
@@ -468,6 +474,8 @@ MonoBehaviour:
       Raw: 0
     Behaviour: 0
   _IsHiddenInLocker:
+    RawValue: 0
+  _IsInVent:
     RawValue: 0
 --- !u!114 &1950252639633320911
 MonoBehaviour:

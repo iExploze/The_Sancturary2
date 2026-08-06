@@ -115,11 +115,13 @@ namespace TheSancturary.FusionPrototype
         [SerializeField] private AudioClip landingClip;
         [SerializeField] private AudioClip crouchClip;
         [SerializeField] private AudioClip standClip;
+        [SerializeField] private AudioClip[] ventMovementClips;
         [SerializeField, Range(0f, 1f)] private float localFootstepVolume = 0.8f;
         [SerializeField, Range(0f, 1f)] private float remoteVolumeMultiplier = 0.3f;
         [SerializeField, Min(0.1f)] private float walkStepDistance = 1.45f;
         [SerializeField, Min(0.1f)] private float sprintStepDistance = 1.75f;
         [SerializeField, Min(0.1f)] private float crouchStepDistance = 1.05f;
+        [SerializeField, Min(0.1f)] private float ventStepDistance = 0.85f;
 
         [Header("Owner Camera Motion")]
         [SerializeField] private Vector2 walkBobAmount = new(0.018f, 0.028f);
@@ -150,6 +152,8 @@ namespace TheSancturary.FusionPrototype
         [Networked] private byte AudioEventCode { get; set; }
         [Networked] public NetworkBehaviourId CurrentLocker { get; private set; }
         [Networked] public NetworkBool IsHiddenInLocker { get; private set; }
+        [Networked] public NetworkBool IsInVent { get; private set; }
+        [Networked] private ushort TeleportSequence { get; set; }
 
         private readonly Collider[] _standingHits = new Collider[16];
         private InputAction _moveAction;
@@ -190,6 +194,7 @@ namespace TheSancturary.FusionPrototype
         private bool _lastPresentedLockerHidden;
         private bool _lastPresentedDead;
         private bool _localPauseInputBlocked;
+        private ushort _lastPresentedTeleportSequence;
         private LevelRespawnSettings _respawnSettings;
 
         public bool IsDeadOrPending => IsDead || Health - _pendingDamage <= 0f;
@@ -215,6 +220,7 @@ namespace TheSancturary.FusionPrototype
                 RespawnTimer = TickTimer.None;
                 CurrentLocker = default;
                 IsHiddenInLocker = false;
+                IsInVent = false;
                 LookYaw = transform.eulerAngles.y;
                 WasGrounded = networkController.Grounded;
             }
@@ -257,6 +263,7 @@ namespace TheSancturary.FusionPrototype
             _lastAudioEventSequence = AudioEventSequence;
             _lastRenderedHealth = Health;
             _lastPresentedDead = IsDead;
+            _lastPresentedTeleportSequence = TeleportSequence;
             _currentCameraHeight = standingCameraHeight;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             LogNetworkDiagnostics();
@@ -447,7 +454,7 @@ namespace TheSancturary.FusionPrototype
             if (!HasStateAuthority || locker == null || IsDeadOrPending)
                 return false;
 
-            if (CurrentLocker.IsValid)
+            if (CurrentLocker.IsValid || IsInVent)
                 return false;
 
             CurrentLocker = locker.Id;
@@ -507,15 +514,111 @@ namespace TheSancturary.FusionPrototype
             if (!HasStateAuthority || networkController == null)
                 return;
 
-            networkController.Velocity = Vector3.zero;
-            networkController.Teleport(position);
+            IsInVent = false;
+            TeleportMovementAuthoritative(position);
         }
 
         public void TeleportAuthoritative(Vector3 position, Quaternion rotation)
         {
-            TeleportAuthoritative(position);
+            if (!HasStateAuthority || networkController == null)
+                return;
+
+            IsInVent = false;
+            TeleportMovementAuthoritative(position, rotation);
+        }
+
+        public bool CanEnterVentAuthoritative()
+        {
+            return HasValidAuthoritativePlayerIdentity() &&
+                   VentTraversalRules.CanEnter(IsDeadOrPending, IsInVent, CurrentLocker.IsValid);
+        }
+
+        public bool CanExitVentAuthoritative()
+        {
+            return HasValidAuthoritativePlayerIdentity() &&
+                   VentTraversalRules.CanExit(IsDeadOrPending, IsInVent, CurrentLocker.IsValid);
+        }
+
+        public bool TryEnterVentAuthoritative(Vector3 destinationPosition, Quaternion destinationRotation)
+        {
+            if (!CanEnterVentAuthoritative())
+                return false;
+
+            IsInVent = true;
+            ForceCrouchedCharacterControllerAuthoritative();
+            TeleportMovementAuthoritative(destinationPosition, destinationRotation);
+            return true;
+        }
+
+        public bool TryExitVentAuthoritative(Vector3 destinationPosition, Quaternion destinationRotation)
+        {
+            if (!CanExitVentAuthoritative())
+                return false;
+
+            ForceCrouchedCharacterControllerAuthoritative();
+            TeleportMovementAuthoritative(destinationPosition, destinationRotation);
+            IsInVent = false;
+            return true;
+        }
+
+        public bool CanOccupyCrouchedPositionAuthoritative(Vector3 position, LayerMask collisionMask)
+        {
+            if (!HasStateAuthority || characterController == null)
+                return false;
+
+            float radius = Mathf.Max(0.05f, characterController.radius * 0.95f);
+            float floorClearance = Mathf.Max(0.01f, characterController.skinWidth);
+            Vector3 bottom = position + Vector3.up * (radius + floorClearance);
+            Vector3 top = position + Vector3.up * (crouchingHeight - radius);
+            int hitCount = Physics.OverlapCapsuleNonAlloc(
+                bottom,
+                top,
+                radius,
+                _standingHits,
+                collisionMask,
+                QueryTriggerInteraction.Ignore);
+            for (int index = 0; index < hitCount; index++)
+            {
+                Collider hit = _standingHits[index];
+                if (hit != null && hit.transform.root != transform.root)
+                    return false;
+            }
+
+            return true;
+        }
+
+        private bool HasValidAuthoritativePlayerIdentity()
+        {
+            return HasStateAuthority && Runner != null && Object != null &&
+                   Object.IsValid && Object.IsInSimulation &&
+                   Object.InputAuthority != PlayerRef.None &&
+                   Runner.TryGetPlayerObject(Object.InputAuthority, out NetworkObject playerObject) &&
+                   playerObject == Object;
+        }
+
+        private void ForceCrouchedCharacterControllerAuthoritative()
+        {
+            IsCrouched = true;
+            IsSprinting = false;
+            _airborneCharacterControllerShrunk = false;
+            _airborneCharacterControllerHasClearedGround = false;
+            characterController.height = crouchingHeight;
+            characterController.center = Vector3.up * (crouchingHeight * 0.5f);
+        }
+
+        private void TeleportMovementAuthoritative(Vector3 position)
+        {
+            networkController.Velocity = Vector3.zero;
+            AccumulatedStepDistance = 0f;
+            networkController.Teleport(position);
+        }
+
+        private void TeleportMovementAuthoritative(Vector3 position, Quaternion rotation)
+        {
+            TeleportMovementAuthoritative(position);
             transform.rotation = rotation;
             LookYaw = rotation.eulerAngles.y;
+            TeleportSequence++;
         }
 
         public bool KillInstantlyAuthoritative()
@@ -527,6 +630,7 @@ namespace TheSancturary.FusionPrototype
             Health = 0f;
             TimeSinceDamage = 0f;
             IsDead = true;
+            IsInVent = false;
             ReleaseCurrentLockerAfterInvalidation();
             return true;
         }
@@ -909,7 +1013,7 @@ namespace TheSancturary.FusionPrototype
                 if (!IsLockerInputLocked && pressed.IsSet(FusionPlayerButton.UseEquipped))
                     inventory?.ToggleEquippedUseAuthoritative();
 
-                if (!IsLockerInputLocked && pressed.IsSet(FusionPlayerButton.Crouch))
+                if (!IsLockerInputLocked && !IsInVent && pressed.IsSet(FusionPlayerButton.Crouch))
                 {
                     if (IsCrouched || CanStand())
                     {
@@ -928,12 +1032,16 @@ namespace TheSancturary.FusionPrototype
                 return;
             }
 
+            if (IsInVent)
+            {
+                IsCrouched = true;
+                IsSprinting = false;
+            }
+
             Vector2 moveInput = Vector2.ClampMagnitude(input.Move, 1f);
             bool hasForwardInput = moveInput.y > 0.01f;
-            bool wantsToSprint = input.Buttons.IsSet(FusionPlayerButton.Sprint)
-                && !IsCrouched
-                && hasForwardInput
-                && !SprintLocked;
+            bool wantsToSprint = input.Buttons.IsSet(FusionPlayerButton.Sprint) &&
+                VentTraversalRules.CanSprint(IsInVent, IsCrouched, hasForwardInput, SprintLocked);
             Vector2 effectiveMoveInput = wantsToSprint
                 ? new Vector2(0f, Mathf.Clamp01(moveInput.y))
                 : moveInput;
@@ -949,7 +1057,8 @@ namespace TheSancturary.FusionPrototype
             networkController.jumpImpulse = jumpImpulse;
 
             bool wasGrounded = networkController.Grounded;
-            if (pressed.IsSet(FusionPlayerButton.Jump) && wasGrounded && !IsCrouched)
+            if (pressed.IsSet(FusionPlayerButton.Jump) &&
+                VentTraversalRules.CanJump(IsInVent, IsCrouched, wasGrounded))
             {
                 networkController.Jump();
                 BeginAirborneCharacterControllerShrink();
@@ -996,7 +1105,9 @@ namespace TheSancturary.FusionPrototype
             if (isGrounded && actuallyMoving)
             {
                 AccumulatedStepDistance += actualHorizontalSpeed * Runner.DeltaTime;
-                float cadence = IsCrouched ? crouchStepDistance : IsSprinting ? sprintStepDistance : walkStepDistance;
+                float cadence = IsInVent
+                    ? ventStepDistance
+                    : IsCrouched ? crouchStepDistance : IsSprinting ? sprintStepDistance : walkStepDistance;
                 if (AccumulatedStepDistance >= cadence)
                 {
                     AccumulatedStepDistance -= cadence;
@@ -1053,6 +1164,7 @@ namespace TheSancturary.FusionPrototype
             if (Health <= 0f)
             {
                 IsDead = true;
+                IsInVent = false;
                 if (_respawnSettings != null)
                 {
                     RespawnTimer = TickTimer.CreateFromSeconds(
@@ -1080,12 +1192,14 @@ namespace TheSancturary.FusionPrototype
             TimeSinceDamage = 0f;
             CurrentLocker = default;
             IsHiddenInLocker = false;
+            IsInVent = false;
             RespawnTimer = TickTimer.None;
             PreviousButtons = default;
             networkController.Velocity = Vector3.zero;
             networkController.Teleport(position, rotation);
             LookYaw = rotation.eulerAngles.y;
             LookPitch = 0f;
+            TeleportSequence++;
             WasGrounded = false;
             return true;
         }
@@ -1253,6 +1367,17 @@ namespace TheSancturary.FusionPrototype
 
         public override void Render()
         {
+            if (TeleportSequence != _lastPresentedTeleportSequence)
+            {
+                _lastPresentedTeleportSequence = TeleportSequence;
+                if (HasInputAuthority)
+                {
+                    _localLookYaw = LookYaw;
+                    _localLookPitch = Mathf.Clamp(LookPitch, pitchLimits.x, pitchLimits.y);
+                    ApplyOwnerCameraLook();
+                }
+            }
+
             if (IsDead != _lastPresentedDead)
             {
                 _lastPresentedDead = IsDead;
@@ -1486,7 +1611,7 @@ namespace TheSancturary.FusionPrototype
                 return;
 
             AudioSource source = localOwner ? localAudioSource : spatialAudioSource;
-            float stanceVolume = IsCrouched ? 0.55f : IsSprinting ? 1f : 0.82f;
+            float stanceVolume = IsInVent ? 0.65f : IsCrouched ? 0.55f : IsSprinting ? 1f : 0.82f;
             source.pitch = 0.96f + (AudioEventSequence % 7) * 0.012f;
             float volume = localFootstepVolume * stanceVolume * (localOwner ? 1f : remoteVolumeMultiplier);
             if (audioEvent == MovementAudioEvent.Land)
@@ -1496,6 +1621,9 @@ namespace TheSancturary.FusionPrototype
 
         private AudioClip SelectFootstepClip()
         {
+            if (IsInVent && ventMovementClips != null && ventMovementClips.Length > 0)
+                return ventMovementClips[AudioEventSequence % ventMovementClips.Length];
+
             if (footstepClips == null || footstepClips.Length == 0)
                 return null;
             return footstepClips[AudioEventSequence % footstepClips.Length];
@@ -1573,6 +1701,7 @@ namespace TheSancturary.FusionPrototype
 
             CurrentLocker = default;
             IsHiddenInLocker = false;
+            IsInVent = false;
         }
     }
 }
