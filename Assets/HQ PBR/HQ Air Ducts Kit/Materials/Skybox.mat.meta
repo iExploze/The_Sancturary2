@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 7792ad576519c3747bdc94730964c323
+timeCreated: 1460244578
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 60303
+  packageName: HQ Air Ducts Kit
+  packageVersion: 1.2
+  assetPath: Assets/HQ PBR/HQ Air Ducts Kit/Materials/Skybox.mat
+  uploadId: 118411
