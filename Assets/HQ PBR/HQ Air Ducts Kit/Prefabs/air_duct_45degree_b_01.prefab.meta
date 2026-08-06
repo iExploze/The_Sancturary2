@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: fd5d59d1b77620942952b8113c37ad99
+timeCreated: 1460779114
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 60303
+  packageName: HQ Air Ducts Kit
+  packageVersion: 1.2
+  assetPath: Assets/HQ PBR/HQ Air Ducts Kit/Prefabs/air_duct_45degree_b_01.prefab
+  uploadId: 118411
