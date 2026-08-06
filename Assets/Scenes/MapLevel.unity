@@ -140490,7 +140490,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7353932132077492863, guid: 084840019d00f4a46bf58486806756c1, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -37.054245
+      value: -36.563004
       objectReference: {fileID: 0}
     - target: {fileID: 7353932132077492863, guid: 084840019d00f4a46bf58486806756c1, type: 3}
       propertyPath: m_LocalRotation.w
@@ -302125,6 +302125,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.DebugSessionBootstrap
   canonicalPlayerPrefab: {fileID: 361827384529308309, guid: 9515172276e5fc6409b9892e5f5bbe76, type: 3}
+  lobbyPlayerStatePrefab: {fileID: 0}
 --- !u!4 &1518217793
 Transform:
   m_ObjectHideFlags: 0
@@ -367207,7 +367208,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7353932132077492863, guid: 084840019d00f4a46bf58486806756c1, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -37.054245
+      value: -36.563
       objectReference: {fileID: 0}
     - target: {fileID: 7353932132077492863, guid: 084840019d00f4a46bf58486806756c1, type: 3}
       propertyPath: m_LocalRotation.w
@@ -396253,6 +396254,10 @@ PrefabInstance:
     - target: {fileID: 1611737430764524036, guid: c7e043ac7171e6b458b6ef7f7822f5ef, type: 3}
       propertyPath: m_Name
       value: Shelf (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3865380648079796146, guid: c7e043ac7171e6b458b6ef7f7822f5ef, type: 3}
+      propertyPath: m_Convex
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7286946309466525378, guid: c7e043ac7171e6b458b6ef7f7822f5ef, type: 3}
       propertyPath: m_LocalPosition.x
