@@ -2,6 +2,7 @@ using System.Collections;
 using System.Reflection;
 using Fusion;
 using NUnit.Framework;
+using TheSancturary.Inventory;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
@@ -148,6 +149,7 @@ namespace TheSancturary.FusionPrototype.Tests
                 NUnitAssert.That(characterRenderer.enabled, Is.True, $"{characterRenderer.name} must remain enabled for external and Scene cameras.");
                 NUnitAssert.That(characterRenderer.forceRenderingOff, Is.False, $"{characterRenderer.name} must not remain globally suppressed outside the owner-camera render pass.");
             }
+
             Cursor.lockState = CursorLockMode.Locked;
 
             FieldInfo sensitivityField = typeof(FusionNetworkPlayer).GetField("lookSensitivity", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -222,6 +224,115 @@ namespace TheSancturary.FusionPrototype.Tests
             NUnitAssert.That(vignette.intensity.value, Is.LessThan(combinedIntensity), "The initial damage flash should settle smoothly into the persistent health vignette.");
             NUnitAssert.That(vignette.intensity.value, Is.GreaterThan(0.5f), "Low health should keep an obvious edge vignette without covering the center of the screen.");
             NUnitAssert.That(vignette.color.value.r, Is.GreaterThan(vignette.color.value.g + 0.15f), "Missing health should retain a persistent red vignette after the initial flash.");
+        }
+
+        [UnityTest]
+        public IEnumerator OwnedPlayerMaintainsBothEquipmentPresentations()
+        {
+            yield return FusionPlayModeTestSession.ResetExistingSession();
+            yield return SceneManager.LoadSceneAsync(
+                FusionSessionManager.GameplayScenePath,
+                LoadSceneMode.Single);
+
+            FusionNetworkPlayer player = null;
+            yield return WaitUntil(
+                () => (player = Object.FindFirstObjectByType<
+                    FusionNetworkPlayer>()) != null,
+                30f,
+                "Direct scene Play did not spawn the owned Fusion player.");
+            NUnitAssert.That(player.HasInputAuthority, Is.True);
+            NUnitAssert.That(player.HasStateAuthority, Is.True);
+
+            NUnitAssert.That(
+                player.Inventory.TryAddItemAuthoritative(
+                    "sawed_off_shotgun",
+                    out InventoryRequestRejection addRejection),
+                Is.True,
+                $"Failed to add the owner-presentation test shotgun: {addRejection}");
+            ushort shotgunInstanceId = 0;
+            for (int index = 0;
+                 index < NetworkPlayerInventory.MaximumItems;
+                 index++)
+            {
+                NetworkInventoryEntry entry =
+                    player.Inventory.Entries.Get(index);
+                if (entry.IsOccupied &&
+                    entry.ItemId.ToString() == "sawed_off_shotgun")
+                {
+                    shotgunInstanceId = entry.InstanceId;
+                    break;
+                }
+            }
+
+            NUnitAssert.That(shotgunInstanceId, Is.Not.Zero);
+            player.Inventory.RequestEquip(shotgunInstanceId);
+            yield return WaitUntil(
+                () => player.Inventory.EquippedInstanceId == shotgunInstanceId,
+                3f,
+                "The owner-presentation test shotgun was not equipped.");
+
+            PlayerEquipment equipment = player.GetComponent<PlayerEquipment>();
+            PlayerEquipmentRigController equipmentRig =
+                player.GetComponentInChildren<PlayerEquipmentRigController>(true);
+            yield return WaitUntil(
+                () => equipment.FirstPersonHeldVisual != null &&
+                      equipment.ThirdPersonHeldVisual != null,
+                2f,
+                "The local owner must build first- and third-person held visuals together.");
+            NUnitAssert.That(
+                equipment.FirstPersonHeldVisual.IsOwnerPresentation,
+                Is.True);
+            NUnitAssert.That(
+                equipment.ThirdPersonHeldVisual.IsOwnerPresentation,
+                Is.False);
+            NUnitAssert.That(equipment.ThirdPersonRenderers, Is.Not.Empty);
+            NUnitAssert.That(equipmentRig.Equipment, Is.SameAs(equipment));
+            NUnitAssert.That(equipmentRig.DesiredRightWeight, Is.EqualTo(1f));
+            NUnitAssert.That(equipmentRig.DesiredLeftWeight, Is.EqualTo(1f));
+
+            Renderer[] firstPersonRenderers =
+                equipment.FirstPersonHeldVisual.GetComponentsInChildren<
+                    Renderer>(true);
+            equipment.SetOwnerCameraThirdPersonSuppressed(true);
+            foreach (Renderer thirdPersonRenderer in
+                     equipment.ThirdPersonRenderers)
+            {
+                NUnitAssert.That(
+                    thirdPersonRenderer.forceRenderingOff,
+                    Is.True,
+                    "Only the local third-person held item should be suppressed for the owner camera.");
+            }
+
+            foreach (Renderer firstPersonRenderer in firstPersonRenderers)
+            {
+                NUnitAssert.That(
+                    firstPersonRenderer.forceRenderingOff,
+                    Is.False,
+                    "Owner suppression must leave the first-person item visible.");
+            }
+
+            equipment.SetOwnerCameraThirdPersonSuppressed(false);
+            foreach (Renderer thirdPersonRenderer in
+                     equipment.ThirdPersonRenderers)
+            {
+                NUnitAssert.That(
+                    thirdPersonRenderer.forceRenderingOff,
+                    Is.False,
+                    "Scene and external cameras must see the local third-person item.");
+            }
+
+            player.Inventory.RequestEquip(shotgunInstanceId);
+            yield return WaitUntil(
+                () => player.Inventory.EquippedInstanceId == 0,
+                3f,
+                "The owner-presentation test shotgun was not unequipped.");
+            yield return WaitUntil(
+                () => equipment.FirstPersonHeldVisual == null &&
+                      equipment.ThirdPersonHeldVisual == null,
+                2f,
+                "Unequipping must clear both local presentation objects.");
+            NUnitAssert.That(equipment.ThirdPersonRenderers, Is.Empty);
+            NUnitAssert.That(equipmentRig.Equipment, Is.Null);
         }
 
         private static IEnumerator WaitUntil(System.Func<bool> condition, float timeoutSeconds, string failureMessage)

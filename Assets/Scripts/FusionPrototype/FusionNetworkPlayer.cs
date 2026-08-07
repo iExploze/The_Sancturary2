@@ -198,6 +198,7 @@ namespace TheSancturary.FusionPrototype
         private bool _lastPresentedDead;
         private bool _localPauseInputBlocked;
         private bool _attackRequiresRelease;
+        private PlayerEquipment _equipmentPresentation;
         private ushort _lastPresentedTeleportSequence;
         private LevelRespawnSettings _respawnSettings;
 
@@ -251,7 +252,7 @@ namespace TheSancturary.FusionPrototype
                 _localLookPitch = Mathf.Clamp(LookPitch, pitchLimits.x, pitchLimits.y);
                 ApplyOwnerCameraLook();
                 localInteractionTargeting.Initialize(playerCamera, playerInput, this, inventory);
-                gridInventory.GetComponent<PlayerEquipment>().InitializeOwner(playerCamera);
+                _equipmentPresentation?.InitializeOwner(playerCamera);
                 gridInventory.InitializeOwner(
                     playerInput,
                     playerCamera,
@@ -287,6 +288,7 @@ namespace TheSancturary.FusionPrototype
             inventory ??= GetComponent<NetworkPlayerInventory>();
             gridInventory ??= GetComponent<PlayerInventory>();
             itemUseController ??= GetComponent<NetworkItemUseController>();
+            _equipmentPresentation ??= GetComponent<PlayerEquipment>();
             _respawnSettings ??= FindFirstObjectByType<LevelRespawnSettings>();
             localAudioSource ??= GetComponent<AudioSource>();
             if (spatialAudioSource == null)
@@ -1606,14 +1608,17 @@ namespace TheSancturary.FusionPrototype
 
         private void SetCharacterRenderingSuppressed(bool suppressed)
         {
-            if (characterRenderers == null)
-                return;
-
-            for (int i = 0; i < characterRenderers.Length; i++)
+            if (characterRenderers != null)
             {
-                if (characterRenderers[i] != null)
-                    characterRenderers[i].forceRenderingOff = suppressed;
+                for (int i = 0; i < characterRenderers.Length; i++)
+                {
+                    if (characterRenderers[i] != null)
+                        characterRenderers[i].forceRenderingOff = suppressed;
+                }
             }
+
+            _equipmentPresentation?.SetOwnerCameraThirdPersonSuppressed(
+                suppressed);
         }
 
         private void RenderOwnerCamera()

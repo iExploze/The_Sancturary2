@@ -1,3 +1,4 @@
+using System;
 using Fusion;
 using TheSancturary.FusionPrototype;
 using UnityEngine;
@@ -27,17 +28,30 @@ namespace TheSancturary.Inventory
         [SerializeField] private FlashlightController flashlight;
 
         private Transform _ownerCamera;
-        private GameObject _heldObject;
-        private HeldItemVisual _heldVisual;
-        private GameObject _heldPrefab;
+        private GameObject _firstPersonHeldObject;
+        private HeldItemVisual _firstPersonHeldVisual;
+        private GameObject _firstPersonHeldPrefab;
+        private GameObject _thirdPersonHeldObject;
+        private HeldItemVisual _thirdPersonHeldVisual;
+        private GameObject _thirdPersonHeldPrefab;
+        private Renderer[] _thirdPersonRenderers = Array.Empty<Renderer>();
+        private Light[] _thirdPersonLights = Array.Empty<Light>();
+        private bool[] _thirdPersonLightEnabledBeforeSuppression =
+            Array.Empty<bool>();
+        private bool _ownerCameraThirdPersonSuppressed;
         private InventoryItemDefinition _heldDefinition;
         private ushort _heldInstanceId;
-        private bool _heldIsOwnerPresentation;
         private ushort _lastPresentedActionSequence;
         private ushort _presentedActiveUseInstanceId;
         private InventoryItemUseKind _presentedActiveUseKind;
 
-        public HeldItemVisual CurrentHeldVisual => _heldVisual;
+        public HeldItemVisual CurrentHeldVisual =>
+            _firstPersonHeldVisual != null
+                ? _firstPersonHeldVisual
+                : _thirdPersonHeldVisual;
+        public HeldItemVisual FirstPersonHeldVisual => _firstPersonHeldVisual;
+        public HeldItemVisual ThirdPersonHeldVisual => _thirdPersonHeldVisual;
+        public Renderer[] ThirdPersonRenderers => _thirdPersonRenderers;
 
         public void InitializeOwner(Camera ownerCamera)
         {
@@ -55,7 +69,7 @@ namespace TheSancturary.Inventory
                 return;
             }
 
-            bool ownerPresentation = inventory.HasInputAuthority;
+            bool hasInputAuthority = inventory.HasInputAuthority;
             ushort equippedId = inventory.EquippedInstanceId;
             if (equippedId == 0 ||
                 !inventory.TryGetEntry(
@@ -69,30 +83,68 @@ namespace TheSancturary.Inventory
                 return;
             }
 
-            GameObject prefab = ownerPresentation
-                ? definition.EquippedPrefab
-                : definition.ThirdPersonEquippedPrefab;
-            Transform anchor = ownerPresentation
-                ? ownerFirstPersonAnchor != null
-                    ? ownerFirstPersonAnchor
-                    : _ownerCamera
-                : thirdPersonAnchor;
-            if (prefab == null || anchor == null)
+            Transform firstPersonAnchor = ownerFirstPersonAnchor != null
+                ? ownerFirstPersonAnchor
+                : _ownerCamera;
+            if (definition.ThirdPersonEquippedPrefab == null ||
+                thirdPersonAnchor == null ||
+                hasInputAuthority &&
+                (definition.EquippedPrefab == null || firstPersonAnchor == null))
             {
                 ClearPresentation();
                 return;
             }
 
-            EnsureHeldVisual(
-                equippedId,
-                definition,
-                prefab,
-                anchor,
-                ownerPresentation);
+            bool itemChanged = _heldDefinition != definition ||
+                               _heldInstanceId != equippedId;
+            if (itemChanged)
+            {
+                ClearPresentation();
+                _heldDefinition = definition;
+                _heldInstanceId = equippedId;
+                _lastPresentedActionSequence =
+                    player.ItemUseController != null
+                        ? player.ItemUseController.ActionSequence
+                        : (ushort)0;
+            }
+
+            if (hasInputAuthority)
+            {
+                if (!EnsureHeldVisual(
+                        ref _firstPersonHeldObject,
+                        ref _firstPersonHeldVisual,
+                        ref _firstPersonHeldPrefab,
+                        definition.EquippedPrefab,
+                        firstPersonAnchor,
+                        definition,
+                        true,
+                        "First-person"))
+                {
+                    ClearPresentation();
+                    return;
+                }
+            }
+            else
+            {
+                ClearFirstPersonPresentation();
+            }
+
+            if (!EnsureThirdPersonHeldVisual(definition))
+            {
+                ClearPresentation();
+                return;
+            }
+
+            equipmentRig?.Configure(
+                this,
+                _thirdPersonHeldVisual.RightHandGrip,
+                _thirdPersonHeldVisual.LeftHandGrip,
+                definition.HoldStyle,
+                definition.HoldPose);
             ApplyFlashlightPresentation(
                 inventory,
                 definition,
-                ownerPresentation);
+                hasInputAuthority);
             PresentNewAction(equippedId, definition);
             SyncActiveUsePresentation(equippedId, definition);
         }
@@ -101,83 +153,175 @@ namespace TheSancturary.Inventory
         {
             flashlight?.SetLightEnabled(false);
             equipmentRig?.Clear(this);
-            if (_heldObject != null)
-            {
-                _heldObject.SetActive(false);
-                Destroy(_heldObject);
-            }
-
-            _heldObject = null;
-            _heldVisual = null;
-            _heldPrefab = null;
+            ClearFirstPersonPresentation();
+            ClearThirdPersonPresentation();
             _heldDefinition = null;
             _heldInstanceId = 0;
-            _heldIsOwnerPresentation = false;
             _presentedActiveUseInstanceId = 0;
             _presentedActiveUseKind = InventoryItemUseKind.None;
         }
 
-        private void EnsureHeldVisual(
-            ushort instanceId,
-            InventoryItemDefinition definition,
+        public void SetOwnerCameraThirdPersonSuppressed(bool suppressed)
+        {
+            if (_ownerCameraThirdPersonSuppressed == suppressed)
+                return;
+
+            _ownerCameraThirdPersonSuppressed = suppressed;
+            for (int index = 0; index < _thirdPersonRenderers.Length; index++)
+            {
+                Renderer itemRenderer = _thirdPersonRenderers[index];
+                if (itemRenderer != null)
+                    itemRenderer.forceRenderingOff = suppressed;
+            }
+
+            if (suppressed)
+            {
+                for (int index = 0; index < _thirdPersonLights.Length; index++)
+                {
+                    Light itemLight = _thirdPersonLights[index];
+                    if (itemLight == null)
+                        continue;
+
+                    _thirdPersonLightEnabledBeforeSuppression[index] =
+                        itemLight.enabled;
+                    itemLight.enabled = false;
+                }
+            }
+            else
+            {
+                for (int index = 0; index < _thirdPersonLights.Length; index++)
+                {
+                    Light itemLight = _thirdPersonLights[index];
+                    if (itemLight != null)
+                    {
+                        itemLight.enabled =
+                            _thirdPersonLightEnabledBeforeSuppression[index];
+                    }
+                }
+            }
+        }
+
+        private bool EnsureThirdPersonHeldVisual(
+            InventoryItemDefinition definition)
+        {
+            bool rebuilt = _thirdPersonHeldObject == null ||
+                           _thirdPersonHeldPrefab !=
+                           definition.ThirdPersonEquippedPrefab;
+            if (!EnsureHeldVisual(
+                    ref _thirdPersonHeldObject,
+                    ref _thirdPersonHeldVisual,
+                    ref _thirdPersonHeldPrefab,
+                    definition.ThirdPersonEquippedPrefab,
+                    thirdPersonAnchor,
+                    definition,
+                    false,
+                    "Third-person"))
+                return false;
+
+            if (rebuilt)
+                CacheThirdPersonEffects();
+            return true;
+        }
+
+        private bool EnsureHeldVisual(
+            ref GameObject heldObject,
+            ref HeldItemVisual heldVisual,
+            ref GameObject heldPrefab,
             GameObject prefab,
             Transform anchor,
-            bool ownerPresentation)
+            InventoryItemDefinition definition,
+            bool ownerPresentation,
+            string presentationName)
         {
-            bool rebuild = _heldObject == null ||
-                           _heldPrefab != prefab ||
-                           _heldDefinition != definition ||
-                           _heldInstanceId != instanceId ||
-                           _heldIsOwnerPresentation != ownerPresentation;
+            bool rebuild = heldObject == null || heldPrefab != prefab;
             if (rebuild)
             {
-                ClearPresentation();
-                _heldObject = Instantiate(prefab, anchor, false);
-                _heldObject.name = $"Held {definition.DisplayName}";
-                _heldObject.transform.SetLocalPositionAndRotation(
+                DestroyHeldVisual(ref heldObject, ref heldVisual, ref heldPrefab);
+                heldObject = Instantiate(prefab, anchor, false);
+                heldObject.name = $"{presentationName} Held {definition.DisplayName}";
+                heldObject.transform.SetLocalPositionAndRotation(
                     Vector3.zero,
                     Quaternion.identity);
-                _heldVisual = _heldObject.GetComponent<HeldItemVisual>();
-                if (_heldVisual == null)
+                heldVisual = heldObject.GetComponent<HeldItemVisual>();
+                if (heldVisual == null)
                 {
                     Debug.LogError(
                         $"Held prefab '{prefab.name}' requires {nameof(HeldItemVisual)}.",
                         prefab);
-                    ClearPresentation();
-                    return;
+                    DestroyHeldVisual(
+                        ref heldObject,
+                        ref heldVisual,
+                        ref heldPrefab);
+                    return false;
                 }
 
-                _heldPrefab = prefab;
-                _heldDefinition = definition;
-                _heldInstanceId = instanceId;
-                _heldIsOwnerPresentation = ownerPresentation;
-                _heldVisual.Configure(definition, ownerPresentation);
-                _lastPresentedActionSequence =
-                    player.ItemUseController != null
-                        ? player.ItemUseController.ActionSequence
-                        : (ushort)0;
+                heldPrefab = prefab;
+                heldVisual.Configure(definition, ownerPresentation);
             }
-            else if (_heldObject.transform.parent != anchor)
+            else if (heldObject.transform.parent != anchor)
             {
-                _heldObject.transform.SetParent(anchor, false);
-                _heldObject.transform.SetLocalPositionAndRotation(
+                heldObject.transform.SetParent(anchor, false);
+                heldObject.transform.SetLocalPositionAndRotation(
                     Vector3.zero,
                     Quaternion.identity);
             }
 
-            if (ownerPresentation || _heldVisual == null)
+            return heldVisual != null;
+        }
+
+        private void CacheThirdPersonEffects()
+        {
+            bool wasSuppressed = _ownerCameraThirdPersonSuppressed;
+            if (wasSuppressed)
+                SetOwnerCameraThirdPersonSuppressed(false);
+
+            _thirdPersonRenderers = _thirdPersonHeldObject != null
+                ? _thirdPersonHeldObject.GetComponentsInChildren<Renderer>(true)
+                : Array.Empty<Renderer>();
+            _thirdPersonLights = _thirdPersonHeldObject != null
+                ? _thirdPersonHeldObject.GetComponentsInChildren<Light>(true)
+                : Array.Empty<Light>();
+            _thirdPersonLightEnabledBeforeSuppression =
+                new bool[_thirdPersonLights.Length];
+
+            if (wasSuppressed)
+                SetOwnerCameraThirdPersonSuppressed(true);
+        }
+
+        private void ClearFirstPersonPresentation()
+        {
+            DestroyHeldVisual(
+                ref _firstPersonHeldObject,
+                ref _firstPersonHeldVisual,
+                ref _firstPersonHeldPrefab);
+        }
+
+        private void ClearThirdPersonPresentation()
+        {
+            SetOwnerCameraThirdPersonSuppressed(false);
+            DestroyHeldVisual(
+                ref _thirdPersonHeldObject,
+                ref _thirdPersonHeldVisual,
+                ref _thirdPersonHeldPrefab);
+            _thirdPersonRenderers = Array.Empty<Renderer>();
+            _thirdPersonLights = Array.Empty<Light>();
+            _thirdPersonLightEnabledBeforeSuppression = Array.Empty<bool>();
+        }
+
+        private static void DestroyHeldVisual(
+            ref GameObject heldObject,
+            ref HeldItemVisual heldVisual,
+            ref GameObject heldPrefab)
+        {
+            if (heldObject != null)
             {
-                equipmentRig?.Clear(this);
+                heldObject.SetActive(false);
+                Destroy(heldObject);
             }
-            else
-            {
-                equipmentRig?.Configure(
-                    this,
-                    _heldVisual.RightHandGrip,
-                    _heldVisual.LeftHandGrip,
-                    definition.HoldStyle,
-                    definition.HoldPose);
-            }
+
+            heldObject = null;
+            heldVisual = null;
+            heldPrefab = null;
         }
 
         private void PresentNewAction(
@@ -197,8 +341,9 @@ namespace TheSancturary.Inventory
             ItemActionPresentation action = controller.LastAction;
             if (action != ItemActionPresentation.Reload)
             {
-                _heldVisual?.PlayUse(
-                    action == ItemActionPresentation.DryFire);
+                bool dryFire = action == ItemActionPresentation.DryFire;
+                _firstPersonHeldVisual?.PlayUse(dryFire);
+                _thirdPersonHeldVisual?.PlayUse(dryFire);
             }
 
             AudioClip clip = action switch
@@ -231,7 +376,10 @@ namespace TheSancturary.Inventory
             if (!isThisItemActive)
             {
                 if (_presentedActiveUseInstanceId != 0)
-                    _heldVisual?.CancelUse();
+                {
+                    _firstPersonHeldVisual?.CancelUse();
+                    _thirdPersonHeldVisual?.CancelUse();
+                }
 
                 _presentedActiveUseInstanceId = 0;
                 _presentedActiveUseKind = InventoryItemUseKind.None;
@@ -246,7 +394,8 @@ namespace TheSancturary.Inventory
                 0f,
                 definition.UseDuration -
                 controller.ActiveUseRemainingSeconds);
-            _heldVisual?.PlayUseFromElapsed(false, elapsedSeconds);
+            _firstPersonHeldVisual?.PlayUseFromElapsed(false, elapsedSeconds);
+            _thirdPersonHeldVisual?.PlayUseFromElapsed(false, elapsedSeconds);
             _presentedActiveUseInstanceId = equippedInstanceId;
             _presentedActiveUseKind = controller.ActiveUseKind;
         }
