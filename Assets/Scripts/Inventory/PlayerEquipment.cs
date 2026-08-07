@@ -15,7 +15,7 @@ namespace TheSancturary.Inventory
         [SerializeField] private FusionNetworkPlayer player;
         [SerializeField] private Transform ownerFirstPersonAnchor;
         [SerializeField] private Transform thirdPersonAnchor;
-        [SerializeField] private PlayerEquipmentAnimatorIK animatorIK;
+        [SerializeField] private PlayerEquipmentRigController equipmentRig;
 
         [Header("Action Audio")]
         [SerializeField] private AudioSource ownerAudioSource;
@@ -108,7 +108,7 @@ namespace TheSancturary.Inventory
         public void ClearPresentation()
         {
             flashlight?.SetLightEnabled(false);
-            animatorIK?.Clear(this);
+            equipmentRig?.Clear(this);
             if (_heldObject != null)
             {
                 _heldObject.SetActive(false);
@@ -175,11 +175,11 @@ namespace TheSancturary.Inventory
 
             if (ownerPresentation || _heldVisual == null)
             {
-                animatorIK?.Clear(this);
+                equipmentRig?.Clear(this);
             }
             else
             {
-                animatorIK?.Configure(
+                equipmentRig?.Configure(
                     this,
                     _heldVisual.RightHandGrip,
                     _heldVisual.LeftHandGrip,
@@ -305,7 +305,7 @@ namespace TheSancturary.Inventory
         private void ResolveReferences()
         {
             player ??= GetComponent<FusionNetworkPlayer>();
-            animatorIK ??= GetComponentInChildren<PlayerEquipmentAnimatorIK>(
+            equipmentRig ??= GetComponentInChildren<PlayerEquipmentRigController>(
                 true);
             flashlight ??= GetComponentInChildren<FlashlightController>(true);
             if (flashlightOrigin == null && flashlight != null)

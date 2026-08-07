@@ -8,6 +8,7 @@ using TheSancturary.Inventory;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 using Assert = NUnit.Framework.Assert;
 
 namespace TheSancturary.FusionPrototype.Tests
@@ -539,7 +540,7 @@ namespace TheSancturary.FusionPrototype.Tests
         }
 
         [Test]
-        public void PlayerPrefabHasItemUseEquipmentAndAnimatorIkWiring()
+        public void PlayerPrefabHasItemUseEquipmentAndAnimationRiggingWiring()
         {
             GameObject playerPrefab = LoadRequiredAsset<GameObject>(
                 PlayerPrefabPath);
@@ -553,8 +554,28 @@ namespace TheSancturary.FusionPrototype.Tests
                 playerPrefab.GetComponent<NetworkItemUseController>();
             Animator animator =
                 playerPrefab.GetComponentInChildren<Animator>(true);
-            PlayerEquipmentAnimatorIK animatorIK = animator != null
-                ? animator.GetComponent<PlayerEquipmentAnimatorIK>()
+            PlayerEquipmentRigController equipmentRig = animator != null
+                ? animator.GetComponent<PlayerEquipmentRigController>()
+                : null;
+            RigBuilder rigBuilder = animator != null
+                ? animator.GetComponent<RigBuilder>()
+                : null;
+            Transform itemRig = animator != null
+                ? animator.transform.Find("ItemRig")
+                : null;
+            Rig rightArmRig = itemRig != null
+                ? itemRig.Find("RightArmRig")?.GetComponent<Rig>()
+                : null;
+            Rig leftArmRig = itemRig != null
+                ? itemRig.Find("LeftArmRig")?.GetComponent<Rig>()
+                : null;
+            TwoBoneIKConstraint rightArmConstraint = rightArmRig != null
+                ? rightArmRig.transform.Find("RightArmIK")
+                    ?.GetComponent<TwoBoneIKConstraint>()
+                : null;
+            TwoBoneIKConstraint leftArmConstraint = leftArmRig != null
+                ? leftArmRig.transform.Find("LeftArmIK")
+                    ?.GetComponent<TwoBoneIKConstraint>()
                 : null;
 
             Assert.That(player, Is.Not.Null);
@@ -562,15 +583,72 @@ namespace TheSancturary.FusionPrototype.Tests
             Assert.That(equipment, Is.Not.Null);
             Assert.That(useController, Is.Not.Null);
             Assert.That(animator, Is.Not.Null);
-            Assert.That(animatorIK, Is.Not.Null);
+            Assert.That(equipmentRig, Is.Not.Null);
+            Assert.That(rigBuilder, Is.Not.Null);
+            Assert.That(itemRig, Is.Not.Null);
+            Assert.That(rightArmRig, Is.Not.Null);
+            Assert.That(leftArmRig, Is.Not.Null);
+            Assert.That(rightArmConstraint, Is.Not.Null);
+            Assert.That(leftArmConstraint, Is.Not.Null);
+            Assert.That(rightArmConstraint.IsValid(), Is.True);
+            Assert.That(leftArmConstraint.IsValid(), Is.True);
 
             AssertSerializedReference(useController, "player", player);
             AssertSerializedReference(useController, "inventory", inventory);
             AssertSerializedReference(equipment, "player", player);
             AssertSerializedReferenceNotNull(equipment, "ownerFirstPersonAnchor");
             AssertSerializedReferenceNotNull(equipment, "thirdPersonAnchor");
-            AssertSerializedReference(equipment, "animatorIK", animatorIK);
-            AssertSerializedReference(animatorIK, "animator", animator);
+            AssertSerializedReference(equipment, "equipmentRig", equipmentRig);
+            AssertSerializedReference(equipmentRig, "animator", animator);
+            AssertSerializedReference(equipmentRig, "rigBuilder", rigBuilder);
+            AssertSerializedReference(
+                equipmentRig,
+                "rightArmRig",
+                rightArmRig);
+            AssertSerializedReference(
+                equipmentRig,
+                "leftArmRig",
+                leftArmRig);
+            AssertSerializedReference(
+                equipmentRig,
+                "rightArmConstraint",
+                rightArmConstraint);
+            AssertSerializedReference(
+                equipmentRig,
+                "leftArmConstraint",
+                leftArmConstraint);
+            Assert.That(rigBuilder.layers.Count, Is.EqualTo(2));
+            Assert.That(
+                rigBuilder.layers.Select(layer => layer.rig),
+                Is.EquivalentTo(new[] { rightArmRig, leftArmRig }));
+
+            SerializedObject serializedRig = new(equipmentRig);
+            Transform rightTarget = (Transform)serializedRig
+                .FindProperty("rightHandTarget").objectReferenceValue;
+            Transform leftTarget = (Transform)serializedRig
+                .FindProperty("leftHandTarget").objectReferenceValue;
+            Transform rightHint = (Transform)serializedRig
+                .FindProperty("rightElbowHint").objectReferenceValue;
+            Transform leftHint = (Transform)serializedRig
+                .FindProperty("leftElbowHint").objectReferenceValue;
+            Assert.That(rightTarget, Is.Not.Null);
+            Assert.That(leftTarget, Is.Not.Null);
+            Assert.That(rightHint, Is.Not.Null);
+            Assert.That(leftHint, Is.Not.Null);
+            Assert.That(rightTarget.IsChildOf(animator.avatarRoot), Is.False);
+            Assert.That(leftTarget.IsChildOf(animator.avatarRoot), Is.False);
+            Assert.That(rightArmConstraint.data.target, Is.SameAs(rightTarget));
+            Assert.That(leftArmConstraint.data.target, Is.SameAs(leftTarget));
+            Assert.That(rightArmConstraint.data.hint, Is.SameAs(rightHint));
+            Assert.That(leftArmConstraint.data.hint, Is.SameAs(leftHint));
+            Assert.That(
+                rightArmConstraint.data.root,
+                Is.SameAs(animator.GetBoneTransform(
+                    HumanBodyBones.RightUpperArm)));
+            Assert.That(
+                leftArmConstraint.data.root,
+                Is.SameAs(animator.GetBoneTransform(
+                    HumanBodyBones.LeftUpperArm)));
 
             AnimatorController controller = LoadRequiredAsset<AnimatorController>(
                 AnimatorControllerPath);
@@ -579,9 +657,122 @@ namespace TheSancturary.FusionPrototype.Tests
                 .Where(layer => layer.name == "ItemPresentation")
                 .ToArray();
             Assert.That(itemLayers.Length, Is.EqualTo(1));
-            Assert.That(itemLayers[0].iKPass, Is.True);
+            Assert.That(itemLayers[0].iKPass, Is.False);
             Assert.That(itemLayers[0].avatarMask, Is.Not.Null);
             Assert.That(itemLayers[0].stateMachine, Is.Not.Null);
+        }
+
+        [Test]
+        public void EquipmentRigUsesRightHandOnlyForOneHandedHoldStyle()
+        {
+            GameObject playerInstance = UnityEngine.Object.Instantiate(
+                LoadRequiredAsset<GameObject>(PlayerPrefabPath));
+            GameObject oneHandedInstance = UnityEngine.Object.Instantiate(
+                LoadRequiredAsset<GameObject>(
+                    PrefabFolder + "/HeldCrowbarRemote.prefab"));
+            GameObject twoHandedInstance = UnityEngine.Object.Instantiate(
+                LoadRequiredAsset<GameObject>(
+                    PrefabFolder + "/HeldFireAxeRemote.prefab"));
+            try
+            {
+                PlayerEquipment equipment =
+                    playerInstance.GetComponent<PlayerEquipment>();
+                PlayerEquipmentRigController equipmentRig =
+                    playerInstance.GetComponentInChildren<
+                        PlayerEquipmentRigController>(true);
+                HeldItemVisual oneHandedVisual =
+                    oneHandedInstance.GetComponent<HeldItemVisual>();
+                HeldItemVisual twoHandedVisual =
+                    twoHandedInstance.GetComponent<HeldItemVisual>();
+
+                equipmentRig.Configure(
+                    equipment,
+                    oneHandedVisual.RightHandGrip,
+                    oneHandedVisual.LeftHandGrip,
+                    InventoryHoldStyle.OneHanded);
+                Assert.That(equipmentRig.DesiredRightWeight, Is.EqualTo(1f));
+                Assert.That(equipmentRig.DesiredLeftWeight, Is.EqualTo(0f));
+
+                equipmentRig.Configure(
+                    equipment,
+                    twoHandedVisual.RightHandGrip,
+                    twoHandedVisual.LeftHandGrip,
+                    InventoryHoldStyle.TwoHanded);
+                Assert.That(equipmentRig.DesiredRightWeight, Is.EqualTo(1f));
+                Assert.That(equipmentRig.DesiredLeftWeight, Is.EqualTo(1f));
+
+                equipmentRig.Clear(equipment);
+                Assert.That(equipmentRig.DesiredRightWeight, Is.EqualTo(0f));
+                Assert.That(equipmentRig.DesiredLeftWeight, Is.EqualTo(0f));
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(twoHandedInstance);
+                UnityEngine.Object.DestroyImmediate(oneHandedInstance);
+                UnityEngine.Object.DestroyImmediate(playerInstance);
+            }
+        }
+
+        [Test]
+        public void DynamicDropPoseStagingKeepsTransformAndRigidbodyAlignedForFiftyFarPoses()
+        {
+            GameObject instance = new("Dynamic Drop Pose Test");
+            try
+            {
+                Rigidbody body = instance.AddComponent<Rigidbody>();
+                WorldItemPhysics physics =
+                    instance.AddComponent<WorldItemPhysics>();
+                physics.Configure(
+                    instance.GetComponent<NetworkObject>(),
+                    body,
+                    Array.Empty<Collider>(),
+                    new Bounds(Vector3.zero, Vector3.one));
+
+                for (int index = 0; index < 50; index++)
+                {
+                    Vector3 position = new(
+                        40f + index * 1.7f,
+                        3f + index * 0.05f,
+                        -35f - index * 1.3f);
+                    Quaternion rotation = Quaternion.Euler(
+                        11f + index,
+                        70f + index * 3f,
+                        -7f);
+
+                    Assert.That(
+                        physics.StageDropPoseBeforeSpawn(position, rotation),
+                        Is.True,
+                        $"cycle {index}");
+                    Assert.That(
+                        Vector3.Distance(instance.transform.position, position),
+                        Is.LessThan(0.001f),
+                        $"cycle {index}");
+                    Assert.That(
+                        Vector3.Distance(physics.Body.position, position),
+                        Is.LessThan(0.001f),
+                        $"cycle {index}");
+                    Assert.That(
+                        Quaternion.Angle(instance.transform.rotation, rotation),
+                        Is.LessThan(0.01f),
+                        $"cycle {index}");
+                    Assert.That(
+                        Quaternion.Angle(physics.Body.rotation, rotation),
+                        Is.LessThan(0.01f),
+                        $"cycle {index}");
+                    Assert.That(
+                        physics.Body.isKinematic,
+                        Is.True,
+                        $"cycle {index}");
+                    Assert.That(
+                        physics.Body.useGravity,
+                        Is.False,
+                        $"cycle {index}");
+                }
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(instance);
+            }
         }
 
         [Test]

@@ -2,6 +2,7 @@
   "name": "TheSancturary.FusionPrototype.Tests",
   "references": [
     "TheSancturary.Runtime",
+    "Unity.Animation.Rigging",
     "UnityEngine.TestRunner",
     "UnityEditor.TestRunner"
   ],

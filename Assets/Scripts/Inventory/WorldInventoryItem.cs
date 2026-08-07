@@ -26,13 +26,16 @@ namespace TheSancturary.Inventory
 
         [Networked] public NetworkBool IsCollected { get; private set; }
         [Networked] public byte LoadedAmmunition { get; private set; }
+        [Networked] public NetworkBool DropPosePrepared { get; private set; }
 
         private bool _spawned;
         private bool _lastRenderedCollected;
+        private bool _lastRenderedDropPosePrepared;
 
         public InventoryItemDefinition Definition => definition;
         public string ItemId => definition != null ? definition.ItemId : string.Empty;
-        public bool IsAvailable => _spawned && !IsCollected;
+        public bool IsAvailable =>
+            _spawned && DropPosePrepared && !IsCollected;
         public InteractionTarget PromptTarget => interactionTarget;
 
         public override void Spawned()
@@ -41,6 +44,8 @@ namespace TheSancturary.Inventory
             ConfigureInteractionTarget();
             if (HasStateAuthority)
             {
+                if (Object.NetworkTypeId.IsSceneObject)
+                    DropPosePrepared = true;
                 LoadedAmmunition = ClampLoadedAmmunition(
                     Object.NetworkTypeId.IsSceneObject
                         ? definition != null
@@ -50,6 +55,7 @@ namespace TheSancturary.Inventory
             }
             _spawned = true;
             _lastRenderedCollected = IsCollected;
+            _lastRenderedDropPosePrepared = DropPosePrepared;
             ApplyCollectedState(_lastRenderedCollected);
             SetTargeted(false);
         }
@@ -57,10 +63,13 @@ namespace TheSancturary.Inventory
         public override void Render()
         {
             bool collected = IsCollected;
-            if (collected == _lastRenderedCollected)
+            bool dropPosePrepared = DropPosePrepared;
+            if (collected == _lastRenderedCollected &&
+                dropPosePrepared == _lastRenderedDropPosePrepared)
                 return;
 
             _lastRenderedCollected = collected;
+            _lastRenderedDropPosePrepared = dropPosePrepared;
             ApplyCollectedState(collected);
         }
 
@@ -70,9 +79,35 @@ namespace TheSancturary.Inventory
             ConfigureInteractionTarget();
         }
 
-        public void InitializeLoadedAmmunitionBeforeSpawn(byte value)
+        public bool InitializeDroppedStateBeforeSpawn(
+            byte loadedAmmunition,
+            Vector3 position,
+            Quaternion rotation)
         {
-            LoadedAmmunition = ClampLoadedAmmunition(value);
+            ResolveReferences();
+            DropPosePrepared = false;
+            LoadedAmmunition = ClampLoadedAmmunition(loadedAmmunition);
+            return worldItemPhysics != null &&
+                   worldItemPhysics.StageDropPoseBeforeSpawn(
+                       position,
+                       rotation);
+        }
+
+        public bool TryFinalizeDroppedSpawn(
+            Vector3 position,
+            Quaternion rotation)
+        {
+            ResolveReferences();
+            if (!HasStateAuthority ||
+                Object.NetworkTypeId.IsSceneObject ||
+                worldItemPhysics == null ||
+                !worldItemPhysics.TryActivatePreparedDrop(position, rotation))
+                return false;
+
+            DropPosePrepared = true;
+            _lastRenderedDropPosePrepared = true;
+            ApplyCollectedState(IsCollected);
+            return true;
         }
 
         public bool TryGetActionText(
@@ -159,16 +194,19 @@ namespace TheSancturary.Inventory
 
         private void ApplyCollectedState(bool collected)
         {
-            worldItemPhysics?.ApplyAvailableState(!collected);
+            bool presented = !collected && DropPosePrepared;
+            worldItemPhysics?.ApplyAvailableState(presented);
 
             if (visualRoot != null)
-                visualRoot.SetActive(!collected);
+                visualRoot.SetActive(presented);
             if (interactionTarget != null)
             {
                 interactionTarget.SetStatus(
                     collected
                         ? InteractionTargetStatus.Unavailable
-                        : InteractionTargetStatus.Available);
+                        : presented
+                            ? InteractionTargetStatus.Available
+                            : InteractionTargetStatus.Unavailable);
             }
 
             if (pickupColliders != null)
@@ -176,7 +214,7 @@ namespace TheSancturary.Inventory
                 for (int index = 0; index < pickupColliders.Length; index++)
                 {
                     if (pickupColliders[index] != null)
-                        pickupColliders[index].enabled = !collected;
+                        pickupColliders[index].enabled = presented;
                 }
             }
 

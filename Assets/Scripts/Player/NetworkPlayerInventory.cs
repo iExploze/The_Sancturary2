@@ -596,7 +596,7 @@ namespace TheSancturary.FusionPrototype
                         entry.LoadedAmmunition,
                         definition.AmmunitionCapacity)
                     : (byte)0;
-            bool dropStateInitialized = prefabWorldItem == null;
+            bool dropStateInitialized = false;
             NetworkObject spawned = Runner.Spawn(
                 definition.WorldPrefab,
                 position,
@@ -604,14 +604,21 @@ namespace TheSancturary.FusionPrototype
                 null,
                 (_, spawnedObject) =>
                 {
+                    WorldItemPhysics stagedPhysics =
+                        spawnedObject.GetComponent<WorldItemPhysics>();
                     WorldInventoryItem spawnedWorldItem =
                         spawnedObject.GetComponent<WorldInventoryItem>();
-                    if (spawnedWorldItem == null)
+                    if (stagedPhysics == null)
                         return;
 
-                    spawnedWorldItem.InitializeLoadedAmmunitionBeforeSpawn(
-                        droppedAmmunition);
-                    dropStateInitialized = true;
+                    dropStateInitialized = spawnedWorldItem != null
+                        ? spawnedWorldItem.InitializeDroppedStateBeforeSpawn(
+                            droppedAmmunition,
+                            position,
+                            rotation)
+                        : stagedPhysics.StageDropPoseBeforeSpawn(
+                            position,
+                            rotation);
                 },
                 default);
             if (spawned == null)
@@ -636,13 +643,27 @@ namespace TheSancturary.FusionPrototype
                 return;
             }
 
-            spawnedPhysics.PrepareForDrop();
+            bool dropPoseActivated = spawnedInventoryItem != null
+                ? spawnedInventoryItem.TryFinalizeDroppedSpawn(
+                    position,
+                    rotation)
+                : spawnedPhysics.TryActivatePreparedDrop(position, rotation);
+            if (!dropPoseActivated)
+            {
+                Runner.Despawn(spawned);
+                SendOwnerRejection(InventoryRequestRejection.InvalidRequest);
+                return;
+            }
 
             const float positionTolerance = 0.01f;
             const float rotationTolerance = 1f;
             if ((spawned.transform.position - position).sqrMagnitude >
                 positionTolerance * positionTolerance ||
                 Quaternion.Angle(spawned.transform.rotation, rotation) >
+                rotationTolerance ||
+                (spawnedPhysics.Body.position - position).sqrMagnitude >
+                positionTolerance * positionTolerance ||
+                Quaternion.Angle(spawnedPhysics.Body.rotation, rotation) >
                 rotationTolerance)
             {
                 Runner.Despawn(spawned);

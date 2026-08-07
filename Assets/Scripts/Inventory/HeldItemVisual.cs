@@ -7,6 +7,7 @@ namespace TheSancturary.Inventory
     /// It animates authored local transforms and an optional muzzle light, but
     /// never reads input or applies inventory, networking, or gameplay effects.
     /// </summary>
+    [DefaultExecutionOrder(-100)]
     [DisallowMultipleComponent]
     public sealed class HeldItemVisual : MonoBehaviour
     {
@@ -189,10 +190,9 @@ namespace TheSancturary.Inventory
                 if (_muzzleFlashRemaining <= 0f)
                     StopMuzzleFlash();
             }
-        }
 
-        private void LateUpdate()
-        {
+            // Evaluate the held pose before PlayerEquipmentRigController copies
+            // its grip transforms into the persistent rig targets.
             if (!_poseCaptured || visualRoot == null)
                 return;
 

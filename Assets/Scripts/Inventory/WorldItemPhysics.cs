@@ -18,6 +18,9 @@ namespace TheSancturary.Inventory
         [SerializeField] private Vector3 localBoundsCenter;
         [SerializeField] private Vector3 localBoundsSize = Vector3.one * 0.1f;
 
+        private bool _dropPoseStaged;
+        private bool _dropPoseActivated;
+
         public Rigidbody Body => body;
         public Collider[] PhysicalColliders => physicalColliders;
         public Bounds LocalBounds => new(localBoundsCenter, localBoundsSize);
@@ -48,7 +51,9 @@ namespace TheSancturary.Inventory
             bool simulate = available &&
                             networkObject != null &&
                             networkObject.IsValid &&
-                            networkObject.HasStateAuthority;
+                            networkObject.HasStateAuthority &&
+                            (networkObject.NetworkTypeId.IsSceneObject ||
+                             _dropPoseActivated);
 
             if (!simulate)
             {
@@ -64,11 +69,61 @@ namespace TheSancturary.Inventory
             body.WakeUp();
         }
 
-        public void PrepareForDrop()
+        /// <summary>
+        /// Copies the intended drop pose into both Unity transform stores before
+        /// Fusion invokes Spawned. Awake runs while a prefab instance is still at
+        /// its authored pose, so moving only Transform leaves Rigidbody at that
+        /// stale pose and the first physics step can snap the object back there.
+        /// </summary>
+        public bool StageDropPoseBeforeSpawn(
+            Vector3 position,
+            Quaternion rotation)
         {
             ResolveReferences();
+            if (body == null)
+                return false;
+
+            _dropPoseStaged = true;
+            _dropPoseActivated = false;
             StopMotion();
+            body.useGravity = false;
+            body.isKinematic = true;
+            transform.SetPositionAndRotation(position, rotation);
+            body.position = position;
+            body.rotation = rotation;
+            body.Sleep();
+            return PoseMatches(position, rotation);
+        }
+
+        /// <summary>
+        /// Establishes the authoritative Fusion pose once, confirms Transform and
+        /// Rigidbody agree, and only then permits dynamic physics simulation.
+        /// </summary>
+        public bool TryActivatePreparedDrop(
+            Vector3 position,
+            Quaternion rotation)
+        {
+            ResolveReferences();
+            if (!_dropPoseStaged ||
+                body == null ||
+                networkObject == null ||
+                !networkObject.IsValid ||
+                !networkObject.HasStateAuthority ||
+                networkObject.NetworkTypeId.IsSceneObject)
+                return false;
+
+            body.useGravity = false;
+            body.isKinematic = true;
+            GetComponent<NetworkTransform>()?.Teleport(position, rotation);
+            transform.SetPositionAndRotation(position, rotation);
+            body.position = position;
+            body.rotation = rotation;
+            if (!PoseMatches(position, rotation))
+                return false;
+
+            _dropPoseActivated = true;
             ApplyAvailableState(true);
+            return PoseMatches(position, rotation);
         }
 
         public void Configure(
@@ -86,11 +141,27 @@ namespace TheSancturary.Inventory
 
         private void StopMotion()
         {
-            if (body == null)
+            if (body == null || body.isKinematic)
                 return;
 
             body.linearVelocity = Vector3.zero;
             body.angularVelocity = Vector3.zero;
+        }
+
+        private bool PoseMatches(Vector3 position, Quaternion rotation)
+        {
+            const float positionTolerance = 0.01f;
+            const float rotationTolerance = 1f;
+            float positionToleranceSquared =
+                positionTolerance * positionTolerance;
+            return (transform.position - position).sqrMagnitude <=
+                       positionToleranceSquared &&
+                   (body.position - position).sqrMagnitude <=
+                       positionToleranceSquared &&
+                   Quaternion.Angle(transform.rotation, rotation) <=
+                       rotationTolerance &&
+                   Quaternion.Angle(body.rotation, rotation) <=
+                       rotationTolerance;
         }
 
         private void SetCollidersEnabled(bool enabled)
