@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c310c582055cdc947a33ab4e658cdbc3, type: 3}
+  m_Name: Adrenaline
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.InventoryItemDefinition
+  displayName: Adrenaline
+  itemId: adrenaline
+  category: 2
+  temporaryIconLabel: ADREN
+  width: 1
+  height: 1
+  canRotate: 0
+  stackable: 0
+  canEquip: 1
+  canDrop: 1
+  worldPrefab: {fileID: 6182688361562110865, guid: 9b533a888921dc1408b4abf4b5359c08, type: 3}
+  equippedPrefab: {fileID: 2689444132015630493, guid: 07521db6a4eda3647ab4e26559a72588, type: 3}
+  thirdPersonEquippedPrefab: {fileID: 6442932760409826479, guid: d7965730f5ded2941a825b99e5e447c7, type: 3}
+  useKind: 4
+  holdStyle: 1
+  holdPose: 1
+  useDuration: 1
+  useCooldown: 0.25
+  compatibleAmmoItemId: 
+  ammunitionCapacity: 0
+  initialLoadedAmmunition: 0
+  useAudioClip: {fileID: 8300000, guid: 061701974a4c33a469ff7949225794fd, type: 3}
+  dryFireAudioClip: {fileID: 0}
+  impactAudioClip: {fileID: 0}
+  reloadAudioClip: {fileID: 0}

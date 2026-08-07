@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c310c582055cdc947a33ab4e658cdbc3, type: 3}
+  m_Name: Crowbar
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.InventoryItemDefinition
+  displayName: Crowbar
+  itemId: crowbar
+  category: 4
+  temporaryIconLabel: PRY
+  width: 3
+  height: 1
+  canRotate: 1
+  stackable: 0
+  canEquip: 1
+  canDrop: 1
+  worldPrefab: {fileID: 3590646800020215598, guid: e633487d60cc44a4f84d6e52f034c942, type: 3}
+  equippedPrefab: {fileID: 1918133357494802143, guid: 07d841e9573fd754f8fa7758f4e8438e, type: 3}
+  thirdPersonEquippedPrefab: {fileID: 4029868941624145405, guid: 04f1ef1d3218a8e458f70b22d6dc62b2, type: 3}
+  useKind: 5
+  holdStyle: 1
+  holdPose: 1
+  useDuration: 0.65
+  useCooldown: 0.25
+  compatibleAmmoItemId: 
+  ammunitionCapacity: 0
+  initialLoadedAmmunition: 0
+  useAudioClip: {fileID: 8300000, guid: 0ff5d85c1d4c2034aa7288bf932322bb, type: 3}
+  dryFireAudioClip: {fileID: 0}
+  impactAudioClip: {fileID: 8300000, guid: 8b0018c77854b6c47b7ee8b1e8ee2407, type: 3}
+  reloadAudioClip: {fileID: 0}

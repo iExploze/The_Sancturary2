@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c310c582055cdc947a33ab4e658cdbc3, type: 3}
+  m_Name: SawedOffShotgun
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.InventoryItemDefinition
+  displayName: Sawed-Off Shotgun
+  itemId: sawed_off_shotgun
+  category: 5
+  temporaryIconLabel: SHOTGUN
+  width: 3
+  height: 2
+  canRotate: 0
+  stackable: 0
+  canEquip: 1
+  canDrop: 1
+  worldPrefab: {fileID: 2150542288156453975, guid: aa7c7aca63cb629408651d13be46f94e, type: 3}
+  equippedPrefab: {fileID: 4492151168155731757, guid: 7dc889b4c5da79243be3a8fff783cf08, type: 3}
+  thirdPersonEquippedPrefab: {fileID: 7373253456249372858, guid: 3f24c496d71843349a8e287d5d7bf56f, type: 3}
+  useKind: 7
+  holdStyle: 2
+  holdPose: 3
+  useDuration: 0
+  useCooldown: 0.8
+  compatibleAmmoItemId: shotgun_shell
+  ammunitionCapacity: 1
+  initialLoadedAmmunition: 0
+  useAudioClip: {fileID: 8300000, guid: 9b4bf3ed1f3d97042be21f177ac7a7b9, type: 3}
+  dryFireAudioClip: {fileID: 8300000, guid: 103d60057d3c3494392b14819f5fcc4b, type: 3}
+  impactAudioClip: {fileID: 0}
+  reloadAudioClip: {fileID: 8300000, guid: 33046812ea8445f4381c0e05f22d862f, type: 3}

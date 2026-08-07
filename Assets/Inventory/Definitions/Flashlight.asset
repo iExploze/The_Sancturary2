@@ -15,7 +15,7 @@ MonoBehaviour:
   displayName: Flashlight
   itemId: flashlight
   category: 1
-  temporaryIconLabel: FLASHLIGHT
+  temporaryIconLabel: LIGHT
   width: 1
   height: 1
   canRotate: 0
@@ -24,4 +24,16 @@ MonoBehaviour:
   canDrop: 1
   worldPrefab: {fileID: 1368844624513880782, guid: 1ef7dd4540c114349939a5b9e9b6774f, type: 3}
   equippedPrefab: {fileID: 2523608082153835697, guid: f888cffb87aa89e4491be74878fbb769, type: 3}
-  thirdPersonEquippedPrefab: {fileID: 2523608082153835697, guid: f888cffb87aa89e4491be74878fbb769, type: 3}
+  thirdPersonEquippedPrefab: {fileID: 860767260467368698, guid: 7b3be25592de8ff4ebe590aec3442fb5, type: 3}
+  useKind: 1
+  holdStyle: 1
+  holdPose: 1
+  useDuration: 0
+  useCooldown: 0.2
+  compatibleAmmoItemId: 
+  ammunitionCapacity: 0
+  initialLoadedAmmunition: 0
+  useAudioClip: {fileID: 8300000, guid: 2c37e3de7df65cd4bad1ff5f623d0d3c, type: 3}
+  dryFireAudioClip: {fileID: 0}
+  impactAudioClip: {fileID: 0}
+  reloadAudioClip: {fileID: 0}

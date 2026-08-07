@@ -19,13 +19,15 @@ namespace TheSancturary.FusionPrototype
         None,
         Move,
         Equip,
-        Drop
+        Drop,
+        Reload
     }
 
     public struct InventoryInputCommand
     {
         public InventoryInputCommandType Type;
         public ushort InstanceId;
+        public ushort TargetInstanceId;
         public byte Column;
         public byte Row;
         public NetworkBool Rotated;
@@ -40,6 +42,7 @@ namespace TheSancturary.FusionPrototype
         public byte InventoryCommand;
         public byte InventoryCommandSequence;
         public ushort InventoryInstanceId;
+        public ushort InventoryTargetInstanceId;
         public byte InventoryColumn;
         public byte InventoryRow;
         public NetworkBool InventoryRotated;

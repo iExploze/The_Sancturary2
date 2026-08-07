@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c310c582055cdc947a33ab4e658cdbc3, type: 3}
+  m_Name: MedKit
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.InventoryItemDefinition
+  displayName: Med Kit
+  itemId: med_kit
+  category: 2
+  temporaryIconLabel: MED
+  width: 1
+  height: 1
+  canRotate: 0
+  stackable: 0
+  canEquip: 1
+  canDrop: 1
+  worldPrefab: {fileID: 3477831660798063033, guid: c3f46cdae4b352d47b10d2c23dc31c99, type: 3}
+  equippedPrefab: {fileID: 4873241477762490699, guid: e923d9660f77f204d852562376906fac, type: 3}
+  thirdPersonEquippedPrefab: {fileID: 8277977161176766183, guid: 863a52d888c4ff442a086121460ca515, type: 3}
+  useKind: 3
+  holdStyle: 1
+  holdPose: 1
+  useDuration: 1.25
+  useCooldown: 0.25
+  compatibleAmmoItemId: 
+  ammunitionCapacity: 0
+  initialLoadedAmmunition: 0
+  useAudioClip: {fileID: 8300000, guid: f29fea67d60569141910a5458b2011c3, type: 3}
+  dryFireAudioClip: {fileID: 0}
+  impactAudioClip: {fileID: 0}
+  reloadAudioClip: {fileID: 0}
