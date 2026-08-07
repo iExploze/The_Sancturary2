@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c310c582055cdc947a33ab4e658cdbc3, type: 3}
+  m_Name: OldRevolver
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.InventoryItemDefinition
+  displayName: Old Revolver
+  itemId: old_revolver
+  category: 5
+  temporaryIconLabel: REVOLVER
+  width: 2
+  height: 2
+  canRotate: 0
+  stackable: 0
+  canEquip: 1
+  canDrop: 1
+  worldPrefab: {fileID: 7439682290802490079, guid: 3972016c627a7274a82bb5abfd9421bd, type: 3}
+  equippedPrefab: {fileID: 2414619399790150444, guid: 5cc8a9aca8e7ae2408ff3de9c148377a, type: 3}
+  thirdPersonEquippedPrefab: {fileID: 8919111696293491782, guid: e9f2e5c81ecbf1f4fa0d0ccddf0c1a7f, type: 3}
+  useKind: 7
+  holdStyle: 1
+  useDuration: 0
+  useCooldown: 0.34
+  compatibleAmmoItemId: revolver_ammo
+  ammunitionCapacity: 6
+  initialLoadedAmmunition: 0
+  useAudioClip: {fileID: 8300000, guid: 5b3f3439772f07049abc10b2bb5e9d09, type: 3}
+  dryFireAudioClip: {fileID: 8300000, guid: 84dac96280e03ab4aba1a634f9ff61d3, type: 3}
+  impactAudioClip: {fileID: 0}
+  reloadAudioClip: {fileID: 8300000, guid: a2eed27e1ac503f4286ac6e22a31151b, type: 3}

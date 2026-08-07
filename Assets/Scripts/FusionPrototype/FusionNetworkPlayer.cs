@@ -12,6 +12,7 @@ namespace TheSancturary.FusionPrototype
     [RequireComponent(typeof(NetworkObject), typeof(NetworkCharacterController), typeof(CharacterController))]
     [RequireComponent(typeof(PlayerAnimationDriver))]
     [RequireComponent(typeof(LocalInteractionTargeting), typeof(NetworkPlayerInventory), typeof(PlayerInventory))]
+    [RequireComponent(typeof(NetworkItemUseController))]
     public sealed class FusionNetworkPlayer : NetworkBehaviour
     {
         private const string OwnerPostProcessingLayerName = "OwnerPostProcessing";
@@ -69,6 +70,7 @@ namespace TheSancturary.FusionPrototype
         [SerializeField] private LocalInteractionTargeting localInteractionTargeting;
         [SerializeField] private NetworkPlayerInventory inventory;
         [SerializeField] private PlayerInventory gridInventory;
+        [SerializeField] private NetworkItemUseController itemUseController;
         [SerializeField] private Renderer[] characterRenderers;
         [SerializeField] private AudioSource localAudioSource;
         [SerializeField] private AudioSource spatialAudioSource;
@@ -195,6 +197,7 @@ namespace TheSancturary.FusionPrototype
         private bool _lastPresentedLockerHidden;
         private bool _lastPresentedDead;
         private bool _localPauseInputBlocked;
+        private bool _attackRequiresRelease;
         private ushort _lastPresentedTeleportSequence;
         private LevelRespawnSettings _respawnSettings;
 
@@ -202,6 +205,9 @@ namespace TheSancturary.FusionPrototype
         public bool IsLockerInputLocked => CurrentLocker.IsValid;
         public bool IsLocalPauseInputBlocked => HasInputAuthority && _localPauseInputBlocked;
         public NetworkPlayerInventory Inventory => inventory;
+        public NetworkItemUseController ItemUseController => itemUseController;
+        public float MaximumHealth => maximumHealth;
+        public float MaximumStamina => maximumStamina;
         public Vector3 ReplicatedViewPosition =>
             transform.position +
             Vector3.up *
@@ -280,6 +286,7 @@ namespace TheSancturary.FusionPrototype
             localInteractionTargeting ??= GetComponent<LocalInteractionTargeting>();
             inventory ??= GetComponent<NetworkPlayerInventory>();
             gridInventory ??= GetComponent<PlayerInventory>();
+            itemUseController ??= GetComponent<NetworkItemUseController>();
             _respawnSettings ??= FindFirstObjectByType<LevelRespawnSettings>();
             localAudioSource ??= GetComponent<AudioSource>();
             if (spatialAudioSource == null)
@@ -356,8 +363,16 @@ namespace TheSancturary.FusionPrototype
             if (!HasInputAuthority || playerInput == null || !playerInput.enabled)
                 return input;
 
+            bool attackPressed =
+                _attackAction != null && _attackAction.IsPressed();
+            if (!attackPressed)
+                _attackRequiresRelease = false;
             if (_localPauseInputBlocked)
+            {
+                if (attackPressed)
+                    _attackRequiresRelease = true;
                 return input;
+            }
 
             input.LookAngles = new Vector2(_localLookYaw, _localLookPitch);
             if (!IsLockerInputLocked && inventory != null &&
@@ -372,13 +387,22 @@ namespace TheSancturary.FusionPrototype
                 input.InventoryCommandSequence =
                     _nextInventoryCommandSequence;
                 input.InventoryInstanceId = inventoryCommand.InstanceId;
+                input.InventoryTargetInstanceId =
+                    inventoryCommand.TargetInstanceId;
                 input.InventoryColumn = inventoryCommand.Column;
                 input.InventoryRow = inventoryCommand.Row;
                 input.InventoryRotated = inventoryCommand.Rotated;
             }
 
             if (gridInventory != null && gridInventory.IsMenuOpen)
+            {
+                if (attackPressed)
+                    _attackRequiresRelease = true;
                 return input;
+            }
+
+            if ((IsLockerInputLocked || IsDeadOrPending) && attackPressed)
+                _attackRequiresRelease = true;
 
             if (!IsLockerInputLocked)
                 input.Move = Vector2.ClampMagnitude(_moveAction.ReadValue<Vector2>(), 1f);
@@ -399,7 +423,12 @@ namespace TheSancturary.FusionPrototype
                 _submittedInteractionCommandSequence;
             input.Buttons.Set(FusionPlayerButton.Jump, !IsLockerInputLocked && _jumpAction.IsPressed());
             input.Buttons.Set(FusionPlayerButton.Sprint, !IsLockerInputLocked && _sprintAction.IsPressed());
-            input.Buttons.Set(FusionPlayerButton.UseEquipped, !IsLockerInputLocked && _attackAction.IsPressed());
+            input.Buttons.Set(
+                FusionPlayerButton.UseEquipped,
+                !IsLockerInputLocked &&
+                !IsDeadOrPending &&
+                attackPressed &&
+                !_attackRequiresRelease);
 
             bool keyboardCrouch = !IsLockerInputLocked && Keyboard.current != null && Keyboard.current.leftCtrlKey.isPressed;
             input.Buttons.Set(FusionPlayerButton.Crouch, !IsLockerInputLocked && (_crouchAction.IsPressed() || keyboardCrouch));
@@ -640,7 +669,55 @@ namespace TheSancturary.FusionPrototype
             TimeSinceDamage = 0f;
             IsDead = true;
             IsInVent = false;
+            itemUseController?.CancelAllAuthoritative();
+            DisableFlashlightAuthoritative();
             ReleaseCurrentLockerAfterInvalidation();
+            return true;
+        }
+
+        public bool TryHealFullyAuthoritative()
+        {
+            if (!HasStateAuthority ||
+                !ItemGameplayRules.TryApplyMedKitUse(
+                    !IsDead,
+                    Health,
+                    maximumHealth,
+                    out ItemGameplayRules.MedKitUseTransition transition))
+                return false;
+
+            _pendingDamage = transition.PendingDamage;
+            Health = transition.Health;
+            TimeSinceDamage = transition.TimeSinceDamage;
+            return true;
+        }
+
+        public bool TryReviveAtHalfHealthAuthoritative()
+        {
+            if (!HasStateAuthority ||
+                !ItemGameplayRules.TryApplyRevival(
+                    IsDead,
+                    maximumHealth,
+                    maximumStamina,
+                    out ItemGameplayRules.RevivalUseTransition transition))
+                return false;
+
+            _pendingDamage = transition.PendingDamage;
+            Health = transition.Health;
+            Stamina = transition.Stamina;
+            IsDead = transition.IsDead;
+            IsCrouched = false;
+            IsSprinting = false;
+            SprintLocked = false;
+            StaminaRecoveryElapsed = 0f;
+            TimeSinceDamage = transition.TimeSinceDamage;
+            CurrentLocker = default;
+            IsHiddenInLocker = false;
+            IsInVent = false;
+            if (transition.ClearRespawnTimer)
+                RespawnTimer = TickTimer.None;
+            PreviousButtons = default;
+            itemUseController?.CancelAllAuthoritative();
+            DisableFlashlightAuthoritative();
             return true;
         }
 
@@ -1005,6 +1082,7 @@ namespace TheSancturary.FusionPrototype
                     inventory.ProcessInputCommandAuthoritative(
                         (InventoryInputCommandType)input.InventoryCommand,
                         input.InventoryInstanceId,
+                        input.InventoryTargetInstanceId,
                         input.InventoryColumn,
                         input.InventoryRow,
                         input.InventoryRotated);
@@ -1020,7 +1098,7 @@ namespace TheSancturary.FusionPrototype
                 }
 
                 if (!IsLockerInputLocked && pressed.IsSet(FusionPlayerButton.UseEquipped))
-                    inventory?.ToggleEquippedUseAuthoritative();
+                    itemUseController?.TryUseEquippedAuthoritative();
 
                 if (!IsLockerInputLocked && !IsInVent && pressed.IsSet(FusionPlayerButton.Crouch))
                 {
@@ -1034,6 +1112,9 @@ namespace TheSancturary.FusionPrototype
 
             if (IsLockerInputLocked)
             {
+                if (HasStateAuthority)
+                    itemUseController?.CancelActiveUseAuthoritative();
+
                 IsSprinting = false;
                 networkController.Velocity = Vector3.zero;
                 networkController.Move(Vector3.zero);
@@ -1049,8 +1130,19 @@ namespace TheSancturary.FusionPrototype
 
             Vector2 moveInput = Vector2.ClampMagnitude(input.Move, 1f);
             bool hasForwardInput = moveInput.y > 0.01f;
+            bool adrenalineActive =
+                itemUseController != null &&
+                itemUseController.IsAdrenalineActive;
+            bool effectiveSprintLocked =
+                ItemGameplayRules.ResolveSprintLocked(
+                    SprintLocked,
+                    adrenalineActive);
             bool wantsToSprint = input.Buttons.IsSet(FusionPlayerButton.Sprint) &&
-                VentTraversalRules.CanSprint(IsInVent, IsCrouched, hasForwardInput, SprintLocked);
+                VentTraversalRules.CanSprint(
+                    IsInVent,
+                    IsCrouched,
+                    hasForwardInput,
+                    effectiveSprintLocked);
             Vector2 effectiveMoveInput = wantsToSprint
                 ? new Vector2(0f, Mathf.Clamp01(moveInput.y))
                 : moveInput;
@@ -1071,7 +1163,12 @@ namespace TheSancturary.FusionPrototype
             {
                 networkController.Jump();
                 BeginAirborneCharacterControllerShrink();
-                Stamina = PlayerVitalsMath.SpendStamina(Stamina, jumpStaminaCost);
+                if (!adrenalineActive)
+                {
+                    Stamina = PlayerVitalsMath.SpendStamina(
+                        Stamina,
+                        jumpStaminaCost);
+                }
                 StaminaRecoveryElapsed = 0f;
                 EmitAudioEvent(MovementAudioEvent.Jump);
             }
@@ -1095,20 +1192,32 @@ namespace TheSancturary.FusionPrototype
             bool actuallyMoving = wantsToMove && actualHorizontalSpeed > 0.08f;
             bool actuallySprinting = actuallyMoving && wantsToSprint;
 
-            StaminaStep staminaStep = PlayerVitalsMath.UpdateStamina(
-                Stamina,
-                StaminaRecoveryElapsed,
-                SprintLocked,
-                actuallySprinting,
-                Runner.DeltaTime,
-                maximumStamina,
-                staminaDrainRate,
-                staminaRecoveryDelay,
-                staminaRecoveryRate,
-                staminaRestartThreshold);
-            Stamina = staminaStep.Stamina;
-            StaminaRecoveryElapsed = staminaStep.RecoveryElapsed;
-            SprintLocked = staminaStep.SprintLocked;
+            if (adrenalineActive)
+            {
+                Stamina = ItemGameplayRules.ResolveStamina(
+                    Stamina,
+                    maximumStamina,
+                    true);
+                StaminaRecoveryElapsed = 0f;
+                SprintLocked = false;
+            }
+            else
+            {
+                StaminaStep staminaStep = PlayerVitalsMath.UpdateStamina(
+                    Stamina,
+                    StaminaRecoveryElapsed,
+                    SprintLocked,
+                    actuallySprinting,
+                    Runner.DeltaTime,
+                    maximumStamina,
+                    staminaDrainRate,
+                    staminaRecoveryDelay,
+                    staminaRecoveryRate,
+                    staminaRestartThreshold);
+                Stamina = staminaStep.Stamina;
+                StaminaRecoveryElapsed = staminaStep.RecoveryElapsed;
+                SprintLocked = staminaStep.SprintLocked;
+            }
             IsSprinting = actuallySprinting && !SprintLocked;
 
             if (isGrounded && actuallyMoving)
@@ -1155,6 +1264,8 @@ namespace TheSancturary.FusionPrototype
                     healthRegenerationRate);
                 Health = healthStep.Health;
                 TimeSinceDamage = healthStep.TimeSinceDamage;
+
+                itemUseController?.TickAuthoritative();
             }
         }
 
@@ -1176,6 +1287,8 @@ namespace TheSancturary.FusionPrototype
             {
                 IsDead = true;
                 IsInVent = false;
+                itemUseController?.CancelAllAuthoritative();
+                DisableFlashlightAuthoritative();
                 if (_respawnSettings != null)
                 {
                     RespawnTimer = TickTimer.CreateFromSeconds(
@@ -1215,6 +1328,12 @@ namespace TheSancturary.FusionPrototype
             return true;
         }
 
+        private void DisableFlashlightAuthoritative()
+        {
+            if (inventory != null && inventory.FlashlightEnabled)
+                inventory.ToggleEquippedUseAuthoritative();
+        }
+
         private void ReleaseCurrentLockerAfterInvalidation()
         {
             if (!HasStateAuthority || !CurrentLocker.IsValid || Runner == null)
@@ -1235,6 +1354,7 @@ namespace TheSancturary.FusionPrototype
                 return;
 
             _deathSequenceStarted = true;
+            _attackRequiresRelease = true;
             if (playerInput != null)
             {
                 playerInput.DeactivateInput();
@@ -1426,6 +1546,7 @@ namespace TheSancturary.FusionPrototype
 
             DisposeDeathVideoPlayer();
             _deathSequenceStarted = false;
+            _attackRequiresRelease = true;
             _pendingInteractionTargets.Clear();
             localInteractionTargeting?.SetInputCaptured(false);
             if (playerInput != null)

@@ -1,4 +1,5 @@
 using UnityEngine;
+using TheSancturary.FusionPrototype;
 
 namespace TheSancturary.Inventory
 {
@@ -9,7 +10,27 @@ namespace TheSancturary.Inventory
         Medicine,
         Key,
         PuzzleTool,
+        Firearm,
+        Ammunition
+    }
+
+    public enum InventoryItemUseKind
+    {
+        None,
+        FlashlightToggle,
+        RevivalSyringe,
+        FullHeal,
+        Adrenaline,
+        Crowbar,
+        FireAxe,
         Firearm
+    }
+
+    public enum InventoryHoldStyle
+    {
+        None,
+        OneHanded,
+        TwoHanded
     }
 
     [CreateAssetMenu(menuName = "The Sancturary/Inventory/Item Definition", fileName = "InventoryItem")]
@@ -34,6 +55,23 @@ namespace TheSancturary.Inventory
         [SerializeField] private GameObject equippedPrefab;
         [SerializeField] private GameObject thirdPersonEquippedPrefab;
 
+        [Header("Item Action")]
+        [SerializeField] private InventoryItemUseKind useKind;
+        [SerializeField] private InventoryHoldStyle holdStyle;
+        [SerializeField, Min(0f)] private float useDuration;
+        [SerializeField, Min(0f)] private float useCooldown;
+
+        [Header("Ammunition")]
+        [SerializeField] private string compatibleAmmoItemId;
+        [SerializeField] private byte ammunitionCapacity;
+        [SerializeField] private byte initialLoadedAmmunition;
+
+        [Header("Audio")]
+        [SerializeField] private AudioClip useAudioClip;
+        [SerializeField] private AudioClip dryFireAudioClip;
+        [SerializeField] private AudioClip impactAudioClip;
+        [SerializeField] private AudioClip reloadAudioClip;
+
         public string DisplayName => displayName;
         public string ItemId => itemId;
         public InventoryItemCategory Category => category;
@@ -48,13 +86,39 @@ namespace TheSancturary.Inventory
         public GameObject EquippedPrefab => equippedPrefab;
         public GameObject ThirdPersonEquippedPrefab =>
             thirdPersonEquippedPrefab != null ? thirdPersonEquippedPrefab : equippedPrefab;
+        public InventoryItemUseKind UseKind => useKind;
+        public InventoryHoldStyle HoldStyle => holdStyle;
+        public float UseDuration => Mathf.Max(0f, useDuration);
+        public float UseCooldown => Mathf.Max(0f, useCooldown);
+        public string CompatibleAmmoItemId => compatibleAmmoItemId;
+        public byte AmmunitionCapacity => ammunitionCapacity;
+        public byte InitialLoadedAmmunition =>
+            (byte)Mathf.Min(initialLoadedAmmunition, ammunitionCapacity);
+        public AudioClip UseAudioClip => useAudioClip;
+        public AudioClip DryFireAudioClip => dryFireAudioClip;
+        public AudioClip ImpactAudioClip => impactAudioClip;
+        public AudioClip ReloadAudioClip => reloadAudioClip;
 
         private void OnValidate()
         {
             width = Mathf.Max(1, width);
             height = Mathf.Max(1, height);
-            itemId = itemId?.Trim();
+            itemId = NetworkLockGroup.NormalizeId(itemId);
             displayName = displayName?.Trim();
+            compatibleAmmoItemId = NetworkLockGroup.NormalizeId(
+                compatibleAmmoItemId);
+            useDuration = Mathf.Max(0f, useDuration);
+            useCooldown = Mathf.Max(0f, useCooldown);
+            initialLoadedAmmunition = (byte)Mathf.Min(
+                initialLoadedAmmunition,
+                ammunitionCapacity);
+
+            if (category != InventoryItemCategory.Firearm)
+            {
+                compatibleAmmoItemId = string.Empty;
+                ammunitionCapacity = 0;
+                initialLoadedAmmunition = 0;
+            }
         }
     }
 }

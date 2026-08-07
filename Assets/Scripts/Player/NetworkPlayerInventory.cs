@@ -19,12 +19,6 @@ namespace TheSancturary.FusionPrototype
         [SerializeField] private InventoryItemCatalog catalog;
         [SerializeField] private string flashlightItemId = "flashlight";
 
-        [Header("Carry Restrictions")]
-        [SerializeField] private List<InventoryCategoryLimit> categoryLimits = new()
-        {
-            new InventoryCategoryLimit()
-        };
-
         [Header("Authoritative Dropping")]
         [SerializeField, Min(0.5f)] private float dropDistance = 1.5f;
         [SerializeField, Min(0.05f)] private float wallClearance = 0.35f;
@@ -108,6 +102,115 @@ namespace TheSancturary.FusionPrototype
             return false;
         }
 
+        public bool TryGetItemAuthoritative(
+            ushort instanceId,
+            out NetworkInventoryEntry entry,
+            out InventoryItemDefinition definition)
+        {
+            entry = default;
+            definition = null;
+            return HasStateAuthority &&
+                   TryGetEntry(instanceId, out entry) &&
+                   TryResolveDefinition(entry.ItemId.ToString(), out definition);
+        }
+
+        public bool TryGetEquippedItemAuthoritative(
+            out NetworkInventoryEntry entry,
+            out InventoryItemDefinition definition)
+        {
+            return TryGetItemAuthoritative(
+                EquippedInstanceId,
+                out entry,
+                out definition);
+        }
+
+        public bool IsInstanceEquippedAuthoritative(ushort instanceId)
+        {
+            return HasStateAuthority &&
+                   instanceId != 0 &&
+                   EquippedInstanceId == instanceId &&
+                   FindEntryIndex(instanceId) >= 0;
+        }
+
+        public bool ContainsInstanceAuthoritative(ushort instanceId)
+        {
+            return HasStateAuthority && FindEntryIndex(instanceId) >= 0;
+        }
+
+        public bool TryConsumeInstanceAuthoritative(ushort instanceId)
+        {
+            if (!HasStateAuthority)
+                return false;
+
+            int index = FindEntryIndex(instanceId);
+            if (index < 0)
+                return false;
+
+            RemoveEntryAt(index, instanceId);
+            return true;
+        }
+
+        public bool TrySetLoadedAmmunitionAuthoritative(
+            ushort instanceId,
+            byte loadedAmmunition)
+        {
+            if (!TryGetItemAuthoritative(
+                    instanceId,
+                    out NetworkInventoryEntry entry,
+                    out InventoryItemDefinition definition) ||
+                definition.Category != InventoryItemCategory.Firearm ||
+                definition.AmmunitionCapacity == 0)
+                return false;
+
+            byte clamped = ClampLoadedAmmunition(
+                definition,
+                loadedAmmunition);
+            if (entry.LoadedAmmunition == clamped)
+                return true;
+
+            int index = FindEntryIndex(instanceId);
+            if (index < 0)
+                return false;
+
+            entry.LoadedAmmunition = clamped;
+            Entries.Set(index, entry);
+            Revision++;
+            return true;
+        }
+
+        public bool TryDecrementLoadedAmmunitionAuthoritative(
+            ushort instanceId,
+            out bool wasLoaded,
+            out byte remainingAmmunition)
+        {
+            wasLoaded = false;
+            remainingAmmunition = 0;
+            if (!TryGetItemAuthoritative(
+                    instanceId,
+                    out NetworkInventoryEntry entry,
+                    out InventoryItemDefinition definition) ||
+                definition.Category != InventoryItemCategory.Firearm ||
+                definition.AmmunitionCapacity == 0)
+                return false;
+
+            if (!ItemGameplayRules.TryFireRound(
+                    entry.LoadedAmmunition,
+                    definition.AmmunitionCapacity,
+                    out byte remaining))
+                return true;
+
+            int index = FindEntryIndex(instanceId);
+            if (index < 0)
+                return false;
+
+            wasLoaded = true;
+            remainingAmmunition = remaining;
+            entry.LoadedAmmunition = remainingAmmunition;
+            Entries.Set(index, entry);
+            Revision++;
+            return true;
+        }
+
         public bool HasItem(string itemId)
         {
             string normalizedId = NetworkLockGroup.NormalizeId(itemId);
@@ -129,8 +232,7 @@ namespace TheSancturary.FusionPrototype
             if (!TryResolveDefinition(itemId, out InventoryItemDefinition definition))
                 return false;
 
-            return CanAcceptCategory(definition.Category) &&
-                   TryFindFirstPlacement(definition, out _, out _, out _);
+            return TryFindFirstPlacement(definition, out _, out _, out _);
         }
 
         public bool TryAddItemAuthoritative(string itemId, string displayName)
@@ -185,7 +287,11 @@ namespace TheSancturary.FusionPrototype
                 return false;
             }
 
-            return TryAddItemAuthoritative(worldItem.ItemId, out _, out rejection);
+            return TryAddItemAuthoritative(
+                worldItem.ItemId,
+                worldItem.LoadedAmmunition,
+                out _,
+                out rejection);
         }
 
         public void RequestMove(
@@ -230,6 +336,21 @@ namespace TheSancturary.FusionPrototype
             }
         }
 
+        public void RequestReload(
+            ushort sourceInstanceId,
+            ushort targetInstanceId)
+        {
+            if (HasInputAuthority)
+            {
+                _pendingInputCommands.Enqueue(new InventoryInputCommand
+                {
+                    Type = InventoryInputCommandType.Reload,
+                    InstanceId = sourceInstanceId,
+                    TargetInstanceId = targetInstanceId
+                });
+            }
+        }
+
         public bool TryDequeueInputCommand(out InventoryInputCommand command)
         {
             if (!HasInputAuthority || _pendingInputCommands.Count == 0)
@@ -245,6 +366,7 @@ namespace TheSancturary.FusionPrototype
         public void ProcessInputCommandAuthoritative(
             InventoryInputCommandType commandType,
             ushort instanceId,
+            ushort targetInstanceId,
             byte column,
             byte row,
             NetworkBool rotated)
@@ -267,6 +389,11 @@ namespace TheSancturary.FusionPrototype
                 case InventoryInputCommandType.Drop:
                     ProcessDropAuthoritative(instanceId);
                     break;
+                case InventoryInputCommandType.Reload:
+                    ProcessReloadAuthoritative(
+                        instanceId,
+                        targetInstanceId);
+                    break;
                 case InventoryInputCommandType.None:
                     break;
                 default:
@@ -274,6 +401,22 @@ namespace TheSancturary.FusionPrototype
                         InventoryRequestRejection.InvalidRequest);
                     break;
             }
+        }
+
+        public void ProcessInputCommandAuthoritative(
+            InventoryInputCommandType commandType,
+            ushort instanceId,
+            byte column,
+            byte row,
+            NetworkBool rotated)
+        {
+            ProcessInputCommandAuthoritative(
+                commandType,
+                instanceId,
+                0,
+                column,
+                row,
+                rotated);
         }
 
         public void ToggleEquippedUseAuthoritative()
@@ -344,8 +487,69 @@ namespace TheSancturary.FusionPrototype
             }
 
             EquippedInstanceId = instanceId;
-            FlashlightEnabled = entry.ItemId == flashlightItemId;
+            FlashlightEnabled = false;
             Revision++;
+        }
+
+        private void ProcessReloadAuthoritative(
+            ushort sourceInstanceId,
+            ushort targetInstanceId)
+        {
+            if (sourceInstanceId == 0 ||
+                targetInstanceId == 0 ||
+                sourceInstanceId == targetInstanceId)
+            {
+                SendOwnerRejection(InventoryRequestRejection.InvalidRequest);
+                return;
+            }
+
+            int sourceIndex = FindEntryIndex(sourceInstanceId);
+            int targetIndex = FindEntryIndex(targetInstanceId);
+            if (sourceIndex < 0 || targetIndex < 0)
+            {
+                SendOwnerRejection(InventoryRequestRejection.InvalidRequest);
+                return;
+            }
+
+            NetworkInventoryEntry sourceEntry = Entries.Get(sourceIndex);
+            NetworkInventoryEntry targetEntry = Entries.Get(targetIndex);
+            if (!TryResolveDefinition(
+                    sourceEntry.ItemId.ToString(),
+                    out InventoryItemDefinition sourceDefinition) ||
+                !TryResolveDefinition(
+                    targetEntry.ItemId.ToString(),
+                    out InventoryItemDefinition targetDefinition) ||
+                !ItemGameplayRules.TryApplyReload(
+                    sourceInstanceId,
+                    true,
+                    sourceDefinition.Category ==
+                    InventoryItemCategory.Ammunition,
+                    sourceDefinition.ItemId,
+                    targetInstanceId,
+                    true,
+                    targetDefinition.Category ==
+                    InventoryItemCategory.Firearm,
+                    targetDefinition.CompatibleAmmoItemId,
+                    targetEntry.LoadedAmmunition,
+                    targetDefinition.AmmunitionCapacity,
+                    out ItemGameplayRules.ReloadTransition transition))
+            {
+                SendOwnerRejection(InventoryRequestRejection.InvalidRequest);
+                return;
+            }
+
+            targetEntry.LoadedAmmunition = transition.LoadedAmmunition;
+            Entries.Set(targetIndex, targetEntry);
+            Entries.Set(sourceIndex, default);
+            if (EquippedInstanceId == sourceInstanceId)
+            {
+                EquippedInstanceId = 0;
+                FlashlightEnabled = false;
+            }
+
+            Revision++;
+            GetComponent<NetworkItemUseController>()?
+                .PresentReloadAuthoritative(targetInstanceId);
         }
 
         private void ProcessDropAuthoritative(ushort instanceId)
@@ -378,16 +582,38 @@ namespace TheSancturary.FusionPrototype
                 0f);
             WorldItemPhysics prefabPhysics =
                 definition.WorldPrefab.GetComponent<WorldItemPhysics>();
+            WorldInventoryItem prefabWorldItem =
+                definition.WorldPrefab.GetComponent<WorldInventoryItem>();
             if (!TryFindDropPosition(prefabPhysics, rotation, out Vector3 position))
             {
                 SendOwnerRejection(InventoryRequestRejection.InvalidRequest);
                 return;
             }
 
+            byte droppedAmmunition =
+                definition.Category == InventoryItemCategory.Firearm
+                    ? ItemGameplayRules.CaptureLoadedAmmunitionForWorld(
+                        entry.LoadedAmmunition,
+                        definition.AmmunitionCapacity)
+                    : (byte)0;
+            bool dropStateInitialized = prefabWorldItem == null;
             NetworkObject spawned = Runner.Spawn(
                 definition.WorldPrefab,
                 position,
-                rotation);
+                rotation,
+                null,
+                (_, spawnedObject) =>
+                {
+                    WorldInventoryItem spawnedWorldItem =
+                        spawnedObject.GetComponent<WorldInventoryItem>();
+                    if (spawnedWorldItem == null)
+                        return;
+
+                    spawnedWorldItem.InitializeLoadedAmmunitionBeforeSpawn(
+                        droppedAmmunition);
+                    dropStateInitialized = true;
+                },
+                default);
             if (spawned == null)
             {
                 SendOwnerRejection(InventoryRequestRejection.InvalidRequest);
@@ -396,7 +622,14 @@ namespace TheSancturary.FusionPrototype
 
             WorldItemPhysics spawnedPhysics =
                 spawned.GetComponent<WorldItemPhysics>();
-            if (spawnedPhysics == null)
+            WorldInventoryItem spawnedInventoryItem =
+                spawned.GetComponent<WorldInventoryItem>();
+            if (spawnedPhysics == null ||
+                !dropStateInitialized ||
+                (prefabWorldItem != null &&
+                 (spawnedInventoryItem == null ||
+                  spawnedInventoryItem.LoadedAmmunition !=
+                  droppedAmmunition)))
             {
                 Runner.Despawn(spawned);
                 SendOwnerRejection(InventoryRequestRejection.InvalidRequest);
@@ -440,17 +673,24 @@ namespace TheSancturary.FusionPrototype
             out ushort instanceId,
             out InventoryRequestRejection rejection)
         {
+            return TryAddItemAuthoritative(
+                itemId,
+                null,
+                out instanceId,
+                out rejection);
+        }
+
+        private bool TryAddItemAuthoritative(
+            string itemId,
+            byte? loadedAmmunition,
+            out ushort instanceId,
+            out InventoryRequestRejection rejection)
+        {
             instanceId = 0;
             if (!HasStateAuthority || !_catalogValid ||
                 !TryResolveDefinition(itemId, out InventoryItemDefinition definition))
             {
                 rejection = InventoryRequestRejection.InvalidRequest;
-                return false;
-            }
-
-            if (!CanAcceptCategory(definition.Category))
-            {
-                rejection = InventoryRequestRejection.CategoryLimitReached;
                 return false;
             }
 
@@ -479,7 +719,15 @@ namespace TheSancturary.FusionPrototype
                 ItemId = NetworkLockGroup.NormalizeId(definition.ItemId),
                 Column = column,
                 Row = row,
-                Rotated = rotated
+                Rotated = rotated,
+                LoadedAmmunition = loadedAmmunition.HasValue &&
+                    definition.Category == InventoryItemCategory.Firearm
+                        ? ItemGameplayRules.RestoreLoadedAmmunitionFromWorld(
+                            loadedAmmunition.Value,
+                            definition.AmmunitionCapacity)
+                        : ClampLoadedAmmunition(
+                            definition,
+                            definition.InitialLoadedAmmunition)
             });
             Revision++;
             rejection = InventoryRequestRejection.None;
@@ -587,30 +835,18 @@ namespace TheSancturary.FusionPrototype
             return true;
         }
 
-        private bool CanAcceptCategory(InventoryItemCategory category)
+        private static byte ClampLoadedAmmunition(
+            InventoryItemDefinition definition,
+            byte loadedAmmunition)
         {
-            for (int limitIndex = 0; limitIndex < categoryLimits.Count; limitIndex++)
-            {
-                InventoryCategoryLimit limit = categoryLimits[limitIndex];
-                if (limit == null || limit.Category != category)
-                    continue;
+            if (definition == null ||
+                definition.Category != InventoryItemCategory.Firearm ||
+                definition.AmmunitionCapacity == 0)
+                return 0;
 
-                int count = 0;
-                for (int entryIndex = 0; entryIndex < MaximumItems; entryIndex++)
-                {
-                    NetworkInventoryEntry entry = Entries.Get(entryIndex);
-                    if (entry.IsOccupied &&
-                        TryResolveDefinition(
-                            entry.ItemId.ToString(),
-                            out InventoryItemDefinition definition) &&
-                        definition.Category == category)
-                        count++;
-                }
-
-                return count < limit.Maximum;
-            }
-
-            return true;
+            return ItemGameplayRules.ClampLoadedAmmunition(
+                loadedAmmunition,
+                definition.AmmunitionCapacity);
         }
 
         private int FindEntryIndex(ushort instanceId)

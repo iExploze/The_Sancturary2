@@ -40,6 +40,7 @@ namespace TheSancturary.Inventory
         private Vector2 _dragPointerOffset;
         private Vector2Int _dragCandidate;
         private bool _dragCandidateValid;
+        private InventoryItemInstance _dragTargetItem;
         private bool _lockerInputLocked;
 
         public bool IsOpen => _panel != null && _panel.activeSelf;
@@ -284,7 +285,13 @@ namespace TheSancturary.Inventory
                 return;
 
             InventoryItemInstance movedItem = _draggedItem;
-            bool committed = _dragCandidateValid && _inventory.TryMove(movedItem, _dragCandidate);
+            bool reloadRequested =
+                movedItem.Definition.Category == InventoryItemCategory.Ammunition &&
+                _dragTargetItem != null;
+            bool committed = reloadRequested
+                ? _inventory.TryReload(movedItem, _dragTargetItem)
+                : _dragCandidateValid &&
+                  _inventory.TryMove(movedItem, _dragCandidate);
             if (!committed)
                 _inventory.CancelMove(movedItem);
             ClearDragState();
@@ -306,10 +313,18 @@ namespace TheSancturary.Inventory
             _dragCandidate = new Vector2Int(
                 Mathf.RoundToInt(draggedPosition.x / stride),
                 Mathf.RoundToInt(-draggedPosition.y / stride));
-            _dragCandidateValid = _inventory.CanPlace(
-                _draggedItem.Definition,
-                _dragCandidate,
-                _draggedItem.Rotated);
+            _dragTargetItem = _inventory.GetCell(
+                _dragCandidate.y,
+                _dragCandidate.x);
+            bool targetsOccupiedCell =
+                _draggedItem.Definition.Category ==
+                InventoryItemCategory.Ammunition &&
+                _dragTargetItem != null;
+            _dragCandidateValid = targetsOccupiedCell ||
+                _inventory.CanPlace(
+                    _draggedItem.Definition,
+                    _dragCandidate,
+                    _draggedItem.Rotated);
 
             RectTransform previewRect = _placementPreview.rectTransform;
             previewRect.anchorMin = previewRect.anchorMax = new Vector2(0f, 1f);
@@ -320,9 +335,11 @@ namespace TheSancturary.Inventory
             previewRect.sizeDelta = new Vector2(
                 _draggedItem.Width * CellSize + (_draggedItem.Width - 1) * CellGap,
                 _draggedItem.Height * CellSize + (_draggedItem.Height - 1) * CellGap);
-            _placementPreview.color = _dragCandidateValid
-                ? new Color(0.18f, 0.82f, 0.35f, 0.42f)
-                : new Color(0.9f, 0.2f, 0.2f, 0.42f);
+            _placementPreview.color = targetsOccupiedCell
+                ? new Color(0.9f, 0.67f, 0.16f, 0.48f)
+                : _dragCandidateValid
+                    ? new Color(0.18f, 0.82f, 0.35f, 0.42f)
+                    : new Color(0.9f, 0.2f, 0.2f, 0.42f);
             _placementPreview.gameObject.SetActive(true);
         }
 
@@ -339,6 +356,7 @@ namespace TheSancturary.Inventory
                 _placementPreview.gameObject.SetActive(false);
             _draggedView = null;
             _draggedItem = null;
+            _dragTargetItem = null;
             _dragCandidateValid = false;
         }
 

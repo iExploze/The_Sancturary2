@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c310c582055cdc947a33ab4e658cdbc3, type: 3}
+  m_Name: FireAxe
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.InventoryItemDefinition
+  displayName: Fire Axe
+  itemId: fire_axe
+  category: 4
+  temporaryIconLabel: AXE
+  width: 2
+  height: 3
+  canRotate: 1
+  stackable: 0
+  canEquip: 1
+  canDrop: 1
+  worldPrefab: {fileID: 3062717326564856502, guid: b809e13a1fa20ae4ab5c2b48e1e8e71f, type: 3}
+  equippedPrefab: {fileID: 1418707111006368376, guid: df8d46782dfa0c14796873a7d3801896, type: 3}
+  thirdPersonEquippedPrefab: {fileID: 8998655951149024785, guid: 8283aa4f33086e741a866d5eb9cbcea7, type: 3}
+  useKind: 6
+  holdStyle: 2
+  useDuration: 0.85
+  useCooldown: 0.3
+  compatibleAmmoItemId: 
+  ammunitionCapacity: 0
+  initialLoadedAmmunition: 0
+  useAudioClip: {fileID: 8300000, guid: 8363b1caca05b2a4ebe4d05732d571a2, type: 3}
+  dryFireAudioClip: {fileID: 0}
+  impactAudioClip: {fileID: 8300000, guid: f44bcc2c43d341a48916afefd13abd14, type: 3}
+  reloadAudioClip: {fileID: 0}

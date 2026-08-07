@@ -2442,6 +2442,7 @@ GameObject:
   m_Component:
   - component: {fileID: 183015200}
   - component: {fileID: 183015201}
+  - component: {fileID: 183015202}
   m_Layer: 0
   m_Name: Central_Junction_Light
   m_TagString: Untagged
@@ -2529,6 +2530,35 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!114 &183015202
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 183015199}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1001 &193574628
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -13487,6 +13517,131 @@ Transform:
   m_Children: []
   m_Father: {fileID: 420001341}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1030212375
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 441221914233937903, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: SortKey
+      value: 1271419895
+      objectReference: {fileID: 0}
+    - target: {fileID: 912123096549461193, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: SortKey
+      value: 1218533639
+      objectReference: {fileID: 0}
+    - target: {fileID: 1756442295544171033, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: SortKey
+      value: 1989383359
+      objectReference: {fileID: 0}
+    - target: {fileID: 2210457802384134369, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -4.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2210457802384134369, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2210457802384134369, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -13
+      objectReference: {fileID: 0}
+    - target: {fileID: 2210457802384134369, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2210457802384134369, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2210457802384134369, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2210457802384134369, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2210457802384134369, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2210457802384134369, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2210457802384134369, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4209989292020358743, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: SortKey
+      value: 3394886601
+      objectReference: {fileID: 0}
+    - target: {fileID: 4280755759945589387, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: SortKey
+      value: 1190791683
+      objectReference: {fileID: 0}
+    - target: {fileID: 5026035336234199887, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: m_Name
+      value: ItemValidationSetup
+      objectReference: {fileID: 0}
+    - target: {fileID: 5105752438110120990, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: SortKey
+      value: 2921317735
+      objectReference: {fileID: 0}
+    - target: {fileID: 5251748208697328900, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: SortKey
+      value: 137083794
+      objectReference: {fileID: 0}
+    - target: {fileID: 5273261232341748786, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: SortKey
+      value: 2655377079
+      objectReference: {fileID: 0}
+    - target: {fileID: 5759257170932412431, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: SortKey
+      value: 635154139
+      objectReference: {fileID: 0}
+    - target: {fileID: 6111831958580542559, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: SortKey
+      value: 2298964483
+      objectReference: {fileID: 0}
+    - target: {fileID: 6139489909262496398, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: SortKey
+      value: 1704205473
+      objectReference: {fileID: 0}
+    - target: {fileID: 6262558964493373930, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: SortKey
+      value: 4202387258
+      objectReference: {fileID: 0}
+    - target: {fileID: 7008690449311933958, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: SortKey
+      value: 1558253231
+      objectReference: {fileID: 0}
+    - target: {fileID: 7103883540104541728, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: SortKey
+      value: 1816369887
+      objectReference: {fileID: 0}
+    - target: {fileID: 7394677260518377057, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: SortKey
+      value: 133993108
+      objectReference: {fileID: 0}
+    - target: {fileID: 7552919279557986380, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: SortKey
+      value: 2648826758
+      objectReference: {fileID: 0}
+    - target: {fileID: 8794838759149907439, guid: ae616295f953e774ead99175658cbc03, type: 3}
+      propertyPath: SortKey
+      value: 4067215282
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ae616295f953e774ead99175658cbc03, type: 3}
 --- !u!1 &1031005380
 GameObject:
   m_ObjectHideFlags: 0
@@ -23902,6 +24057,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1782496809}
   - component: {fileID: 1782496810}
+  - component: {fileID: 1782496811}
   m_Layer: 0
   m_Name: Pocket_A_Light
   m_TagString: Untagged
@@ -23989,6 +24145,35 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!114 &1782496811
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1782496808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &1794304707
 GameObject:
   m_ObjectHideFlags: 0
@@ -32135,3 +32320,4 @@ SceneRoots:
   - {fileID: 8150656691096496688}
   - {fileID: 723032337}
   - {fileID: 1843677851}
+  - {fileID: 1030212375}

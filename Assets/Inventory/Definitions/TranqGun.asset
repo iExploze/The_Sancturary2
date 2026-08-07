@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c310c582055cdc947a33ab4e658cdbc3, type: 3}
+  m_Name: TranqGun
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.InventoryItemDefinition
+  displayName: Tranq Gun
+  itemId: tranq_gun
+  category: 5
+  temporaryIconLabel: TRANQ
+  width: 3
+  height: 2
+  canRotate: 0
+  stackable: 0
+  canEquip: 1
+  canDrop: 1
+  worldPrefab: {fileID: 5877559014163559352, guid: 1744661a68098e94d8acc9055797b95d, type: 3}
+  equippedPrefab: {fileID: 7007868990429088813, guid: 92974980f6da12942a2adfd6ae41f8e8, type: 3}
+  thirdPersonEquippedPrefab: {fileID: 2748323349199806109, guid: 61efa64caa0688e48bc7869f862ee312, type: 3}
+  useKind: 7
+  holdStyle: 2
+  useDuration: 0
+  useCooldown: 0.45
+  compatibleAmmoItemId: tranq_dart
+  ammunitionCapacity: 1
+  initialLoadedAmmunition: 0
+  useAudioClip: {fileID: 8300000, guid: f1791df89db4d6440905fadc2f008fd3, type: 3}
+  dryFireAudioClip: {fileID: 8300000, guid: cfd1253fa985b294fabca7668cd1ceef, type: 3}
+  impactAudioClip: {fileID: 0}
+  reloadAudioClip: {fileID: 8300000, guid: 33046812ea8445f4381c0e05f22d862f, type: 3}

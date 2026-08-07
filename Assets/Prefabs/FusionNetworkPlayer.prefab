@@ -54,6 +54,7 @@ GameObject:
   - component: {fileID: 6008705058086688184}
   - component: {fileID: 3876416893426119887}
   - component: {fileID: 6973947097866052018}
+  - component: {fileID: 4512405732918198426}
   m_Layer: 0
   m_Name: FusionNetworkPlayer
   m_TagString: Untagged
@@ -76,6 +77,7 @@ Transform:
   m_Children:
   - {fileID: 2006686930086813494}
   - {fileID: 4852510062034650625}
+  - {fileID: 4522332421762857497}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &361827384529308309
@@ -99,6 +101,7 @@ MonoBehaviour:
   - {fileID: 1661761706703525729}
   - {fileID: 3534618155417879656}
   - {fileID: 4952048985873913713}
+  - {fileID: 4512405732918198426}
   ForceRemoteRenderTimeframe: 0
 --- !u!143 &1817330395535169925
 CharacterController:
@@ -391,6 +394,7 @@ MonoBehaviour:
   localInteractionTargeting: {fileID: 2203274112193757590}
   inventory: {fileID: 4952048985873913713}
   gridInventory: {fileID: 6973947097866052018}
+  itemUseController: {fileID: 4512405732918198426}
   characterRenderers:
   - {fileID: 4607367529537180434}
   - {fileID: 2698025421313357052}
@@ -528,9 +532,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.NetworkPlayerInventory
   catalog: {fileID: 11400000, guid: c37c67caf50b1ea43933d56abbd7a87e, type: 2}
   flashlightItemId: flashlight
-  categoryLimits:
-  - category: 5
-    maximum: 1
   dropDistance: 1.5
   wallClearance: 0.35
   dropOriginHeight: 1.35
@@ -556,8 +557,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 621ad4a63b00ac9439acbb7513b9615e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.PlayerEquipment
-  flashlightItemId: flashlight
   player: {fileID: 3534618155417879656}
+  ownerFirstPersonAnchor: {fileID: 5658212836864350396}
+  thirdPersonAnchor: {fileID: 4522332421762857497}
+  animatorIK: {fileID: 5194587298959656726}
+  ownerAudioSource: {fileID: 7593962408230321345}
+  spatialAudioSource: {fileID: 3678016109987678052}
+  flashlightItemId: flashlight
   flashlightOrigin: {fileID: 7683402297725607401}
   flashlight: {fileID: 8176668023581248087}
 --- !u!114 &3876416893426119887
@@ -589,6 +595,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7299845204c88f4292955b123452e89, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.PlayerInventory
+--- !u!114 &4512405732918198426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 935648667489386037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f96e1d242b37134e94bd258bd3d962c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.NetworkItemUseController
+  player: {fileID: 3534618155417879656}
+  inventory: {fileID: 4952048985873913713}
+  maximumUseDistance: 2
+  useCollisionMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  _ActionSequence: 0
+  _ActionPresentationCode: 0
+  _ActionUseKindCode: 0
+  _ActionInstanceId: 0
+  _ActiveUseInstanceId: 0
+  _ActiveUseKindCode: 0
+  _ActiveTarget:
+    Object:
+      Raw: 0
+    Behaviour: 0
 --- !u!1 &1265475174293207895
 GameObject:
   m_ObjectHideFlags: 0
@@ -706,6 +740,37 @@ MonoBehaviour:
   intensity: 7
   color: {r: 0.92, g: 0.96, b: 1, a: 1}
   shadows: 2
+--- !u!1 &3157971028716977941
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4522332421762857497}
+  m_Layer: 0
+  m_Name: ThirdPersonHeldItemAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4522332421762857497
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3157971028716977941}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.28, y: 1.25, z: 0.35}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1862970608609475245}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3170984722257280242
 GameObject:
   m_ObjectHideFlags: 0
@@ -739,6 +804,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3202720508368442498}
+  - {fileID: 5658212836864350396}
   m_Father: {fileID: 9177884012568396752}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &5671701118482004310
@@ -844,6 +910,37 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!1 &3767294149882786815
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5658212836864350396}
+  m_Layer: 0
+  m_Name: FirstPersonHeldItemAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5658212836864350396
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3767294149882786815}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.034887537, y: -0.026161004, z: 0.00091356237, w: 0.9990484}
+  m_LocalPosition: {x: 0.27, y: -0.23, z: 0.48}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7683402297725607401}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6249705081435670012
 GameObject:
   m_ObjectHideFlags: 0
@@ -951,7 +1048,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 057d86323f55ed74e8c5506438de870b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5194587298959656726}
   m_SourcePrefab: {fileID: 100100000, guid: 057d86323f55ed74e8c5506438de870b, type: 3}
 --- !u!95 &1564922691669482619 stripped
 Animator:
@@ -983,6 +1083,29 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 057d86323f55ed74e8c5506438de870b, type: 3}
   m_PrefabInstance: {fileID: 4962172170653983210}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &5196103513564110011 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 057d86323f55ed74e8c5506438de870b, type: 3}
+  m_PrefabInstance: {fileID: 4962172170653983210}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5194587298959656726
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5196103513564110011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a44648ee6a74e3343acd1ec0f71e1a85, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.PlayerEquipmentAnimatorIK
+  animator: {fileID: 1564922691669482619}
+  blendSpeed: 14
+  rightPositionWeight: 1
+  rightRotationWeight: 1
+  leftPositionWeight: 1
+  leftRotationWeight: 1
 --- !u!137 &5211566571980786821 stripped
 SkinnedMeshRenderer:
   m_CorrespondingSourceObject: {fileID: 904688488343924079, guid: 057d86323f55ed74e8c5506438de870b, type: 3}

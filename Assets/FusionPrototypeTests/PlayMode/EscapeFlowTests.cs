@@ -16,6 +16,7 @@ namespace TheSancturary.FusionPrototype.Tests
         [UnityTest]
         public IEnumerator ExitDoorLoadsEscapeScreenAndReturnsSessionToLobby()
         {
+            yield return FusionPlayModeTestSession.ResetExistingSession();
             yield return SceneManager.LoadSceneAsync(ReferenceScenePath, LoadSceneMode.Single);
 
             FusionNetworkPlayer player = null;

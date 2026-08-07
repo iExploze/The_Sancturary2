@@ -10,14 +10,14 @@ namespace TheSancturary.Inventory
         public byte Column;
         public byte Row;
         public NetworkBool Rotated;
+        public byte LoadedAmmunition;
     }
 
     public enum InventoryRequestRejection : byte
     {
-        None,
-        InventoryFull,
-        CategoryLimitReached,
-        ItemTaken,
-        InvalidRequest
+        None = 0,
+        InventoryFull = 1,
+        ItemTaken = 3,
+        InvalidRequest = 4
     }
 }

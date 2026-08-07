@@ -25,6 +25,7 @@ namespace TheSancturary.Inventory
         [SerializeField] private WorldItemPhysics worldItemPhysics;
 
         [Networked] public NetworkBool IsCollected { get; private set; }
+        [Networked] public byte LoadedAmmunition { get; private set; }
 
         private bool _spawned;
         private bool _lastRenderedCollected;
@@ -38,6 +39,15 @@ namespace TheSancturary.Inventory
         {
             ResolveReferences();
             ConfigureInteractionTarget();
+            if (HasStateAuthority)
+            {
+                LoadedAmmunition = ClampLoadedAmmunition(
+                    Object.NetworkTypeId.IsSceneObject
+                        ? definition != null
+                            ? definition.InitialLoadedAmmunition
+                            : (byte)0
+                        : LoadedAmmunition);
+            }
             _spawned = true;
             _lastRenderedCollected = IsCollected;
             ApplyCollectedState(_lastRenderedCollected);
@@ -58,6 +68,11 @@ namespace TheSancturary.Inventory
         {
             definition = value;
             ConfigureInteractionTarget();
+        }
+
+        public void InitializeLoadedAmmunitionBeforeSpawn(byte value)
+        {
+            LoadedAmmunition = ClampLoadedAmmunition(value);
         }
 
         public bool TryGetActionText(
@@ -189,6 +204,18 @@ namespace TheSancturary.Inventory
                 InteractionTargetStatus.Available,
                 null,
                 this);
+        }
+
+        private byte ClampLoadedAmmunition(byte value)
+        {
+            if (definition == null ||
+                definition.Category != InventoryItemCategory.Firearm ||
+                definition.AmmunitionCapacity == 0)
+                return 0;
+
+            return ItemGameplayRules.CaptureLoadedAmmunitionForWorld(
+                value,
+                definition.AmmunitionCapacity);
         }
 
         private void OnValidate()

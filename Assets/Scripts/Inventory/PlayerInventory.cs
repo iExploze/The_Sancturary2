@@ -6,17 +6,6 @@ using UnityEngine.InputSystem;
 
 namespace TheSancturary.Inventory
 {
-    [Serializable]
-    public sealed class InventoryCategoryLimit
-    {
-        [SerializeField] private InventoryItemCategory category =
-            InventoryItemCategory.Firearm;
-        [SerializeField, Min(0)] private int maximum = 1;
-
-        public InventoryItemCategory Category => category;
-        public int Maximum => Mathf.Max(0, maximum);
-    }
-
     /// <summary>
     /// Owner-only projection and UI controller for NetworkPlayerInventory.
     /// It never commits shared gameplay state directly.
@@ -112,14 +101,16 @@ namespace TheSancturary.Inventory
                         entry.InstanceId,
                         definition,
                         new Vector2Int(entry.Column, entry.Row),
-                        entry.Rotated);
+                        entry.Rotated,
+                        entry.LoadedAmmunition);
                 }
                 else
                 {
                     instance.ApplyReplicatedState(
                         definition,
                         new Vector2Int(entry.Column, entry.Row),
-                        entry.Rotated);
+                        entry.Rotated,
+                        entry.LoadedAmmunition);
                 }
 
                 _items.Add(instance);
@@ -221,6 +212,27 @@ namespace TheSancturary.Inventory
             return true;
         }
 
+        public bool TryReload(
+            InventoryItemInstance source,
+            InventoryItemInstance target)
+        {
+            if (_movingItem != source ||
+                source == null ||
+                target == null ||
+                source == target ||
+                source.Definition.Category != InventoryItemCategory.Ammunition)
+                return false;
+
+            RestoreMovingItem();
+            if (_networkInventory == null)
+                return false;
+
+            _networkInventory.RequestReload(
+                source.InstanceId,
+                target.InstanceId);
+            return true;
+        }
+
         public void CancelMove(InventoryItemInstance instance)
         {
             if (_movingItem == instance)
@@ -242,8 +254,6 @@ namespace TheSancturary.Inventory
             string message = rejection switch
             {
                 InventoryRequestRejection.InventoryFull => "Inventory Full",
-                InventoryRequestRejection.CategoryLimitReached =>
-                    "Category Limit Reached",
                 InventoryRequestRejection.ItemTaken => "Item Taken",
                 _ => "Action Rejected"
             };
@@ -274,7 +284,8 @@ namespace TheSancturary.Inventory
             _movingItem.ApplyReplicatedState(
                 _movingItem.Definition,
                 _moveOriginalPosition,
-                _moveOriginalRotated);
+                _moveOriginalRotated,
+                _movingItem.LoadedAmmunition);
             OccupyCells(_movingItem);
             _movingItem = null;
             Changed?.Invoke();
