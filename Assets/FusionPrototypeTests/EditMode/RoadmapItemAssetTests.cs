@@ -415,6 +415,52 @@ namespace TheSancturary.FusionPrototype.Tests
                     prefab.GetComponentsInChildren<Renderer>(true).Length,
                     Is.GreaterThan(0),
                     context);
+
+                if (expected.CanEquip)
+                {
+                    MeshCollider[] meshColliders =
+                        prefab.GetComponentsInChildren<MeshCollider>(true);
+                    Assert.That(
+                        meshColliders.Length,
+                        Is.GreaterThan(0),
+                        context + " must use mesh-shaped collision.");
+                    Assert.That(
+                        prefab.GetComponentsInChildren<BoxCollider>(true),
+                        Is.Empty,
+                        context + " must not retain the generic box collider.");
+                    Assert.That(
+                        meshColliders.All(collider =>
+                            collider.convex && collider.sharedMesh != null),
+                        Is.True,
+                        context + " requires cooked convex collision meshes.");
+
+                    WorldItemPhysics physics =
+                        prefab.GetComponent<WorldItemPhysics>();
+                    Assert.That(physics.HasValidLocalBounds, Is.True, context);
+                    CollectionAssert.AreEquivalent(
+                        meshColliders,
+                        physics.PhysicalColliders,
+                        context + " must reference every physical collider.");
+
+                    SerializedObject serializedWorldItem =
+                        new(worldItem);
+                    SerializedProperty pickupColliders =
+                        serializedWorldItem.FindProperty("pickupColliders");
+                    Assert.That(
+                        pickupColliders.arraySize,
+                        Is.EqualTo(meshColliders.Length),
+                        context + " must reference every pickup collider.");
+                    for (int index = 0;
+                         index < pickupColliders.arraySize;
+                         index++)
+                    {
+                        Assert.That(
+                            pickupColliders.GetArrayElementAtIndex(index)
+                                .objectReferenceValue,
+                            Is.Not.Null,
+                            context + " contains a missing pickup collider.");
+                    }
+                }
             }
         }
 
@@ -448,6 +494,34 @@ namespace TheSancturary.FusionPrototype.Tests
             {
                 AssertHeldPrefab(expected.OwnerHeldPrefabPath, expected);
                 AssertHeldPrefab(expected.RemoteHeldPrefabPath, expected);
+            }
+        }
+
+        [TestCase("Adrenaline", "Assets/Props/Medical Glass_8.prefab")]
+        [TestCase("MedKit", "Assets/Props/Medical Glass_10.prefab")]
+        public void BottleWrappersUseTheRequestedVisualSource(
+            string itemName,
+            string expectedSourcePath)
+        {
+            string[] wrapperPaths =
+            {
+                PrefabFolder + "/World" + itemName + ".prefab",
+                PrefabFolder + "/Held" + itemName + ".prefab",
+                PrefabFolder + "/Held" + itemName + "Remote.prefab"
+            };
+
+            foreach (string wrapperPath in wrapperPaths)
+            {
+                GameObject wrapper = LoadRequiredAsset<GameObject>(wrapperPath);
+                Transform model = wrapper.transform.Find("VisualRoot/Model");
+                Assert.That(model, Is.Not.Null, wrapperPath);
+                GameObject source = PrefabUtility.GetCorrespondingObjectFromSource(
+                    model.gameObject);
+                Assert.That(source, Is.Not.Null, wrapperPath);
+                Assert.That(
+                    AssetDatabase.GetAssetPath(source),
+                    Is.EqualTo(expectedSourcePath),
+                    wrapperPath);
             }
         }
 
