@@ -33,6 +33,15 @@ namespace TheSancturary.Inventory
         TwoHanded
     }
 
+    public enum InventoryHoldPose
+    {
+        None,
+        OneHandedCarry,
+        Pistol,
+        LongGun,
+        TwoHandedTool
+    }
+
     [CreateAssetMenu(menuName = "The Sancturary/Inventory/Item Definition", fileName = "InventoryItem")]
     public sealed class InventoryItemDefinition : ScriptableObject
     {
@@ -58,6 +67,7 @@ namespace TheSancturary.Inventory
         [Header("Item Action")]
         [SerializeField] private InventoryItemUseKind useKind;
         [SerializeField] private InventoryHoldStyle holdStyle;
+        [SerializeField] private InventoryHoldPose holdPose;
         [SerializeField, Min(0f)] private float useDuration;
         [SerializeField, Min(0f)] private float useCooldown;
 
@@ -88,6 +98,7 @@ namespace TheSancturary.Inventory
             thirdPersonEquippedPrefab != null ? thirdPersonEquippedPrefab : equippedPrefab;
         public InventoryItemUseKind UseKind => useKind;
         public InventoryHoldStyle HoldStyle => holdStyle;
+        public InventoryHoldPose HoldPose => holdPose;
         public float UseDuration => Mathf.Max(0f, useDuration);
         public float UseCooldown => Mathf.Max(0f, useCooldown);
         public string CompatibleAmmoItemId => compatibleAmmoItemId;

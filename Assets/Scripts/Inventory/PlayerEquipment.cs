@@ -175,7 +175,8 @@ namespace TheSancturary.Inventory
                     this,
                     _heldVisual.RightHandGrip,
                     _heldVisual.LeftHandGrip,
-                    definition.HoldStyle);
+                    definition.HoldStyle,
+                    definition.HoldPose);
             }
         }
 

@@ -65,6 +65,7 @@ Transform:
   - {fileID: 2697020404874106310}
   - {fileID: 139789607646329461}
   - {fileID: 8064237442569205921}
+  - {fileID: 7392599972001062993}
   m_Father: {fileID: 1862970608609475245}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &451927663065232961
@@ -838,6 +839,53 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8742450409093107231}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2848724729979224320
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8440033346745829486}
+  - component: {fileID: 8608179964389194174}
+  m_Layer: 0
+  m_Name: ChestAimRig
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8440033346745829486
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2848724729979224320}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 320222926703358135}
+  m_Father: {fileID: 2872370050083744321}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8608179964389194174
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2848724729979224320}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70b342d8ce5c2fd48b8fa3147d48d1d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.Rig
+  m_Weight: 0.65
+  m_Effectors: []
 --- !u!1 &2975580901245445763
 GameObject:
   m_ObjectHideFlags: 0
@@ -870,6 +918,7 @@ Transform:
   - {fileID: 7466027838742506446}
   - {fileID: 1771271539666030956}
   - {fileID: 5304256060135304794}
+  - {fileID: 8440033346745829486}
   m_Father: {fileID: 4852510062034650625}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3157971028716977941
@@ -897,7 +946,7 @@ Transform:
   m_GameObject: {fileID: 3157971028716977941}
   serializedVersion: 2
   m_LocalRotation: {x: 0.040503558, y: -0, z: -0, w: 0.9991794}
-  m_LocalPosition: {x: 0.3050109, y: 0.008713558, z: 0.39534083}
+  m_LocalPosition: {x: 0.1, y: 0.01, z: 0.28}
   m_LocalScale: {x: 1.0893247, y: 1.0893246, z: 1.0893246}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1043,6 +1092,37 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!1 &3431960613916974069
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7392599972001062993}
+  m_Layer: 0
+  m_Name: ChestAimTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7392599972001062993
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3431960613916974069}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.3, z: 3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8742450409093107231}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3453008383375269948
 GameObject:
   m_ObjectHideFlags: 0
@@ -1086,10 +1166,96 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 70b342d8ce5c2fd48b8fa3147d48d1d1, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.Rig
   m_Weight: 1
   m_Effectors: []
+--- !u!1 &3566156317405157887
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 320222926703358135}
+  - component: {fileID: 9112034575245124091}
+  m_Layer: 0
+  m_Name: UpperChestAim
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &320222926703358135
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3566156317405157887}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8440033346745829486}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &9112034575245124091
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3566156317405157887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3c430f382484144e925c097c2d33cfe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.MultiAimConstraint
+  m_Weight: 1
+  m_Data:
+    m_ConstrainedObject: {fileID: 4740539076317589893}
+    m_SourceObjects:
+      m_Length: 1
+      m_Item0:
+        transform: {fileID: 7392599972001062993}
+        weight: 1
+      m_Item1:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item2:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item3:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item4:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item5:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item6:
+        transform: {fileID: 0}
+        weight: 0
+      m_Item7:
+        transform: {fileID: 0}
+        weight: 0
+    m_Offset: {x: 0, y: 0, z: 0}
+    m_MinLimit: -12
+    m_MaxLimit: 12
+    m_AimAxis: 4
+    m_UpAxis: 2
+    m_WorldUpType: 3
+    m_WorldUpObject: {fileID: 1862970608609475245}
+    m_WorldUpAxis: 2
+    m_MaintainOffset: 1
+    m_ConstrainedAxes:
+      x: 1
+      y: 0
+      z: 0
 --- !u!1 &3767294149882786815
 GameObject:
   m_ObjectHideFlags: 0
@@ -1164,7 +1330,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 70b342d8ce5c2fd48b8fa3147d48d1d1, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.Rig
   m_Weight: 0.85
   m_Effectors: []
@@ -1241,7 +1407,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aeda7bfbf984f2a4da5ab4b8967b115d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.TwoBoneIKConstraint
   m_Weight: 1
   m_Data:
@@ -1251,7 +1417,7 @@ MonoBehaviour:
     m_Target: {fileID: 3736366335659367280}
     m_Hint: {fileID: 2697020404874106310}
     m_TargetPositionWeight: 1
-    m_TargetRotationWeight: 1
+    m_TargetRotationWeight: 0.92
     m_HintWeight: 0.75
     m_MaintainTargetPositionOffset: 0
     m_MaintainTargetRotationOffset: 0
@@ -1328,7 +1494,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e3c430f382484144e925c097c2d33cfe, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.MultiAimConstraint
   m_Weight: 1
   m_Data:
@@ -1509,7 +1675,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 70b342d8ce5c2fd48b8fa3147d48d1d1, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.Rig
   m_Weight: 1
   m_Effectors: []
@@ -1555,7 +1721,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aeda7bfbf984f2a4da5ab4b8967b115d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Animation.Rigging::UnityEngine.Animations.Rigging.TwoBoneIKConstraint
   m_Weight: 1
   m_Data:
@@ -1565,7 +1731,7 @@ MonoBehaviour:
     m_Target: {fileID: 9036639561265855691}
     m_Hint: {fileID: 139789607646329461}
     m_TargetPositionWeight: 1
-    m_TargetRotationWeight: 1
+    m_TargetRotationWeight: 0.84
     m_HintWeight: 0.75
     m_MaintainTargetPositionOffset: 0
     m_MaintainTargetRotationOffset: 0
@@ -1743,6 +1909,8 @@ MonoBehaviour:
     m_Active: 0
   - m_Rig: {fileID: 6445537022214879319}
     m_Active: 0
+  - m_Rig: {fileID: 8608179964389194174}
+    m_Active: 1
   - m_Rig: {fileID: 1107327130245956025}
     m_Active: 1
   m_Effectors: []
@@ -1756,7 +1924,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 88142a830731ec34dab8e80af03b449a, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.PlayerEquipmentRigController
   animator: {fileID: 1564922691669482619}
   rigBuilder: {fileID: 4568968011266319000}
@@ -1769,6 +1937,17 @@ MonoBehaviour:
   rightElbowHint: {fileID: 2697020404874106310}
   leftElbowHint: {fileID: 139789607646329461}
   blendSpeed: 10
+  rightHandPositionWeight: 1
+  rightHandRotationWeight: 0.92
+  leftHandPositionWeight: 1
+  leftHandRotationWeight: 0.84
+  holdPoseLayerWeight: 0.9
+  oneHandedRightHint: {x: 0.52, y: 1.25, z: 0.18}
+  pistolRightHint: {x: 0.45, y: 1.36, z: 0.08}
+  longGunRightHint: {x: 0.5, y: 1.27, z: 0.08}
+  longGunLeftHint: {x: -0.5, y: 1.26, z: 0.12}
+  toolRightHint: {x: 0.48, y: 1.18, z: 0.1}
+  toolLeftHint: {x: -0.46, y: 1.39, z: 0.16}
 --- !u!114 &5482504443560926795
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1779,7 +1958,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2ca04ad7715f2914b85d42d65b53bffa, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Inventory.PlayerThirdPersonLookPresentation
   player: {fileID: 3534618155417879656}
   animator: {fileID: 1564922691669482619}
@@ -1790,10 +1969,16 @@ MonoBehaviour:
   headLookRig: {fileID: 1107327130245956025}
   headLookConstraint: {fileID: 3792402998531190657}
   headLookTarget: {fileID: 8064237442569205921}
+  chestAimRig: {fileID: 8608179964389194174}
+  chestAimConstraint: {fileID: 9112034575245124091}
+  chestAimTarget: {fileID: 7392599972001062993}
   pitchLimit: 45
   pitchSmoothTime: 0.1
   headTargetDistance: 3
   headRigWeight: 0.85
+  chestPitchFraction: 0.25
+  chestRigWeight: 0.65
+  chestTargetDistance: 3
 --- !u!137 &5211566571980786821 stripped
 SkinnedMeshRenderer:
   m_CorrespondingSourceObject: {fileID: 904688488343924079, guid: 057d86323f55ed74e8c5506438de870b, type: 3}

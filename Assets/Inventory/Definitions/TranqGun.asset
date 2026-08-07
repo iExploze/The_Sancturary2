@@ -27,6 +27,7 @@ MonoBehaviour:
   thirdPersonEquippedPrefab: {fileID: 2748323349199806109, guid: 61efa64caa0688e48bc7869f862ee312, type: 3}
   useKind: 7
   holdStyle: 2
+  holdPose: 3
   useDuration: 0
   useCooldown: 0.45
   compatibleAmmoItemId: tranq_dart

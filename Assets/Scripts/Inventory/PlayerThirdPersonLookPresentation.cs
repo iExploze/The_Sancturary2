@@ -31,12 +31,20 @@ namespace TheSancturary.Inventory
         [SerializeField] private MultiAimConstraint headLookConstraint;
         [SerializeField] private Transform headLookTarget;
 
+        [Header("Upper Chest Aim Rig")]
+        [SerializeField] private Rig chestAimRig;
+        [SerializeField] private MultiAimConstraint chestAimConstraint;
+        [SerializeField] private Transform chestAimTarget;
+
         [Header("Look Tuning")]
         [SerializeField, Range(1f, 89f)] private float pitchLimit =
             DefaultPitchLimit;
         [SerializeField, Min(0.01f)] private float pitchSmoothTime = 0.1f;
         [SerializeField, Min(0.25f)] private float headTargetDistance = 3f;
         [SerializeField, Range(0f, 1f)] private float headRigWeight = 0.85f;
+        [SerializeField, Range(0f, 0.5f)] private float chestPitchFraction = 0.25f;
+        [SerializeField, Range(0f, 1f)] private float chestRigWeight = 0.65f;
+        [SerializeField, Min(0.25f)] private float chestTargetDistance = 3f;
 
         private Quaternion _itemPitchRestRotation = Quaternion.identity;
         private float _smoothedPitch;
@@ -50,6 +58,9 @@ namespace TheSancturary.Inventory
         public Transform HeadLookTarget => headLookTarget;
         public Rig HeadLookRig => headLookRig;
         public MultiAimConstraint HeadLookConstraint => headLookConstraint;
+        public Transform ChestAimTarget => chestAimTarget;
+        public Rig ChestAimRig => chestAimRig;
+        public MultiAimConstraint ChestAimConstraint => chestAimConstraint;
         public float PitchLimit => pitchLimit;
         public float SmoothedPitch => _smoothedPitch;
 
@@ -113,7 +124,9 @@ namespace TheSancturary.Inventory
                     Mathf.Max(0f, Time.deltaTime));
             }
 
-            ApplyItemPitch(_smoothedPitch);
+            float chestPitch = _smoothedPitch * chestPitchFraction;
+            ApplyItemPitch(_smoothedPitch - chestPitch);
+            ApplyChestLook(chestPitch);
             ApplyHeadLook(_smoothedPitch);
         }
 
@@ -145,24 +158,64 @@ namespace TheSancturary.Inventory
                 player.transform.up);
         }
 
+        private void ApplyChestLook(float pitch)
+        {
+            if (chestAimRig != null)
+                chestAimRig.weight = chestRigWeight;
+            if (chestAimConstraint != null)
+                chestAimConstraint.weight = 1f;
+            if (chestAimTarget == null || torsoBone == null || player == null)
+                return;
+
+            Vector3 direction =
+                Quaternion.AngleAxis(pitch, player.transform.right) *
+                player.transform.forward;
+            chestAimTarget.position =
+                torsoBone.position + direction * chestTargetDistance;
+            chestAimTarget.rotation = Quaternion.LookRotation(
+                direction,
+                player.transform.up);
+        }
+
         private void DisablePresentation()
         {
             _presentationWasValid = false;
             _smoothedPitch = 0f;
             _pitchVelocity = 0f;
             ApplyItemPitch(0f);
+            if (chestAimRig != null)
+                chestAimRig.weight = 0f;
+            if (chestAimConstraint != null)
+                chestAimConstraint.weight = 1f;
             if (headLookRig != null)
                 headLookRig.weight = 0f;
             if (headLookConstraint != null)
                 headLookConstraint.weight = 1f;
 
             if (headLookTarget == null || headBone == null)
+            {
+                ResetChestTarget();
                 return;
+            }
 
             Transform facing = player != null ? player.transform : transform;
             headLookTarget.position =
                 headBone.position + facing.forward * headTargetDistance;
             headLookTarget.rotation = Quaternion.LookRotation(
+                facing.forward,
+                facing.up);
+            ResetChestTarget();
+        }
+
+        private void ResetChestTarget()
+        {
+            if (chestAimTarget == null || torsoBone == null)
+                return;
+
+            Transform facing = player != null ? player.transform : transform;
+            chestAimTarget.position =
+                torsoBone.position + facing.forward * chestTargetDistance;
+            chestAimTarget.rotation = Quaternion.LookRotation(
                 facing.forward,
                 facing.up);
         }
@@ -192,6 +245,9 @@ namespace TheSancturary.Inventory
             pitchSmoothTime = Mathf.Max(0.01f, pitchSmoothTime);
             headTargetDistance = Mathf.Max(0.25f, headTargetDistance);
             headRigWeight = Mathf.Clamp01(headRigWeight);
+            chestPitchFraction = Mathf.Clamp(chestPitchFraction, 0f, 0.5f);
+            chestRigWeight = Mathf.Clamp01(chestRigWeight);
+            chestTargetDistance = Mathf.Max(0.25f, chestTargetDistance);
         }
 #endif
     }

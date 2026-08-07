@@ -24,9 +24,14 @@ namespace TheSancturary.FusionPrototype.Tests
             NUnitAssert.That(controller, Is.Not.Null);
             NUnitAssert.That(animator, Is.Not.Null);
             NUnitAssert.That(animator.applyRootMotion, Is.False);
-            NUnitAssert.That(animator.layerCount, Is.EqualTo(3));
+            NUnitAssert.That(animator.layerCount, Is.EqualTo(4));
             NUnitAssert.That(animator.GetLayerName(1), Is.EqualTo("Airborne"));
-            NUnitAssert.That(animator.GetLayerName(2), Is.EqualTo("ItemPresentation"));
+            NUnitAssert.That(
+                animator.GetLayerName(2),
+                Is.EqualTo("Item Pose - One Hand"));
+            NUnitAssert.That(
+                animator.GetLayerName(3),
+                Is.EqualTo("Item Pose - Two Hand"));
             yield return WaitUntil(() => controller.Grounded, 5f, "Player did not begin grounded.");
 
             yield return HoldKeys(keyboard, 0.6f, Key.W);

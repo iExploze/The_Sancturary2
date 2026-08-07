@@ -27,6 +27,7 @@ MonoBehaviour:
   thirdPersonEquippedPrefab: {fileID: 8919111696293491782, guid: e9f2e5c81ecbf1f4fa0d0ccddf0c1a7f, type: 3}
   useKind: 7
   holdStyle: 1
+  holdPose: 2
   useDuration: 0
   useCooldown: 0.34
   compatibleAmmoItemId: revolver_ammo

@@ -27,6 +27,7 @@ MonoBehaviour:
   thirdPersonEquippedPrefab: {fileID: 6442932760409826479, guid: d7965730f5ded2941a825b99e5e447c7, type: 3}
   useKind: 4
   holdStyle: 1
+  holdPose: 1
   useDuration: 1
   useCooldown: 0.25
   compatibleAmmoItemId: 

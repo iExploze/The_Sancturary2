@@ -37,6 +37,7 @@ namespace TheSancturary.FusionPrototype.Tests
             public bool CanEquip;
             public InventoryItemUseKind UseKind;
             public InventoryHoldStyle HoldStyle;
+            public InventoryHoldPose HoldPose;
             public string CompatibleAmmoItemId = string.Empty;
             public byte AmmunitionCapacity;
             public byte InitialLoadedAmmunition = 0;
@@ -65,6 +66,7 @@ namespace TheSancturary.FusionPrototype.Tests
                 CanEquip = true,
                 UseKind = InventoryItemUseKind.FlashlightToggle,
                 HoldStyle = InventoryHoldStyle.OneHanded,
+                HoldPose = InventoryHoldPose.OneHandedCarry,
                 UseAudioName = "item_flashlight_toggle"
             },
             new ExpectedItem
@@ -78,6 +80,7 @@ namespace TheSancturary.FusionPrototype.Tests
                 CanEquip = true,
                 UseKind = InventoryItemUseKind.RevivalSyringe,
                 HoldStyle = InventoryHoldStyle.OneHanded,
+                HoldPose = InventoryHoldPose.OneHandedCarry,
                 UseAudioName = "item_revival_syringe_use"
             },
             new ExpectedItem
@@ -90,6 +93,7 @@ namespace TheSancturary.FusionPrototype.Tests
                 CanEquip = true,
                 UseKind = InventoryItemUseKind.FullHeal,
                 HoldStyle = InventoryHoldStyle.OneHanded,
+                HoldPose = InventoryHoldPose.OneHandedCarry,
                 UseAudioName = "item_medkit_use"
             },
             new ExpectedItem
@@ -102,6 +106,7 @@ namespace TheSancturary.FusionPrototype.Tests
                 CanEquip = true,
                 UseKind = InventoryItemUseKind.Adrenaline,
                 HoldStyle = InventoryHoldStyle.OneHanded,
+                HoldPose = InventoryHoldPose.OneHandedCarry,
                 UseAudioName = "item_adrenaline_use"
             },
             new ExpectedItem
@@ -115,6 +120,7 @@ namespace TheSancturary.FusionPrototype.Tests
                 CanEquip = true,
                 UseKind = InventoryItemUseKind.Crowbar,
                 HoldStyle = InventoryHoldStyle.OneHanded,
+                HoldPose = InventoryHoldPose.OneHandedCarry,
                 UseAudioName = "item_crowbar_swing",
                 ImpactAudioName = "item_crowbar_pry"
             },
@@ -129,6 +135,7 @@ namespace TheSancturary.FusionPrototype.Tests
                 CanEquip = true,
                 UseKind = InventoryItemUseKind.FireAxe,
                 HoldStyle = InventoryHoldStyle.TwoHanded,
+                HoldPose = InventoryHoldPose.TwoHandedTool,
                 UseAudioName = "item_fireaxe_swing",
                 ImpactAudioName = "item_fireaxe_wood_impact"
             },
@@ -142,6 +149,7 @@ namespace TheSancturary.FusionPrototype.Tests
                 CanEquip = true,
                 UseKind = InventoryItemUseKind.Firearm,
                 HoldStyle = InventoryHoldStyle.OneHanded,
+                HoldPose = InventoryHoldPose.Pistol,
                 CompatibleAmmoItemId = "revolver_ammo",
                 AmmunitionCapacity = 6,
                 UseAudioName = "item_revolver_fire",
@@ -158,6 +166,7 @@ namespace TheSancturary.FusionPrototype.Tests
                 CanEquip = true,
                 UseKind = InventoryItemUseKind.Firearm,
                 HoldStyle = InventoryHoldStyle.TwoHanded,
+                HoldPose = InventoryHoldPose.LongGun,
                 CompatibleAmmoItemId = "tranq_dart",
                 AmmunitionCapacity = 1,
                 UseAudioName = "item_tranq_fire",
@@ -174,6 +183,7 @@ namespace TheSancturary.FusionPrototype.Tests
                 CanEquip = true,
                 UseKind = InventoryItemUseKind.Firearm,
                 HoldStyle = InventoryHoldStyle.TwoHanded,
+                HoldPose = InventoryHoldPose.LongGun,
                 CompatibleAmmoItemId = "shotgun_shell",
                 AmmunitionCapacity = 1,
                 UseAudioName = "item_shotgun_fire",
@@ -318,6 +328,7 @@ namespace TheSancturary.FusionPrototype.Tests
                 Assert.That(definition.CanDrop, Is.True, context);
                 Assert.That(definition.UseKind, Is.EqualTo(expected.UseKind), context);
                 Assert.That(definition.HoldStyle, Is.EqualTo(expected.HoldStyle), context);
+                Assert.That(definition.HoldPose, Is.EqualTo(expected.HoldPose), context);
                 Assert.That(
                     definition.CompatibleAmmoItemId ?? string.Empty,
                     Is.EqualTo(expected.CompatibleAmmoItemId),
@@ -574,6 +585,9 @@ namespace TheSancturary.FusionPrototype.Tests
             Rig leftArmRig = itemRig != null
                 ? itemRig.Find("LeftArmRig")?.GetComponent<Rig>()
                 : null;
+            Rig chestAimRig = itemRig != null
+                ? itemRig.Find("ChestAimRig")?.GetComponent<Rig>()
+                : null;
             Rig headLookRig = itemRig != null
                 ? itemRig.Find("HeadLookRig")?.GetComponent<Rig>()
                 : null;
@@ -589,6 +603,10 @@ namespace TheSancturary.FusionPrototype.Tests
                 ? headLookRig.transform.Find("HeadLookAim")
                     ?.GetComponent<MultiAimConstraint>()
                 : null;
+            MultiAimConstraint chestAimConstraint = chestAimRig != null
+                ? chestAimRig.transform.Find("UpperChestAim")
+                    ?.GetComponent<MultiAimConstraint>()
+                : null;
 
             Assert.That(player, Is.Not.Null);
             Assert.That(inventory, Is.Not.Null);
@@ -601,12 +619,15 @@ namespace TheSancturary.FusionPrototype.Tests
             Assert.That(itemRig, Is.Not.Null);
             Assert.That(rightArmRig, Is.Not.Null);
             Assert.That(leftArmRig, Is.Not.Null);
+            Assert.That(chestAimRig, Is.Not.Null);
             Assert.That(headLookRig, Is.Not.Null);
             Assert.That(rightArmConstraint, Is.Not.Null);
             Assert.That(leftArmConstraint, Is.Not.Null);
             Assert.That(headLookConstraint, Is.Not.Null);
             Assert.That(rightArmConstraint.IsValid(), Is.True);
             Assert.That(leftArmConstraint.IsValid(), Is.True);
+            Assert.That(chestAimConstraint, Is.Not.Null);
+            Assert.That(chestAimConstraint.IsValid(), Is.True);
             Assert.That(headLookConstraint.IsValid(), Is.True);
 
             AssertSerializedReference(useController, "player", player);
@@ -636,13 +657,14 @@ namespace TheSancturary.FusionPrototype.Tests
                 equipmentRig,
                 "leftArmConstraint",
                 leftArmConstraint);
-            Assert.That(rigBuilder.layers.Count, Is.EqualTo(3));
+            Assert.That(rigBuilder.layers.Count, Is.EqualTo(4));
             Assert.That(
                 rigBuilder.layers.Select(layer => layer.rig),
-                Is.EquivalentTo(new[]
+                Is.EqualTo(new[]
                 {
                     rightArmRig,
                     leftArmRig,
+                    chestAimRig,
                     headLookRig
                 }));
 
@@ -699,6 +721,24 @@ namespace TheSancturary.FusionPrototype.Tests
             Assert.That(
                 lookPresentation.HeadLookConstraint,
                 Is.SameAs(headLookConstraint));
+            Assert.That(lookPresentation.ChestAimRig, Is.SameAs(chestAimRig));
+            Assert.That(
+                lookPresentation.ChestAimConstraint,
+                Is.SameAs(chestAimConstraint));
+            Assert.That(lookPresentation.ChestAimTarget, Is.Not.Null);
+            Assert.That(
+                lookPresentation.ChestAimTarget.IsChildOf(animator.avatarRoot),
+                Is.False);
+            Assert.That(
+                chestAimConstraint.data.constrainedObject,
+                Is.SameAs(expectedTorso));
+            Assert.That(chestAimConstraint.data.sourceObjects.Count, Is.EqualTo(1));
+            Assert.That(
+                chestAimConstraint.data.sourceObjects[0].transform,
+                Is.SameAs(lookPresentation.ChestAimTarget));
+            Assert.That(chestAimConstraint.data.constrainedXAxis, Is.True);
+            Assert.That(chestAimConstraint.data.constrainedYAxis, Is.False);
+            Assert.That(chestAimConstraint.data.constrainedZAxis, Is.False);
             Assert.That(
                 headLookConstraint.data.constrainedObject,
                 Is.SameAs(head));
@@ -719,13 +759,80 @@ namespace TheSancturary.FusionPrototype.Tests
             AnimatorController controller = LoadRequiredAsset<AnimatorController>(
                 AnimatorControllerPath);
             Assert.That(animator.runtimeAnimatorController, Is.SameAs(controller));
+            Assert.That(
+                controller.parameters.Any(parameter =>
+                    parameter.name == PlayerEquipmentRigController.HoldPoseParameterName &&
+                    parameter.type == AnimatorControllerParameterType.Int),
+                Is.True);
             AnimatorControllerLayer[] itemLayers = controller.layers
-                .Where(layer => layer.name == "ItemPresentation")
+                .Where(layer => layer.name ==
+                                    PlayerEquipmentRigController.OneHandPoseLayerName ||
+                                layer.name ==
+                                    PlayerEquipmentRigController.TwoHandPoseLayerName)
                 .ToArray();
-            Assert.That(itemLayers.Length, Is.EqualTo(1));
-            Assert.That(itemLayers[0].iKPass, Is.False);
-            Assert.That(itemLayers[0].avatarMask, Is.Not.Null);
-            Assert.That(itemLayers[0].stateMachine, Is.Not.Null);
+            Assert.That(itemLayers.Length, Is.EqualTo(2));
+            Assert.That(itemLayers.All(layer => !layer.iKPass), Is.True);
+            Assert.That(itemLayers.All(layer => layer.avatarMask != null), Is.True);
+            Assert.That(itemLayers.All(layer => layer.stateMachine != null), Is.True);
+            Assert.That(itemLayers.All(layer => layer.defaultWeight == 0f), Is.True);
+            Assert.That(
+                itemLayers.Select(layer => AssetDatabase.GetAssetPath(layer.avatarMask)),
+                Is.EquivalentTo(new[]
+                {
+                    "Assets/Animations/Player/PlayerRightArmHold.mask",
+                    "Assets/Animations/Player/PlayerUpperBody.mask"
+                }));
+            AvatarMask oneHandMask = itemLayers.Single(layer =>
+                layer.name == PlayerEquipmentRigController.OneHandPoseLayerName)
+                .avatarMask;
+            Assert.That(
+                oneHandMask.GetHumanoidBodyPartActive(
+                    AvatarMaskBodyPart.RightArm),
+                Is.True);
+            Assert.That(
+                oneHandMask.GetHumanoidBodyPartActive(
+                    AvatarMaskBodyPart.LeftArm),
+                Is.False);
+            Assert.That(
+                oneHandMask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.Body),
+                Is.False);
+            AvatarMask twoHandMask = itemLayers.Single(layer =>
+                layer.name == PlayerEquipmentRigController.TwoHandPoseLayerName)
+                .avatarMask;
+            Assert.That(
+                twoHandMask.GetHumanoidBodyPartActive(
+                    AvatarMaskBodyPart.RightArm),
+                Is.True);
+            Assert.That(
+                twoHandMask.GetHumanoidBodyPartActive(
+                    AvatarMaskBodyPart.LeftArm),
+                Is.True);
+            Assert.That(
+                twoHandMask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.Body),
+                Is.True);
+            Assert.That(
+                twoHandMask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.Root),
+                Is.False);
+            Assert.That(
+                twoHandMask.GetHumanoidBodyPartActive(
+                    AvatarMaskBodyPart.LeftLeg),
+                Is.False);
+            Assert.That(
+                twoHandMask.GetHumanoidBodyPartActive(
+                    AvatarMaskBodyPart.RightLeg),
+                Is.False);
+            Assert.That(
+                AssetDatabase.LoadAssetAtPath<AnimationClip>(
+                    "Assets/Animations/Player/ItemPoses/OneHandedCarryPose.anim"),
+                Is.Not.Null);
+            Assert.That(
+                AssetDatabase.LoadAssetAtPath<AnimationClip>(
+                    "Assets/Animations/Player/ItemPoses/LongGunHoldPose.anim"),
+                Is.Not.Null);
+            Assert.That(
+                AssetDatabase.LoadAssetAtPath<AnimationClip>(
+                    "Assets/Animations/Player/ItemPoses/TwoHandedToolPose.anim"),
+                Is.Not.Null);
         }
 
         [Test]
@@ -773,7 +880,8 @@ namespace TheSancturary.FusionPrototype.Tests
                     equipment,
                     oneHandedVisual.RightHandGrip,
                     oneHandedVisual.LeftHandGrip,
-                    InventoryHoldStyle.OneHanded);
+                    InventoryHoldStyle.OneHanded,
+                    InventoryHoldPose.OneHandedCarry);
                 Assert.That(equipmentRig.DesiredRightWeight, Is.EqualTo(1f));
                 Assert.That(equipmentRig.DesiredLeftWeight, Is.EqualTo(0f));
 
@@ -781,7 +889,8 @@ namespace TheSancturary.FusionPrototype.Tests
                     equipment,
                     twoHandedVisual.RightHandGrip,
                     twoHandedVisual.LeftHandGrip,
-                    InventoryHoldStyle.TwoHanded);
+                    InventoryHoldStyle.TwoHanded,
+                    InventoryHoldPose.TwoHandedTool);
                 Assert.That(equipmentRig.DesiredRightWeight, Is.EqualTo(1f));
                 Assert.That(equipmentRig.DesiredLeftWeight, Is.EqualTo(1f));
 

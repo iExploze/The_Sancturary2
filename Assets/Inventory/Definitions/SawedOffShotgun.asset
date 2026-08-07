@@ -27,6 +27,7 @@ MonoBehaviour:
   thirdPersonEquippedPrefab: {fileID: 7373253456249372858, guid: 3f24c496d71843349a8e287d5d7bf56f, type: 3}
   useKind: 7
   holdStyle: 2
+  holdPose: 3
   useDuration: 0
   useCooldown: 0.8
   compatibleAmmoItemId: shotgun_shell
