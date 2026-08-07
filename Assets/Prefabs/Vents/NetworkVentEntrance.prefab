@@ -85,7 +85,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
   SortKey: 2225523520
   SendPriority: 1
@@ -105,12 +105,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 974ed835efe4e9845800145e42023f38, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.InteractionTarget
-  displayName: Vent Entrance
+  displayName: Vent
   interactionVerb: Enter Vent
   status: 0
-  requiredKeyDisplayName:
+  requiredKeyDisplayName: 
   interactionBehaviour: {fileID: 5292923198811334566}
 --- !u!82 &6526607245537475635
 AudioSource:
@@ -219,7 +219,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1d5d28b07cfbe414b8e389974a4f4fdf, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.FusionPrototype.NetworkVentEntrance
   interactionTarget: {fileID: 5443468272429020255}
   correspondingExit: {fileID: 0}
@@ -908,7 +908,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2379970, guid: 83d77b35dc0cbce4daa7dca833660677, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: af68f6e78a41c094fb112bd84a8c38c5, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -986,7 +986,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2300000, guid: 2467f03b21c877d4681e715a7919d7c7, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: af68f6e78a41c094fb112bd84a8c38c5, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
