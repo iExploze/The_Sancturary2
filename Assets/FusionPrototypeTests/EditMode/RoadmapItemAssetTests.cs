@@ -557,6 +557,11 @@ namespace TheSancturary.FusionPrototype.Tests
             PlayerEquipmentRigController equipmentRig = animator != null
                 ? animator.GetComponent<PlayerEquipmentRigController>()
                 : null;
+            PlayerThirdPersonLookPresentation lookPresentation =
+                animator != null
+                    ? animator.GetComponent<
+                        PlayerThirdPersonLookPresentation>()
+                    : null;
             RigBuilder rigBuilder = animator != null
                 ? animator.GetComponent<RigBuilder>()
                 : null;
@@ -569,6 +574,9 @@ namespace TheSancturary.FusionPrototype.Tests
             Rig leftArmRig = itemRig != null
                 ? itemRig.Find("LeftArmRig")?.GetComponent<Rig>()
                 : null;
+            Rig headLookRig = itemRig != null
+                ? itemRig.Find("HeadLookRig")?.GetComponent<Rig>()
+                : null;
             TwoBoneIKConstraint rightArmConstraint = rightArmRig != null
                 ? rightArmRig.transform.Find("RightArmIK")
                     ?.GetComponent<TwoBoneIKConstraint>()
@@ -577,6 +585,10 @@ namespace TheSancturary.FusionPrototype.Tests
                 ? leftArmRig.transform.Find("LeftArmIK")
                     ?.GetComponent<TwoBoneIKConstraint>()
                 : null;
+            MultiAimConstraint headLookConstraint = headLookRig != null
+                ? headLookRig.transform.Find("HeadLookAim")
+                    ?.GetComponent<MultiAimConstraint>()
+                : null;
 
             Assert.That(player, Is.Not.Null);
             Assert.That(inventory, Is.Not.Null);
@@ -584,20 +596,27 @@ namespace TheSancturary.FusionPrototype.Tests
             Assert.That(useController, Is.Not.Null);
             Assert.That(animator, Is.Not.Null);
             Assert.That(equipmentRig, Is.Not.Null);
+            Assert.That(lookPresentation, Is.Not.Null);
             Assert.That(rigBuilder, Is.Not.Null);
             Assert.That(itemRig, Is.Not.Null);
             Assert.That(rightArmRig, Is.Not.Null);
             Assert.That(leftArmRig, Is.Not.Null);
+            Assert.That(headLookRig, Is.Not.Null);
             Assert.That(rightArmConstraint, Is.Not.Null);
             Assert.That(leftArmConstraint, Is.Not.Null);
+            Assert.That(headLookConstraint, Is.Not.Null);
             Assert.That(rightArmConstraint.IsValid(), Is.True);
             Assert.That(leftArmConstraint.IsValid(), Is.True);
+            Assert.That(headLookConstraint.IsValid(), Is.True);
 
             AssertSerializedReference(useController, "player", player);
             AssertSerializedReference(useController, "inventory", inventory);
             AssertSerializedReference(equipment, "player", player);
             AssertSerializedReferenceNotNull(equipment, "ownerFirstPersonAnchor");
-            AssertSerializedReferenceNotNull(equipment, "thirdPersonAnchor");
+            AssertSerializedReference(
+                equipment,
+                "thirdPersonAnchor",
+                lookPresentation.ItemPitchPivot);
             AssertSerializedReference(equipment, "equipmentRig", equipmentRig);
             AssertSerializedReference(equipmentRig, "animator", animator);
             AssertSerializedReference(equipmentRig, "rigBuilder", rigBuilder);
@@ -617,10 +636,15 @@ namespace TheSancturary.FusionPrototype.Tests
                 equipmentRig,
                 "leftArmConstraint",
                 leftArmConstraint);
-            Assert.That(rigBuilder.layers.Count, Is.EqualTo(2));
+            Assert.That(rigBuilder.layers.Count, Is.EqualTo(3));
             Assert.That(
                 rigBuilder.layers.Select(layer => layer.rig),
-                Is.EquivalentTo(new[] { rightArmRig, leftArmRig }));
+                Is.EquivalentTo(new[]
+                {
+                    rightArmRig,
+                    leftArmRig,
+                    headLookRig
+                }));
 
             SerializedObject serializedRig = new(equipmentRig);
             Transform rightTarget = (Transform)serializedRig
@@ -650,6 +674,48 @@ namespace TheSancturary.FusionPrototype.Tests
                 Is.SameAs(animator.GetBoneTransform(
                     HumanBodyBones.LeftUpperArm)));
 
+            Transform upperChest = animator.GetBoneTransform(
+                HumanBodyBones.UpperChest);
+            Transform chest = animator.GetBoneTransform(HumanBodyBones.Chest);
+            Transform expectedTorso = upperChest != null ? upperChest : chest;
+            Transform head = animator.GetBoneTransform(HumanBodyBones.Head);
+            Assert.That(expectedTorso, Is.Not.Null);
+            Assert.That(head, Is.Not.Null);
+            Assert.That(lookPresentation.TorsoBone, Is.SameAs(expectedTorso));
+            Assert.That(lookPresentation.HeadBone, Is.SameAs(head));
+            Assert.That(
+                lookPresentation.ItemBodyAnchor.parent,
+                Is.SameAs(expectedTorso));
+            Assert.That(
+                lookPresentation.ItemPitchPivot.parent,
+                Is.SameAs(lookPresentation.ItemBodyAnchor));
+            Assert.That(lookPresentation.HeadLookTarget, Is.Not.Null);
+            Assert.That(
+                lookPresentation.HeadLookTarget.IsChildOf(animator.avatarRoot),
+                Is.False);
+            Assert.That(
+                lookPresentation.HeadLookRig,
+                Is.SameAs(headLookRig));
+            Assert.That(
+                lookPresentation.HeadLookConstraint,
+                Is.SameAs(headLookConstraint));
+            Assert.That(
+                headLookConstraint.data.constrainedObject,
+                Is.SameAs(head));
+            Assert.That(headLookConstraint.data.sourceObjects.Count, Is.EqualTo(1));
+            Assert.That(
+                headLookConstraint.data.sourceObjects[0].transform,
+                Is.SameAs(lookPresentation.HeadLookTarget));
+            Assert.That(
+                headLookConstraint.data.limits,
+                Is.EqualTo(new Vector2(-45f, 45f)));
+            Assert.That(headLookConstraint.data.constrainedXAxis, Is.True);
+            Assert.That(headLookConstraint.data.constrainedYAxis, Is.False);
+            Assert.That(headLookConstraint.data.constrainedZAxis, Is.False);
+            Assert.That(
+                lookPresentation,
+                Is.Not.InstanceOf<NetworkBehaviour>());
+
             AnimatorController controller = LoadRequiredAsset<AnimatorController>(
                 AnimatorControllerPath);
             Assert.That(animator.runtimeAnimatorController, Is.SameAs(controller));
@@ -660,6 +726,24 @@ namespace TheSancturary.FusionPrototype.Tests
             Assert.That(itemLayers[0].iKPass, Is.False);
             Assert.That(itemLayers[0].avatarMask, Is.Not.Null);
             Assert.That(itemLayers[0].stateMachine, Is.Not.Null);
+        }
+
+        [Test]
+        public void ThirdPersonLookPresentationClampsWithoutChangingRawLookPitch()
+        {
+            float[] rawPitches = { 0f, 20f, 45f, 80f, -20f, -45f, -80f };
+            float[] expected = { 0f, 20f, 45f, 45f, -20f, -45f, -45f };
+
+            for (int index = 0; index < rawPitches.Length; index++)
+            {
+                float rawPitch = rawPitches[index];
+                float presentationPitch =
+                    PlayerThirdPersonLookPresentation
+                        .ClampPresentationPitch(rawPitch);
+
+                Assert.That(presentationPitch, Is.EqualTo(expected[index]));
+                Assert.That(rawPitch, Is.EqualTo(rawPitches[index]));
+            }
         }
 
         [Test]

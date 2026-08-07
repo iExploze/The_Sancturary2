@@ -83,14 +83,6 @@ namespace TheSancturary.Inventory
                 return;
             }
 
-            if (!ownerPresentation && anchor == thirdPersonAnchor)
-            {
-                anchor.localRotation = Quaternion.Euler(
-                    player.LookPitch,
-                    0f,
-                    0f);
-            }
-
             EnsureHeldVisual(
                 equippedId,
                 definition,
