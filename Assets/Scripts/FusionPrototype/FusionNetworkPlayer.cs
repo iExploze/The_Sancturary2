@@ -209,6 +209,8 @@ namespace TheSancturary.FusionPrototype
         public NetworkItemUseController ItemUseController => itemUseController;
         public float MaximumHealth => maximumHealth;
         public float MaximumStamina => maximumStamina;
+        public Vector3 AuthoritativeVelocity =>
+            networkController != null ? networkController.Velocity : Vector3.zero;
         public Vector3 ReplicatedViewPosition =>
             transform.position +
             Vector3.up *
