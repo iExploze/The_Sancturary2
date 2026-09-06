@@ -241,7 +241,8 @@ namespace TheSancturary.Monsters
                 return;
             }
 
-            _agent.SetDestination(target.transform.position);
+            if (hasLineOfSight)
+                _agent.SetDestination(target.transform.position);
             TrackLineOfSightGrace(hasLineOfSight);
         }
 
