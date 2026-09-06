@@ -51,6 +51,7 @@ namespace TheSancturary.Monsters
         [Header("Transformation")]
         [SerializeField, Min(0.05f)] private float transformationDuration = 3.292f;
         [SerializeField] private AnimationClip transformationClip;
+        [SerializeField, Range(-180f, 180f)] private float angryVisualYawOffset = -90f;
 
         [Header("Attack")]
         [SerializeField, Range(0.9f, 1.2f)] private float attackRange = 1.05f;
@@ -96,6 +97,7 @@ namespace TheSancturary.Monsters
         private bool _attackAudioPlayed;
         private HenryMonsterState _presentedTransformationAudioState;
         private int? _presentedTransformationAudioEndTick;
+        private Quaternion _calmVisualLocalRotation;
 
         private float AttackDuration => attackAnimation.length;
 
@@ -105,6 +107,8 @@ namespace TheSancturary.Monsters
         private void Awake()
         {
             ResolveReferences();
+            if (animator != null)
+                _calmVisualLocalRotation = animator.transform.localRotation;
             ConfigureAudioSource(movementAudioSource, true);
             ConfigureAudioSource(attackAudioSource, false);
             ConfigureAudioSource(transformationAudioSource, false, 2f);
@@ -231,6 +235,7 @@ namespace TheSancturary.Monsters
             float distance = HorizontalDistance(attackOrigin.position, target.transform.position);
             if (hasLineOfSight && distance <= attackRange && AttackCooldownTimer.ExpiredOrNotRunning(Runner))
             {
+                FaceTargetImmediately(target.transform.position);
                 EnterAuthorityState(HenryMonsterState.Attack);
                 return;
             }
@@ -243,7 +248,7 @@ namespace TheSancturary.Monsters
         {
             bool hasTarget = TryResolveChaseablePlayer(TargetPlayer, out FusionNetworkPlayer target);
             if (hasTarget)
-                FaceTarget(target.transform.position);
+                FaceTargetImmediately(target.transform.position);
             float normalized = GetStateElapsed(AttackDuration) / AttackDuration;
             if (!DamageApplied && normalized >= attackImpactNormalizedTime)
             {
@@ -519,8 +524,16 @@ namespace TheSancturary.Monsters
                     _agent.angularSpeed * Runner.DeltaTime);
         }
 
+        private void FaceTargetImmediately(Vector3 targetPosition)
+        {
+            Vector3 direction = Vector3.ProjectOnPlane(targetPosition - transform.position, Vector3.up);
+            if (direction.sqrMagnitude > 0.001f)
+                transform.rotation = Quaternion.LookRotation(direction);
+        }
+
         private void PresentState(bool force)
         {
+            PresentVisualFacing();
             bool stateChanged = !_presentationInitialized || CurrentState != _presentedState;
             bool attackRestarted = CurrentState == HenryMonsterState.Attack &&
                 AttackSequence != _lastPresentedAttackSequence;
@@ -570,6 +583,21 @@ namespace TheSancturary.Monsters
                 CurrentState == HenryMonsterState.Attack ? 0.03f : 0.06f,
                 0,
                 fixedTimeOffset);
+        }
+
+        private void PresentVisualFacing()
+        {
+            float angryWeight = CurrentState switch
+            {
+                HenryMonsterState.TransformToAngry =>
+                    GetPresentationElapsed(transformationDuration) / transformationDuration,
+                HenryMonsterState.Chase or HenryMonsterState.Attack => 1f,
+                HenryMonsterState.TransformToCalm =>
+                    1f - GetPresentationElapsed(transformationDuration) / transformationDuration,
+                _ => 0f
+            };
+            float yaw = Mathf.LerpAngle(0f, angryVisualYawOffset, Mathf.Clamp01(angryWeight));
+            animator.transform.localRotation = _calmVisualLocalRotation * Quaternion.Euler(0f, yaw, 0f);
         }
 
         private void SampleReverseTransformationPose()
