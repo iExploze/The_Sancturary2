@@ -57,6 +57,7 @@ namespace TheSancturary.Monsters
         [Header("Attack")]
         [SerializeField, Range(0.9f, 1.2f)] private float attackRange = 1.05f;
         [SerializeField] private AnimationClip attackAnimation;
+        [SerializeField, Min(0.1f)] private float attackAnimationSpeed = 2f;
         [SerializeField, Range(0f, 1f)] private float attackImpactNormalizedTime = 0.6f;
         [Tooltip("Time of the audible strike within the sound file, aligned with the animation impact.")]
         [SerializeField, Min(0f)] private float attackSoundImpactTime = 0.3f;
@@ -100,7 +101,7 @@ namespace TheSancturary.Monsters
         private int? _presentedTransformationAudioEndTick;
         private Quaternion _calmVisualLocalRotation;
 
-        private float AttackDuration => attackAnimation.length;
+        private float AttackDuration => attackAnimation.length / Mathf.Max(0.1f, attackAnimationSpeed);
 
         public Transform CurrentTarget =>
             TryResolvePlayer(TargetPlayer, out FusionNetworkPlayer player) ? player.transform : null;

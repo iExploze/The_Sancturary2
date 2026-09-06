@@ -532,6 +532,7 @@ MonoBehaviour:
   transformationClip: {fileID: -1422011007694221501, guid: a7d3383f81f178a46bb584b65946ebcf, type: 3}
   attackRange: 1.05
   attackAnimation: {fileID: -1422011007694221501, guid: 1fb1590a848474e4d9a583351950da07, type: 3}
+  attackAnimationSpeed: 2
   attackImpactNormalizedTime: 0.6
   attackSoundImpactTime: 0.3
   attackCooldown: 0.9
