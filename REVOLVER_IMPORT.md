@@ -1,38 +1,38 @@
-# Sancturary revolver art import
+# Reference-inspired revolver replacement
 
-Imports the existing original Blender MCP revolver and reusable cartridge as additional visual assets. Existing OldRevolver inventory models, gameplay prefabs, definitions, scenes, and Fusion registration are unchanged.
+The existing Old Revolver now uses an original Blender model inspired by Ian's reference: a long tapered barrel, curved walnut grip, rounded recoil shield, fluted cylinder, slim guard, hammer spur, and slotted screws. The ammunition pickup shows six matching brass cartridges with lead projectiles. A revolver uses cartridges rather than a detachable magazine; one existing ammo item still refills the six-shot cylinder.
 
-## Assets
+## Integration
 
-- `Assets/Inventory/Generated/Models/Sancturary_OldRevolver.fbx`: 46 meshes, 32,196 triangles including six loaded cartridges; bounds 0.284965 x 0.185257 x 0.068200 metres in Unity.
-- `Assets/Inventory/Generated/Models/Sancturary_RevolverRound.fbx`: three meshes, 2,240 triangles; length 0.050650 metres.
-- `Assets/Inventory/Prefabs/Sancturary_OldRevolver_Visual.prefab` and `Sancturary_RevolverRound_Visual.prefab`: unit-scale visual wrappers with muzzle/projectile facing local +Z. The source FBXs face -X; the child rotation converts this without changing source pivots.
-- `Assets/Inventory/Generated/Materials/SancturaryRevolver`: five URP/Lit materials for Metal, Wood, Brass, Bullet, and Recess.
-- `Assets/Inventory/Generated/Textures/SancturaryRevolver`: source base-color maps and converted metallic/smoothness maps. Metallic is in red; alpha is one minus source roughness. Packed maps use linear sampling.
+- New models: `Assets/Inventory/Generated/Models/FrontierRevolver.fbx` and `FrontierRound.fbx`.
+- New URP materials/textures: `Assets/Inventory/Generated/Materials/FrontierRevolver` and `Assets/Inventory/Generated/Textures/FrontierRevolver`. Five materials, with base color and linear metallic/smoothness maps.
+- Updated existing `HeldOldRevolver`, `HeldOldRevolverRemote`, `WorldOldRevolver`, and `WorldRevolverAmmo` prefabs under `Assets/Inventory/Prefabs`.
+- Held meshes face +Z at unit scale, aligned to the existing hand anchor. Both muzzle effect origins sit 2 mm ahead of the new barrel tip. Existing recoil/equip presentation remains in place.
+- World weapon lies on its side with three compound box colliders around barrel, frame, and grip. Updated physics bounds and both physical/pickup collider arrays. The six-cartridge pickup retains its box collider with matching bounds.
+- Removed the previous Sancturary visual imports and their standalone visual prefabs, plus the older OldRevolver/RevolverAmmo FBXs, simplified OBJ/MTL files, materials, and textures. No serialized references to deleted GUIDs remain in Assets.
 
-These are art-only prefabs: no colliders, pickup logic, shooting, animation, or network components. No new authoritative or replicated state is introduced. Future movable/pickup integration must use the existing Fusion inventory flow.
+Gameplay prefab GUIDs, item definition references, item IDs, audio, capacity, and Fusion registration are preserved. Existing state authority still owns pickups, drops, ownership, firing, and ammunition; this revision changes presentation and collision geometry, not networking code. Owner and remote presentations both use the new model.
 
-## Source and limitations
+## Source
 
-Source: `E:\BlenderWithMCPtest\assets\Sancturary_OldRevolver.blend`.
-Exports: `E:\BlenderWithMCPtest\exports\sancturary_oldrevolver\Sancturary_OldRevolver.fbx` and `E:\BlenderWithMCPtest\exports\sancturary_revolverround\Sancturary_RevolverRound.fbx`.
-The existing locally authored Blender MCP asset was reused; no third-party model was downloaded. Source and inspection renders remain outside Unity Assets.
+- Blender: `E:\BlenderWithMCPtest\assets\Frontier_Revolver.blend`.
+- Weapon export: `E:\BlenderWithMCPtest\exports\frontier_revolver\frontier_revolver.fbx`.
+- Cartridge export: `E:\BlenderWithMCPtest\exports\frontier_round\frontier_round.fbx`.
+- Blender inspection renders/reports: `E:\BlenderWithMCPtest\exports\frontier_revolver`.
+- Unity preview renders/report: `E:\BlenderWithMCPtest\logs\HeldOldRevolverRemote-frontier.png`, `WorldRevolverAmmo-frontier.png`, and `frontier-unity-validation.txt`.
 
-UVs and image textures are included. This import does not add normal maps or rebake the source. Separate frame, barrel, cylinder, crane, ejector, hammer, trigger, and grip meshes survive import. Cylinder, crane, hammer, and trigger origins match the source after axis conversion. Pivots are retained, but mechanical parenting/animation still needs to be authored; this is not a working reload rig.
+Geometry was authored through the supplied Blender MCP installation, without downloading a weapon model. Weapon: 25,948 triangles across 24 meshes, 328 x 48 x 157 mm in Blender. Single cartridge: 2,140 triangles, 41.2 mm long. UVs and image textures are included; no normal maps or reload animation were added. Cylinder, hammer, and trigger retain separate meshes and pivots. The reference has a fixed-cylinder silhouette; a swing-out crane is not included. The gameplay export has no permanently visible loaded rounds, so it does not display six cartridges when authoritative ammo is empty.
 
-## Validation
+## Verification and manual playtest
 
-- Connected to the existing Blender scene through the supplied MCP bridge and inspected the existing source/export reports and render.
-- Existing Blender scene and FBX roundtrip reports pass. Weapon FBX and referenced texture hashes match the manifest.
-- Imported and serialized through Unity MCP in Unity 6000.3.15f1; no temporary Editor script was required.
-- Verified both model counts, unit scale, weapon bounds, key pivot positions, URP shaders, and base/packed texture references in the Editor.
-- Inspected a Unity preview render. Preview lighting is limited; final material appearance requires inspection under game lighting.
-- No Console errors observed; an unrelated HenryJumpscare video color-primaries warning was present. Active scene remained clean.
-- Play Mode, builds, and host/client tests were not run. No multiplayer functionality is claimed by this art import.
+Blender inspection found no non-manifold edges in the exported meshes. Both exports passed the supplied fresh-process FBX validator (hashes, names, UVs, material slots, dimensions, and orientation). Inspected side, three-quarter, and rear Blender renders and Unity prefab previews.
 
-## Manual checks
+Unity 6000.3.15f1 MCP validation confirms all four prefabs have valid meshes/materials/textures, no missing scripts, valid pickup/physics references, and retained required gameplay/Fusion components. Both muzzle positions were checked numerically. Final Console query returned no errors or warnings. No gameplay scenes were saved. Unrelated dirty editor state and ProBuilder settings were left outside this change.
 
-1. Open each Visual prefab in Prefab Mode. Confirm materials render without pink/missing textures and the revolver has six loaded rounds.
-2. In a disposable scene with a camera and directional light, place each prefab at scale 1. Confirm the revolver is about 28.5 cm long, the round is about 5.1 cm, and blue +Z points toward the muzzle/projectile. Inspect both sides, grip, muzzle, and cylinder at close range under representative lighting. Do not save changes to gameplay scenes.
-3. For a solo smoke check, run the existing Fusion menu and start a one-player session; existing inventory/gameplay should remain unchanged.
-4. For host/client regression checks, launch one host and one client using the existing session flow, join the same session, and check current item pickup/equipment from both perspectives. These new visual prefabs are intentionally not registered as usable items, so no new revolver pickup is expected.
+Play Mode, build, and two-instance networking tests were not run. Required manual checks:
+
+1. Open `HeldOldRevolver`, `HeldOldRevolverRemote`, `WorldOldRevolver`, and `WorldRevolverAmmo` in Prefab Mode. Check silhouette, material appearance under game lighting, hand fit, and six-round pickup layout.
+2. Start a one-player Fusion session using the existing menu/graybox flow. Pick up the Old Revolver and ammo. Equip it, reload through the inventory, and fire. Expect the new first-person model, existing six-round reload behaviour, and muzzle flash at the new barrel tip. Check camera clipping and aim with the longer barrel.
+3. Drop the weapon and ammo on a flat floor and beside a wall. Expect the new world models to settle without disappearing or passing through the surface. Pick them up again; ammunition state should follow the existing rules.
+4. Run one host and one client in the same session. Have each player equip and fire while the other observes: both should see the new remote model and muzzle effect. Drop and exchange the weapon/ammo in both directions; each world object should disappear once on pickup and never be claimed twice.
+5. Join a client after a weapon has been dropped. Verify the current world model and pickup state are correct. This remains a manual network check, not a claim of runtime verification.
