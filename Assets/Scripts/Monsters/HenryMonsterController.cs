@@ -218,11 +218,13 @@ namespace TheSancturary.Monsters
                 return;
             }
 
-            FaceTarget(target.transform.position);
-            if (!TrackLineOfSightGrace(target))
+            if (!TrackLineOfSightGrace(HasAcquisitionLineOfSight(target)))
                 return;
             if (StateTimer.Expired(Runner))
+            {
+                FaceTargetImmediately(target.transform.position);
                 EnterAuthorityState(HenryMonsterState.Chase);
+            }
         }
 
         private void UpdateAuthorityChase()
@@ -336,11 +338,6 @@ namespace TheSancturary.Monsters
         {
             return player != null && !player.IsHiddenInLocker && IsInChaseFieldOfView(player) &&
                 HasUnobstructedRay(player.ReplicatedViewPosition, player.transform.root);
-        }
-
-        private bool TrackLineOfSightGrace(FusionNetworkPlayer target)
-        {
-            return TrackLineOfSightGrace(HasChaseLineOfSight(target));
         }
 
         private bool TrackLineOfSightGrace(bool hasLineOfSight)
@@ -517,16 +514,6 @@ namespace TheSancturary.Monsters
                 _agent.angularSpeed * Runner.DeltaTime);
         }
 
-        private void FaceTarget(Vector3 targetPosition)
-        {
-            Vector3 direction = Vector3.ProjectOnPlane(targetPosition - transform.position, Vector3.up);
-            if (direction.sqrMagnitude > 0.001f)
-                transform.rotation = Quaternion.RotateTowards(
-                    transform.rotation,
-                    Quaternion.LookRotation(direction),
-                    _agent.angularSpeed * Runner.DeltaTime);
-        }
-
         private void FaceTargetImmediately(Vector3 targetPosition)
         {
             Vector3 direction = Vector3.ProjectOnPlane(targetPosition - transform.position, Vector3.up);
@@ -538,6 +525,8 @@ namespace TheSancturary.Monsters
         {
             PresentVisualFacing();
             bool stateChanged = !_presentationInitialized || CurrentState != _presentedState;
+            bool attackFinished = _presentationInitialized &&
+                _presentedState == HenryMonsterState.Attack && CurrentState == HenryMonsterState.Chase;
             bool attackRestarted = CurrentState == HenryMonsterState.Attack &&
                 AttackSequence != _lastPresentedAttackSequence;
             if (CurrentState == HenryMonsterState.TransformToCalm)
@@ -581,6 +570,14 @@ namespace TheSancturary.Monsters
             float fixedTimeOffset = CurrentState == HenryMonsterState.TransformToAngry
                 ? normalizedStart * transformationDuration
                 : 0f;
+            if (attackFinished)
+            {
+                // Motion time pins the attack to its final pose. Leave that state explicitly before locomotion.
+                animator.SetFloat(AttackTimeParameter, 0f);
+                animator.Play(stateHash, 0, normalizedStart);
+                animator.Update(0f);
+                return;
+            }
             animator.CrossFadeInFixedTime(
                 stateHash,
                 CurrentState == HenryMonsterState.Attack ? 0.03f : 0.06f,
@@ -590,16 +587,9 @@ namespace TheSancturary.Monsters
 
         private void PresentVisualFacing()
         {
-            float angryWeight = CurrentState switch
-            {
-                HenryMonsterState.TransformToAngry =>
-                    GetPresentationElapsed(transformationDuration) / transformationDuration,
-                HenryMonsterState.Chase or HenryMonsterState.Attack => 1f,
-                HenryMonsterState.TransformToCalm =>
-                    1f - GetPresentationElapsed(transformationDuration) / transformationDuration,
-                _ => 0f
-            };
-            float yaw = Mathf.LerpAngle(0f, angryVisualYawOffset, Mathf.Clamp01(angryWeight));
+            float yaw = CurrentState is HenryMonsterState.Chase or HenryMonsterState.Attack
+                ? angryVisualYawOffset
+                : 0f;
             animator.transform.localRotation = _calmVisualLocalRotation * Quaternion.Euler(0f, yaw, 0f);
         }
 
