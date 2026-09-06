@@ -27,6 +27,8 @@ namespace TheSancturary.Monsters
         private static readonly int TransformToAngryState = Animator.StringToHash("TransformToAngry");
         private static readonly int AngryWalkState = Animator.StringToHash("AngryWalk");
         private static readonly int AngryAttackState = Animator.StringToHash("AngryAttack");
+        private static readonly int AttackTimeParameter = Animator.StringToHash("AttackTime");
+        private static readonly int LocomotionSpeedParameter = Animator.StringToHash("LocomotionSpeed");
 
         [Header("Required References")]
         [SerializeField] private Animator animator;
@@ -52,8 +54,10 @@ namespace TheSancturary.Monsters
 
         [Header("Attack")]
         [SerializeField, Range(0.9f, 1.2f)] private float attackRange = 1.05f;
-        [SerializeField, Min(0.1f)] private float attackDuration = 0.45f;
-        [SerializeField, Range(0f, 1f)] private float attackImpactNormalizedTime = 0.25f;
+        [SerializeField] private AnimationClip attackAnimation;
+        [SerializeField, Range(0f, 1f)] private float attackImpactNormalizedTime = 0.6f;
+        [Tooltip("Time of the audible strike within the sound file, aligned with the animation impact.")]
+        [SerializeField, Min(0f)] private float attackSoundImpactTime = 0.3f;
         [SerializeField, Min(0f)] private float attackCooldown = 0.9f;
         [SerializeField] private int attackDamage = 25;
         [SerializeField] private VideoClip jumpscareVideo;
@@ -86,6 +90,9 @@ namespace TheSancturary.Monsters
         private HenryMonsterState _presentedState;
         private bool _presentationInitialized;
         private bool _warnedMissingReferences;
+        private bool _attackAudioPlayed;
+
+        private float AttackDuration => attackAnimation.length;
 
         public Transform CurrentTarget =>
             TryResolvePlayer(TargetPlayer, out FusionNetworkPlayer player) ? player.transform : null;
@@ -126,8 +133,10 @@ namespace TheSancturary.Monsters
             _lastPresentedAttackSequence = AttackSequence;
             _lastPresentedAttackAudioSequence = AttackSequence;
             _lastPresentedJumpscareSequence = JumpscareSequence;
+            _attackAudioPlayed = false;
             PresentState(true);
             PresentMovementAudio(true);
+            PresentAttackEvent();
         }
 
         public override void FixedUpdateNetwork()
@@ -224,27 +233,26 @@ namespace TheSancturary.Monsters
 
         private void UpdateAuthorityAttack()
         {
-            if (!TryResolveChaseablePlayer(TargetPlayer, out FusionNetworkPlayer target))
+            bool hasTarget = TryResolveChaseablePlayer(TargetPlayer, out FusionNetworkPlayer target);
+            if (hasTarget)
+                FaceTarget(target.transform.position);
+            float normalized = GetStateElapsed(AttackDuration) / AttackDuration;
+            if (!DamageApplied && normalized >= attackImpactNormalizedTime)
             {
-                BeginCalmTransition();
-                return;
-            }
-
-            FaceTarget(target.transform.position);
-            float normalized = GetStateElapsed(attackDuration) / Mathf.Max(0.01f, attackDuration);
-            float distance = HorizontalDistance(attackOrigin.position, target.transform.position);
-            if (!DamageApplied && normalized >= attackImpactNormalizedTime &&
-                distance <= attackRange * 1.15f && HasChaseLineOfSight(target))
-            {
+                // Consume the contact once, including misses. Recovery is not another hit window.
                 DamageApplied = true;
-                PlayerRef victim = TargetPlayer;
-                target.TakeDamage(attackDamage);
-                if (target.IsDeadOrPending)
+                if (hasTarget && HorizontalDistance(attackOrigin.position, target.transform.position) <= attackRange * 1.15f &&
+                    HasChaseLineOfSight(target))
                 {
-                    LethalAttack = true;
-                    TargetPlayer = PlayerRef.None;
-                    JumpscareVictim = victim;
-                    JumpscareSequence++;
+                    PlayerRef victim = TargetPlayer;
+                    target.TakeDamage(attackDamage);
+                    if (target.IsDeadOrPending)
+                    {
+                        LethalAttack = true;
+                        TargetPlayer = PlayerRef.None;
+                        JumpscareVictim = victim;
+                        JumpscareSequence++;
+                    }
                 }
             }
 
@@ -252,7 +260,7 @@ namespace TheSancturary.Monsters
                 return;
 
             AttackCooldownTimer = TickTimer.CreateFromSeconds(Runner, attackCooldown);
-            if (LethalAttack)
+            if (LethalAttack || !TryResolveChaseablePlayer(TargetPlayer, out _))
                 BeginCalmTransition();
             else
                 EnterAuthorityState(HenryMonsterState.Chase);
@@ -452,7 +460,7 @@ namespace TheSancturary.Monsters
                     _agent.stoppingDistance = Mathf.Max(0.05f, attackRange * 0.8f);
                     break;
                 case HenryMonsterState.Attack:
-                    StateTimer = TickTimer.CreateFromSeconds(Runner, attackDuration);
+                    StateTimer = TickTimer.CreateFromSeconds(Runner, AttackDuration);
                     StopAgent();
                     DamageApplied = false;
                     LethalAttack = false;
@@ -525,6 +533,9 @@ namespace TheSancturary.Monsters
                 animator.Update(0f);
                 force = true;
             }
+            animator.SetFloat(LocomotionSpeedParameter, IsMoving ? 1f : 0f);
+            if (CurrentState == HenryMonsterState.Attack)
+                animator.SetFloat(AttackTimeParameter, GetPresentationElapsed(AttackDuration) / AttackDuration);
             if (!force && !stateChanged && !attackRestarted)
                 return;
 
@@ -532,7 +543,7 @@ namespace TheSancturary.Monsters
             _presentedState = CurrentState;
             _lastPresentedAttackSequence = AttackSequence;
             float duration = GetStateDuration(CurrentState);
-            float elapsed = GetStateElapsed(duration);
+            float elapsed = GetPresentationElapsed(duration);
             int stateHash = CurrentState switch
             {
                 HenryMonsterState.Idle => CalmIdleState,
@@ -558,7 +569,7 @@ namespace TheSancturary.Monsters
             if (transformationClip == null)
                 return;
 
-            float elapsed = GetStateElapsed(transformationDuration);
+            float elapsed = GetPresentationElapsed(transformationDuration);
             float normalizedTime = 1f - Mathf.Clamp01(elapsed / transformationDuration);
             transformationClip.SampleAnimation(animator.gameObject, normalizedTime * transformationClip.length);
         }
@@ -567,7 +578,8 @@ namespace TheSancturary.Monsters
         {
             if (movementAudioSource == null || walkingClip == null)
                 return;
-            bool shouldPlay = IsMoving;
+            bool shouldPlay = IsMoving &&
+                (CurrentState == HenryMonsterState.Patrol || CurrentState == HenryMonsterState.Chase);
             if (shouldPlay && (!movementAudioSource.isPlaying || movementAudioSource.clip != walkingClip))
             {
                 movementAudioSource.clip = walkingClip;
@@ -584,11 +596,44 @@ namespace TheSancturary.Monsters
 
         private void PresentAttackEvent()
         {
-            if (AttackSequence == _lastPresentedAttackAudioSequence)
+            if (AttackSequence != _lastPresentedAttackAudioSequence)
+            {
+                _lastPresentedAttackAudioSequence = AttackSequence;
+                _attackAudioPlayed = false;
+            }
+            if (CurrentState != HenryMonsterState.Attack)
+            {
+                _attackAudioPlayed = true;
                 return;
-            _lastPresentedAttackAudioSequence = AttackSequence;
-            if (attackAudioSource != null && attackClip != null)
-                attackAudioSource.PlayOneShot(attackClip);
+            }
+            if (_attackAudioPlayed || attackAudioSource == null || attackClip == null)
+                return;
+
+            float soundTime = GetPresentationElapsed(AttackDuration) -
+                AttackDuration * attackImpactNormalizedTime + attackSoundImpactTime;
+            if (soundTime < 0f)
+                return;
+            _attackAudioPlayed = true;
+            if (soundTime >= attackClip.length)
+                return;
+
+            // Seek to the same attack phase on late snapshots/joins; never stack old one-shots.
+            attackAudioSource.Stop();
+            attackAudioSource.clip = attackClip;
+            attackAudioSource.loop = false;
+            attackAudioSource.pitch = 1f;
+            attackAudioSource.time = soundTime;
+            attackAudioSource.Play();
+        }
+
+        private float GetPresentationElapsed(float duration)
+        {
+            if (duration <= 0f || Runner == null || !StateTimer.TargetTick.HasValue)
+                return 0f;
+            // Match the object's interpolated timeline rather than the client's simulation lead.
+            double endTime = StateTimer.TargetTick.Value * (double)Runner.DeltaTime;
+            double renderTime = HasStateAuthority ? Runner.LocalRenderTime : Object.RenderTime;
+            return Mathf.Clamp((float)(duration - (endTime - renderTime)), 0f, duration);
         }
 
         private void PresentJumpscareEvent()
@@ -614,7 +659,7 @@ namespace TheSancturary.Monsters
             {
                 HenryMonsterState.Idle => IdleDuration,
                 HenryMonsterState.TransformToAngry => transformationDuration,
-                HenryMonsterState.Attack => attackDuration,
+                HenryMonsterState.Attack => AttackDuration,
                 HenryMonsterState.TransformToCalm => transformationDuration,
                 _ => 0f
             };
@@ -630,11 +675,12 @@ namespace TheSancturary.Monsters
         private bool ValidateReferences()
         {
             bool valid = _agent != null && _networkTransform != null && animator != null && transformationClip != null &&
+                attackAnimation != null && attackAnimation.length > 0f &&
                 detectionOrigin != null && attackOrigin != null;
             if (!valid && !_warnedMissingReferences)
             {
                 Debug.LogError(
-                    $"{nameof(HenryMonsterController)} on '{name}' requires a NetworkTransform, NavMeshAgent, transform clip, DetectionOrigin, and AttackOrigin.",
+                    $"{nameof(HenryMonsterController)} on '{name}' requires a NetworkTransform, NavMeshAgent, Animator, transformation and attack clips, DetectionOrigin, and AttackOrigin.",
                     this);
                 _warnedMissingReferences = true;
             }

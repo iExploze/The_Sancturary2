@@ -433,8 +433,9 @@ MonoBehaviour:
   transformationDuration: 3.292
   transformationClip: {fileID: -1422011007694221501, guid: a7d3383f81f178a46bb584b65946ebcf, type: 3}
   attackRange: 1.05
-  attackDuration: 0.45
-  attackImpactNormalizedTime: 0.25
+  attackAnimation: {fileID: -1422011007694221501, guid: 1fb1590a848474e4d9a583351950da07, type: 3}
+  attackImpactNormalizedTime: 0.6
+  attackSoundImpactTime: 0.3
   attackCooldown: 0.9
   attackDamage: 25
   jumpscareVideo: {fileID: 32900000, guid: 4e09b080bbc69b24faabc7414b42b3fe, type: 3}
