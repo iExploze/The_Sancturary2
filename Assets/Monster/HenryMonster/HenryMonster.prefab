@@ -522,7 +522,7 @@ MonoBehaviour:
   chaseSpeed: 4
   waypointStoppingDistance: 0.4
   detectionDistance: 7
-  horizontalFieldOfView: 180
+  horizontalFieldOfView: 120
   movementThreshold: 0.12
   obstructionMask:
     serializedVersion: 2

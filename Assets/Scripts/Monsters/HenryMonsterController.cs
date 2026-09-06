@@ -43,7 +43,8 @@ namespace TheSancturary.Monsters
 
         [Header("Detection")]
         [SerializeField, Min(0.1f)] private float detectionDistance = 7f;
-        [SerializeField, Range(1f, 180f)] private float horizontalFieldOfView = 180f;
+        [Tooltip("Horizontal vision angle used after Henry acquires a target.")]
+        [SerializeField, Range(1f, 180f)] private float horizontalFieldOfView = 120f;
         [SerializeField, Min(0.001f)] private float movementThreshold = 0.12f;
         [SerializeField] private LayerMask obstructionMask = ~0;
         [SerializeField, Range(0.25f, 0.5f)] private float lostTargetGracePeriod = 0.35f;
@@ -51,7 +52,7 @@ namespace TheSancturary.Monsters
         [Header("Transformation")]
         [SerializeField, Min(0.05f)] private float transformationDuration = 3.292f;
         [SerializeField] private AnimationClip transformationClip;
-        [SerializeField, Range(-180f, 180f)] private float angryVisualYawOffset = -90f;
+        [SerializeField, Range(-180f, 180f)] private float angryVisualYawOffset = 90f;
 
         [Header("Attack")]
         [SerializeField, Range(0.9f, 1.2f)] private float attackRange = 1.05f;
@@ -296,11 +297,11 @@ namespace TheSancturary.Monsters
                 bool hidden = valid && candidate.IsHiddenInLocker;
                 float distance = valid ? HorizontalDistance(transform.position, candidate.transform.position) : -1f;
                 bool inRange = valid && distance <= detectionDistance;
-                bool inFov = valid && IsInAcquisitionFieldOfView(candidate);
+                bool inFieldOfView = valid; // Acquisition is omnidirectional; chase retention uses the configured cone.
                 bool lineOfSight = valid && HasAcquisitionLineOfSight(candidate);
                 Vector3 velocity = valid ? candidate.AuthoritativeVelocity : Vector3.zero;
                 bool canAcquire = HenryMonsterRules.CanAcquire(
-                    valid, alive, hidden, inRange, inFov, lineOfSight, velocity, movementThreshold);
+                    valid, alive, hidden, inRange, inFieldOfView, lineOfSight, velocity, movementThreshold);
                 if (HenryMonsterRules.ShouldSelectCandidate(canAcquire, distance, bestDistance))
                 {
                     bestDistance = distance;
@@ -317,7 +318,7 @@ namespace TheSancturary.Monsters
             return true;
         }
 
-        private bool IsInAcquisitionFieldOfView(FusionNetworkPlayer player)
+        private bool IsInChaseFieldOfView(FusionNetworkPlayer player)
         {
             Vector3 direction = Vector3.ProjectOnPlane(player.ReplicatedViewPosition - detectionOrigin.position, Vector3.up);
             return direction.sqrMagnitude <= Mathf.Epsilon ||
@@ -331,7 +332,7 @@ namespace TheSancturary.Monsters
 
         private bool HasChaseLineOfSight(FusionNetworkPlayer player)
         {
-            return player != null && !player.IsHiddenInLocker &&
+            return player != null && !player.IsHiddenInLocker && IsInChaseFieldOfView(player) &&
                 HasUnobstructedRay(player.ReplicatedViewPosition, player.transform.root);
         }
 
