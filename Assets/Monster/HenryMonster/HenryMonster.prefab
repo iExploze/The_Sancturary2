@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6430297766026460367}
   - component: {fileID: 6345279293960748828}
   - component: {fileID: 2029491753844272241}
+  - component: {fileID: 9195110333390250905}
   m_Layer: 0
   m_Name: AudioOrigin
   m_TagString: Untagged
@@ -152,6 +153,103 @@ AudioSource:
   Priority: 128
   DopplerLevel: 0
   MinDistance: 0.8
+  MaxDistance: 16
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!82 &9195110333390250905
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2170507555658862906}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: 5497d124a2ead544c93bad050a52ce94, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 0.8
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 2
   MaxDistance: 16
   Pan2D: 0
   rolloffMode: 0
@@ -441,8 +539,11 @@ MonoBehaviour:
   jumpscareVideo: {fileID: 32900000, guid: 4e09b080bbc69b24faabc7414b42b3fe, type: 3}
   movementAudioSource: {fileID: 6345279293960748828}
   attackAudioSource: {fileID: 2029491753844272241}
+  transformationAudioSource: {fileID: 9195110333390250905}
   walkingClip: {fileID: 8300000, guid: ede02857c0d75f243a80dd649cac3b22, type: 3}
   attackClip: {fileID: 8300000, guid: 9ff045fa42b72354ca9d9045beaaa97d, type: 3}
+  transformationGrowlClip: {fileID: 8300000, guid: 5497d124a2ead544c93bad050a52ce94, type: 3}
+  transformationGrowlVolume: 0.8
   _CurrentState: 0
   _PatrolDestination: {x: 0, y: 0, z: 0}
   _IsMoving:

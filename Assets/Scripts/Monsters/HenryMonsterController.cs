@@ -65,8 +65,11 @@ namespace TheSancturary.Monsters
         [Header("Audio")]
         [SerializeField] private AudioSource movementAudioSource;
         [SerializeField] private AudioSource attackAudioSource;
+        [SerializeField] private AudioSource transformationAudioSource;
         [SerializeField] private AudioClip walkingClip;
         [SerializeField] private AudioClip attackClip;
+        [SerializeField] private AudioClip transformationGrowlClip;
+        [SerializeField, Range(0f, 1f)] private float transformationGrowlVolume = 0.8f;
 
         [Networked] public HenryMonsterState CurrentState { get; private set; }
         [Networked] public PlayerRef TargetPlayer { get; private set; }
@@ -91,6 +94,8 @@ namespace TheSancturary.Monsters
         private bool _presentationInitialized;
         private bool _warnedMissingReferences;
         private bool _attackAudioPlayed;
+        private HenryMonsterState _presentedTransformationAudioState;
+        private int? _presentedTransformationAudioEndTick;
 
         private float AttackDuration => attackAnimation.length;
 
@@ -102,6 +107,7 @@ namespace TheSancturary.Monsters
             ResolveReferences();
             ConfigureAudioSource(movementAudioSource, true);
             ConfigureAudioSource(attackAudioSource, false);
+            ConfigureAudioSource(transformationAudioSource, false, 2f);
         }
 
         public override void Spawned()
@@ -136,6 +142,7 @@ namespace TheSancturary.Monsters
             _attackAudioPlayed = false;
             PresentState(true);
             PresentMovementAudio(true);
+            PresentTransformationAudio(true);
             PresentAttackEvent();
         }
 
@@ -175,6 +182,7 @@ namespace TheSancturary.Monsters
         {
             PresentState(false);
             PresentMovementAudio(false);
+            PresentTransformationAudio(false);
             PresentAttackEvent();
             PresentJumpscareEvent();
         }
@@ -594,6 +602,58 @@ namespace TheSancturary.Monsters
             }
         }
 
+        private void PresentTransformationAudio(bool force)
+        {
+            if (transformationAudioSource == null || transformationGrowlClip == null)
+                return;
+
+            bool transforming = CurrentState == HenryMonsterState.TransformToAngry ||
+                CurrentState == HenryMonsterState.TransformToCalm;
+            if (!transforming)
+            {
+                if (transformationAudioSource.isPlaying)
+                    transformationAudioSource.Stop();
+                _presentedTransformationAudioEndTick = null;
+                return;
+            }
+
+            // Both directions use the same authoritative timeline as the transformation pose.
+            float elapsed = GetPresentationElapsed(transformationDuration);
+            if (elapsed >= transformationDuration)
+            {
+                transformationAudioSource.Stop();
+                return;
+            }
+            bool newTransition = force || _presentedTransformationAudioState != CurrentState ||
+                _presentedTransformationAudioEndTick != StateTimer.TargetTick;
+            if (!newTransition && transformationAudioSource.isPlaying)
+                return;
+
+            _presentedTransformationAudioState = CurrentState;
+            _presentedTransformationAudioEndTick = StateTimer.TargetTick;
+            transformationAudioSource.Stop();
+            if (attackAudioSource != null)
+                attackAudioSource.Stop();
+            transformationAudioSource.clip = transformationGrowlClip;
+            transformationAudioSource.loop = false;
+            transformationAudioSource.pitch = transformationGrowlClip.length / transformationDuration;
+            transformationAudioSource.volume = transformationGrowlVolume *
+                (CurrentState == HenryMonsterState.TransformToCalm ? 0.55f : 1f);
+            // Late joiners and audio-device recovery resume the current growl rather than replaying it.
+            transformationAudioSource.time = elapsed * transformationAudioSource.pitch;
+            transformationAudioSource.Play();
+        }
+
+        public override void Despawned(NetworkRunner runner, bool hasState)
+        {
+            if (transformationAudioSource != null)
+                transformationAudioSource.Stop();
+            if (attackAudioSource != null)
+                attackAudioSource.Stop();
+            if (movementAudioSource != null)
+                movementAudioSource.Stop();
+        }
+
         private void PresentAttackEvent()
         {
             if (AttackSequence != _lastPresentedAttackAudioSequence)
@@ -693,14 +753,14 @@ namespace TheSancturary.Monsters
                 _agent.Warp(hit.position);
         }
 
-        private static void ConfigureAudioSource(AudioSource source, bool linearRolloff)
+        private static void ConfigureAudioSource(AudioSource source, bool linearRolloff, float minDistance = 0.8f)
         {
             if (source == null)
                 return;
             source.playOnAwake = false;
             source.spatialBlend = 1f;
             source.rolloffMode = linearRolloff ? AudioRolloffMode.Linear : AudioRolloffMode.Logarithmic;
-            source.minDistance = 0.8f;
+            source.minDistance = minDistance;
             source.maxDistance = 16f;
             source.dopplerLevel = 0f;
         }
