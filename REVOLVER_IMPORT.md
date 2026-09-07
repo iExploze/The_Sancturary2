@@ -15,6 +15,8 @@ Gameplay prefab GUIDs, item definition references, item IDs, audio, capacity, an
 
 ## Source
 
+Production migration is pending: the documented external source below was unavailable during pipeline setup because its drive was absent. Do not treat a nonexistent repository copy as authoritative. When the source is available and opens successfully, copy it (keep the original) to `ArtSource/Blender/Props/FrontierRevolver/Frontier_Revolver.blend`, validate that copy and its texture dependencies, then update this record to make it the production source of truth. Existing validated Unity exports need not be overwritten. See [the pipeline workflow](BLENDER_UNITY_PIPELINE.md).
+
 - Blender: `E:\BlenderWithMCPtest\assets\Frontier_Revolver.blend`.
 - Weapon export: `E:\BlenderWithMCPtest\exports\frontier_revolver\frontier_revolver.fbx`.
 - Cartridge export: `E:\BlenderWithMCPtest\exports\frontier_round\frontier_round.fbx`.
