@@ -16,6 +16,7 @@ MonoBehaviour:
   itemId: flashlight
   category: 1
   temporaryIconLabel: LIGHT
+  thumbnail: {fileID: 21300000, guid: 2df00e0efce3d5f49bc866a904c326d4, type: 3}
   width: 1
   height: 1
   canRotate: 0
@@ -37,3 +38,14 @@ MonoBehaviour:
   dryFireAudioClip: {fileID: 0}
   impactAudioClip: {fileID: 0}
   reloadAudioClip: {fileID: 0}
+  combatSettings: {fileID: 11400000, guid: b06e5980b52a3f7408ec870d13a96611, type: 2}
+  range: 65
+  hipSpreadDegrees: 12
+  adsSpreadDegrees: 0.3
+  reloadDuration: 2.5
+  muzzleOffset: {x: 0.12, y: -0.12, z: 0.5}
+  equipAudioClip: {fileID: 8300000, guid: 639700e30cb13624b857b9a323ebedc5, type: 3}
+  pickupAudioClip: {fileID: 0}
+  reloadInsertAudioClip: {fileID: 0}
+  reloadCloseAudioClip: {fileID: 0}
+  completionAudioClip: {fileID: 0}

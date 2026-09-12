@@ -1,4 +1,10 @@
-# Provisional Item Asset Provenance
+# Item asset provenance
+
+The September 2026 overhaul replaces eight item models with original Blender-authored assets in `Models/ItemOverhaul`, with editable packed sources and export/validation manifests in `SourceArt/Items` at the repository root. Adrenaline, MedKit, Flashlight and OldRevolver retain their original core art. Current item audio uses licensed CC0 recordings documented in [Audio/AUDIO_SOURCES.md](Audio/AUDIO_SOURCES.md); particle texture credits are in [Textures/ItemOverhaul/SOURCES.md](Textures/ItemOverhaul/SOURCES.md).
+
+The following August record documents retained historical source assets. Its generated-audio description does not describe the current item definitions' sound sets.
+
+## Historical provisional assets
 
 Generated on 2026-08-07 for The Sancturary. These assets are provisional and may be replaced by Vlad's authored work. Meshy outputs were requested as textured FBX files with realistic PBR materials, clean UVs, 2K textures, and low-to-mid polygon density. Fal audio used the `cassetteai/sound-effects-generator` model and was imported as WAV. Unity wrapper prefabs provide non-destructive scale, pivot, grip, collider, and URP presentation adjustments; source FBX files are unchanged.
 

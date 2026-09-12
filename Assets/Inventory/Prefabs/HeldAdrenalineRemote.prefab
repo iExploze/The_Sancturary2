@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1245820758878430938}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: EffectOrigin
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -40,7 +40,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1562753307181778091}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: VisualRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -75,7 +75,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3653756835430441111}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: RightHandGrip
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -107,7 +107,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4324260118428779319}
   - component: {fileID: 2702186324041781542}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: HeldAdrenalineRemote
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -147,6 +147,12 @@ MonoBehaviour:
   leftHandGrip: {fileID: 2461801964611594013}
   effectOrigin: {fileID: 1245820758878430938}
   muzzleLight: {fileID: 0}
+  equipClip: {fileID: 0}
+  useClip: {fileID: 0}
+  reloadClip: {fileID: 0}
+  dryFireClip: {fileID: 0}
+  rearSight: {fileID: 0}
+  frontSight: {fileID: 0}
   equipDuration: 0.2
   ownerEquipPositionOffset: {x: 0, y: -0.12, z: -0.08}
   remoteEquipPositionOffset: {x: 0, y: -0.08, z: -0.04}
@@ -162,7 +168,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2461801964611594013}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: LeftHandGrip
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -195,6 +201,10 @@ PrefabInstance:
     - target: {fileID: 4250551030772147819, guid: b67ca6bbfefc6a24b8b5350368540f51, type: 3}
       propertyPath: m_Name
       value: Model
+      objectReference: {fileID: 0}
+    - target: {fileID: 4250551030772147819, guid: b67ca6bbfefc6a24b8b5350368540f51, type: 3}
+      propertyPath: m_Layer
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5367017998876085475, guid: b67ca6bbfefc6a24b8b5350368540f51, type: 3}
       propertyPath: m_LocalPosition.x

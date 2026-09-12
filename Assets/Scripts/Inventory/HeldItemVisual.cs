@@ -32,6 +32,46 @@ namespace TheSancturary.Inventory
         [SerializeField] private Transform leftHandGrip;
         [SerializeField] private Transform effectOrigin;
         [SerializeField] private Light muzzleLight;
+        [Header("Authored local handling")]
+        [SerializeField] private AnimationClip equipClip;
+        [SerializeField] private AnimationClip useClip;
+        [SerializeField] private AnimationClip reloadClip;
+        [SerializeField] private AnimationClip dryFireClip;
+        [SerializeField] private Transform rearSight;
+        [SerializeField] private Transform frontSight;
+        [SerializeField, Range(0, 1)] private float rightGripClosure = 1f;
+        [SerializeField, Range(0, 1)] private float leftGripClosure = 1f;
+        public float RightGripClosure => rightGripClosure;
+        public float LeftGripClosure => leftGripClosure;
+        private AnimationClip _activeClip;
+        private Transform[] _parts;
+        private Vector3[] _partPositions;
+        private Quaternion[] _partRotations;
+        private Vector3[] _partScales;
+        private Transform _aimCamera;
+        private bool _aimRequested;
+        private float _aimBlend;
+        private Vector3 _sightLocalPosition;
+        private Vector3 _sightLocalDirection;
+        public Transform RearSight => rearSight;
+        public Transform FrontSight => frontSight;
+
+        public void SetAim(Transform camera, bool aiming) { _aimCamera = camera; _aimRequested = aiming; }
+
+        public void PlayReloadFromElapsed(float elapsed)
+        {
+            if (!_ownerPresentation || reloadClip == null) return;
+            _activeClip = reloadClip;
+            _useDuration = _definition.ReloadDuration;
+            _useElapsed = Mathf.Clamp(elapsed, 0, _useDuration);
+            _useActive = true;
+        }
+
+        public void PresentRemoteFire(bool dryFire)
+        {
+            if (!dryFire && _definition != null && _definition.UseKind == InventoryItemUseKind.Firearm)
+                BeginMuzzleFlash();
+        }
 
         [Header("Equip Motion")]
         [SerializeField, Min(0.01f)] private float equipDuration = 0.2f;
@@ -61,6 +101,20 @@ namespace TheSancturary.Inventory
         private MotionProfile _motionProfile;
         private float _muzzleFlashRemaining;
         private float _authoredMuzzleIntensity;
+        public const float UnequipDuration = 0.12f;
+        private bool _unequipping;
+        private float _unequipElapsed;
+
+        public void BeginUnequip()
+        {
+            CancelUse();
+            _aimRequested = false;
+            _equipActive = false;
+            _unequipping = true;
+            _unequipElapsed = 0f;
+        }
+
+        public void CancelUnequip() => _unequipping = false;
 
         public InventoryItemDefinition Definition => _definition;
         public bool IsOwnerPresentation => _ownerPresentation;
@@ -106,6 +160,21 @@ namespace TheSancturary.Inventory
             _configured = definition != null;
             ResolveReferences();
             CaptureAuthoredPose();
+            if (rearSight != null && frontSight != null)
+            {
+                _sightLocalPosition = transform.InverseTransformPoint(rearSight.position);
+                _sightLocalDirection = transform.InverseTransformDirection(frontSight.position - rearSight.position).normalized;
+            }
+            _parts = GetComponentsInChildren<Transform>(true);
+            _partPositions = new Vector3[_parts.Length];
+            _partRotations = new Quaternion[_parts.Length];
+            _partScales = new Vector3[_parts.Length];
+            for (int i = 0; i < _parts.Length; i++)
+            {
+                _partPositions[i] = _parts[i].localPosition;
+                _partRotations[i] = _parts[i].localRotation;
+                _partScales[i] = _parts[i].localScale;
+            }
             CancelUse();
 
             if (_configured && isActiveAndEnabled)
@@ -136,6 +205,7 @@ namespace TheSancturary.Inventory
                 return;
 
             _motionProfile = profile;
+            _activeClip = dryFire ? dryFireClip : useClip;
             _useDuration = ResolveUseDuration(_definition, profile);
             _useElapsed = Mathf.Clamp(
                 elapsedSeconds,
@@ -159,12 +229,14 @@ namespace TheSancturary.Inventory
             _useElapsed = 0f;
             _useDuration = 0f;
             _motionProfile = MotionProfile.None;
+            _activeClip = null;
             StopMuzzleFlash();
         }
 
         private void Update()
         {
             float deltaTime = Mathf.Max(0f, Time.deltaTime);
+            if (_unequipping) _unequipElapsed += Time.unscaledDeltaTime;
             if (_equipActive)
             {
                 _equipElapsed += deltaTime;
@@ -196,6 +268,25 @@ namespace TheSancturary.Inventory
             if (!_poseCaptured || visualRoot == null)
                 return;
 
+            if (_ownerPresentation && equipClip != null)
+            {
+                rightGripClosure = 1f;
+                leftGripClosure = 1f;
+                for (int i = 0; i < _parts.Length; i++)
+                {
+                    if (_parts[i] == transform || _parts[i] == null) continue;
+                    _parts[i].SetLocalPositionAndRotation(_partPositions[i], _partRotations[i]);
+                    _parts[i].localScale = _partScales[i];
+                }
+                AnimationClip clip = _unequipping ? equipClip : _useActive ? _activeClip : _equipActive ? equipClip : null;
+                if (clip != null) clip.SampleAnimation(gameObject, _unequipping
+                    ? (1f - Mathf.Clamp01(_unequipElapsed / UnequipDuration)) * clip.length : _useActive
+                    ? Mathf.Clamp01(_useElapsed / _useDuration) * clip.length
+                    : Mathf.Clamp01(_equipElapsed / equipDuration) * clip.length);
+                ApplyAim();
+                return;
+            }
+
             EvaluateEquipMotion(out Vector3 equipPosition, out Vector3 equipEuler);
             EvaluateUseMotion(out Vector3 usePosition, out Vector3 useEuler);
             visualRoot.localPosition =
@@ -203,6 +294,18 @@ namespace TheSancturary.Inventory
             visualRoot.localRotation = _baseLocalRotation *
                                        Quaternion.Euler(equipEuler + useEuler);
             visualRoot.localScale = _baseLocalScale;
+        }
+
+        private void ApplyAim()
+        {
+            float seconds = _definition?.CombatSettings != null ? _definition.CombatSettings.adsTransitionSeconds : 0.2f;
+            _aimBlend = Mathf.MoveTowards(_aimBlend, _aimRequested ? 1f : 0f, Time.deltaTime / Mathf.Max(0.01f, seconds));
+            if (_aimCamera == null || rearSight == null || frontSight == null) return;
+            transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+            Quaternion aimedRotation = _aimCamera.rotation * Quaternion.FromToRotation(_sightLocalDirection, Vector3.forward);
+            Vector3 aimedPosition = _aimCamera.position + _aimCamera.forward * 0.18f - aimedRotation * _sightLocalPosition;
+            transform.rotation = Quaternion.Slerp(transform.parent.rotation, aimedRotation, _aimBlend);
+            transform.position = Vector3.Lerp(transform.parent.position, aimedPosition, _aimBlend);
         }
 
         private void EvaluateEquipMotion(

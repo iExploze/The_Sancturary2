@@ -1,0 +1,469 @@
+{
+  "schema_version": 1,
+  "asset_id": "crowbar_overhaul",
+  "source_blend": "assets/crowbar_overhaul.blend",
+  "export_file": "crowbar_overhaul.fbx",
+  "blender_version": "4.5.13 LTS",
+  "unity_editor": "6000.3.15f1",
+  "export_preset": {
+    "type": "static_mesh",
+    "unit": "meter",
+    "scale": 1,
+    "axis_forward": "-Z",
+    "axis_up": "Y",
+    "bake_space_transform": true,
+    "apply_scale_options": "FBX_SCALE_UNITS",
+    "triangulated": true,
+    "animation": false
+  },
+  "dimensions_blender_m": [
+    0.029,
+    0.151437,
+    0.707493
+  ],
+  "total_triangles": 2572,
+  "objects": [
+    {
+      "name": "Faded red grip rib",
+      "dimensions_blender_m": [
+        0.026,
+        0.026,
+        0.006
+      ],
+      "bounds_min_blender_m": [
+        -0.013,
+        -0.013,
+        -0.173
+      ],
+      "bounds_max_blender_m": [
+        0.013,
+        0.013,
+        -0.167
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Oxide_Red_Paint"
+      ]
+    },
+    {
+      "name": "Faded red grip rib.001",
+      "dimensions_blender_m": [
+        0.026,
+        0.026,
+        0.006
+      ],
+      "bounds_min_blender_m": [
+        -0.013,
+        -0.013,
+        -0.161462
+      ],
+      "bounds_max_blender_m": [
+        0.013,
+        0.013,
+        -0.155462
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Oxide_Red_Paint"
+      ]
+    },
+    {
+      "name": "Faded red grip rib.002",
+      "dimensions_blender_m": [
+        0.026,
+        0.026,
+        0.006
+      ],
+      "bounds_min_blender_m": [
+        -0.013,
+        -0.013,
+        -0.149923
+      ],
+      "bounds_max_blender_m": [
+        0.013,
+        0.013,
+        -0.143923
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Oxide_Red_Paint"
+      ]
+    },
+    {
+      "name": "Faded red grip rib.003",
+      "dimensions_blender_m": [
+        0.026,
+        0.026,
+        0.006
+      ],
+      "bounds_min_blender_m": [
+        -0.013,
+        -0.013,
+        -0.138385
+      ],
+      "bounds_max_blender_m": [
+        0.013,
+        0.013,
+        -0.132385
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Oxide_Red_Paint"
+      ]
+    },
+    {
+      "name": "Faded red grip rib.004",
+      "dimensions_blender_m": [
+        0.026,
+        0.026,
+        0.006
+      ],
+      "bounds_min_blender_m": [
+        -0.013,
+        -0.013,
+        -0.126846
+      ],
+      "bounds_max_blender_m": [
+        0.013,
+        0.013,
+        -0.120846
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Oxide_Red_Paint"
+      ]
+    },
+    {
+      "name": "Faded red grip rib.005",
+      "dimensions_blender_m": [
+        0.026,
+        0.026,
+        0.006
+      ],
+      "bounds_min_blender_m": [
+        -0.013,
+        -0.013,
+        -0.115308
+      ],
+      "bounds_max_blender_m": [
+        0.013,
+        0.013,
+        -0.109308
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Oxide_Red_Paint"
+      ]
+    },
+    {
+      "name": "Faded red grip rib.006",
+      "dimensions_blender_m": [
+        0.026,
+        0.026,
+        0.006
+      ],
+      "bounds_min_blender_m": [
+        -0.013,
+        -0.013,
+        -0.103769
+      ],
+      "bounds_max_blender_m": [
+        0.013,
+        0.013,
+        -0.097769
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Oxide_Red_Paint"
+      ]
+    },
+    {
+      "name": "Faded red grip rib.007",
+      "dimensions_blender_m": [
+        0.026,
+        0.026,
+        0.006
+      ],
+      "bounds_min_blender_m": [
+        -0.013,
+        -0.013,
+        -0.092231
+      ],
+      "bounds_max_blender_m": [
+        0.013,
+        0.013,
+        -0.086231
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Oxide_Red_Paint"
+      ]
+    },
+    {
+      "name": "Faded red grip rib.008",
+      "dimensions_blender_m": [
+        0.026,
+        0.026,
+        0.006
+      ],
+      "bounds_min_blender_m": [
+        -0.013,
+        -0.013,
+        -0.080692
+      ],
+      "bounds_max_blender_m": [
+        0.013,
+        0.013,
+        -0.074692
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Oxide_Red_Paint"
+      ]
+    },
+    {
+      "name": "Faded red grip rib.009",
+      "dimensions_blender_m": [
+        0.026,
+        0.026,
+        0.006
+      ],
+      "bounds_min_blender_m": [
+        -0.013,
+        -0.013,
+        -0.069154
+      ],
+      "bounds_max_blender_m": [
+        0.013,
+        0.013,
+        -0.063154
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Oxide_Red_Paint"
+      ]
+    },
+    {
+      "name": "Faded red grip rib.010",
+      "dimensions_blender_m": [
+        0.026,
+        0.026,
+        0.006
+      ],
+      "bounds_min_blender_m": [
+        -0.013,
+        -0.013,
+        -0.057615
+      ],
+      "bounds_max_blender_m": [
+        0.013,
+        0.013,
+        -0.051615
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Oxide_Red_Paint"
+      ]
+    },
+    {
+      "name": "Faded red grip rib.011",
+      "dimensions_blender_m": [
+        0.026,
+        0.026,
+        0.006
+      ],
+      "bounds_min_blender_m": [
+        -0.013,
+        -0.013,
+        -0.046077
+      ],
+      "bounds_max_blender_m": [
+        0.013,
+        0.013,
+        -0.040077
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Oxide_Red_Paint"
+      ]
+    },
+    {
+      "name": "Faded red grip rib.012",
+      "dimensions_blender_m": [
+        0.026,
+        0.026,
+        0.006
+      ],
+      "bounds_min_blender_m": [
+        -0.013,
+        -0.013,
+        -0.034538
+      ],
+      "bounds_max_blender_m": [
+        0.013,
+        0.013,
+        -0.028538
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Oxide_Red_Paint"
+      ]
+    },
+    {
+      "name": "Faded red grip rib.013",
+      "dimensions_blender_m": [
+        0.026,
+        0.026,
+        0.006
+      ],
+      "bounds_min_blender_m": [
+        -0.013,
+        -0.013,
+        -0.023
+      ],
+      "bounds_max_blender_m": [
+        0.013,
+        0.013,
+        -0.017
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Oxide_Red_Paint"
+      ]
+    },
+    {
+      "name": "Flattened chisel tip",
+      "dimensions_blender_m": [
+        0.028,
+        0.009,
+        0.053
+      ],
+      "bounds_min_blender_m": [
+        -0.014,
+        -0.0045,
+        -0.2695
+      ],
+      "bounds_max_blender_m": [
+        0.014,
+        0.0045,
+        -0.2165
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Forged hex steel bar",
+      "dimensions_blender_m": [
+        0.022,
+        0.120916,
+        0.657993
+      ],
+      "bounds_min_blender_m": [
+        -0.011,
+        -0.015437,
+        -0.22
+      ],
+      "bounds_max_blender_m": [
+        0.011,
+        0.105479,
+        0.437993
+      ],
+      "triangles": 960,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Forked pry claw",
+      "dimensions_blender_m": [
+        0.011,
+        0.046,
+        0.012
+      ],
+      "bounds_min_blender_m": [
+        -0.0145,
+        0.09,
+        0.394
+      ],
+      "bounds_max_blender_m": [
+        -0.0035,
+        0.136,
+        0.406
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Forked pry claw.001",
+      "dimensions_blender_m": [
+        0.011,
+        0.046,
+        0.012
+      ],
+      "bounds_min_blender_m": [
+        0.0035,
+        0.09,
+        0.394
+      ],
+      "bounds_max_blender_m": [
+        0.0145,
+        0.136,
+        0.406
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "Oxide_Red_Paint"
+    },
+    {
+      "name": "Worn_Blue_Steel"
+    }
+  ],
+  "textures": [
+    {
+      "source_image": "Oxide_Red_Paint_Color",
+      "file": "textures/8df2dd76d508_Oxide_Red_Paint.png",
+      "sha256": "8df2dd76d508c4d5a0e7bd7f56af310d9814527bf2882d7f197123b16c45e923",
+      "color_space": "sRGB"
+    },
+    {
+      "source_image": "Worn_Blue_Steel_Color",
+      "file": "textures/3de046bc2371_Worn_Blue_Steel.png",
+      "sha256": "3de046bc23719a9cae8127b606d4e3b61b97c16a5de302fba75cfd0d1b59ebe0",
+      "color_space": "sRGB"
+    }
+  ],
+  "sha256": "1172793fec81738eeb7fcfae642245095f6a6766fb423abf214ec239b25720a6",
+  "notes": [
+    "URP materials and texture channel/color-space assignments require Unity review.",
+    "Static visual asset only; collider, interaction, Fusion authority and gameplay wiring are not included.",
+    "No Unity import or runtime verification is implied by this manifest."
+  ]
+}

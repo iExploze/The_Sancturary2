@@ -1,0 +1,441 @@
+{
+  "schema_version": 1,
+  "asset_id": "fire_axe_overhaul",
+  "source_blend": "assets/fire_axe_overhaul.blend",
+  "export_file": "fire_axe_overhaul.fbx",
+  "blender_version": "4.5.13 LTS",
+  "unity_editor": "6000.3.15f1",
+  "export_preset": {
+    "type": "static_mesh",
+    "unit": "meter",
+    "scale": 1,
+    "axis_forward": "-Z",
+    "axis_up": "Y",
+    "bake_space_transform": true,
+    "apply_scale_options": "FBX_SCALE_UNITS",
+    "triangulated": true,
+    "animation": false
+  },
+  "dimensions_blender_m": [
+    0.039,
+    0.29899,
+    0.778836
+  ],
+  "total_triangles": 1904,
+  "objects": [
+    {
+      "name": "Exposed cutting edge",
+      "dimensions_blender_m": [
+        0.036,
+        0.039657,
+        0.119661
+      ],
+      "bounds_min_blender_m": [
+        -0.018,
+        0.130157,
+        0.470179
+      ],
+      "bounds_max_blender_m": [
+        0.018,
+        0.169814,
+        0.58984
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Head wedge",
+      "dimensions_blender_m": [
+        0.039,
+        0.024,
+        0.024
+      ],
+      "bounds_min_blender_m": [
+        -0.0195,
+        -0.024,
+        0.528
+      ],
+      "bounds_max_blender_m": [
+        0.0195,
+        0.0,
+        0.552
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Hickory handle",
+      "dimensions_blender_m": [
+        0.031,
+        0.06166,
+        0.718996
+      ],
+      "bounds_min_blender_m": [
+        -0.0155,
+        -0.037706,
+        -0.188996
+      ],
+      "bounds_max_blender_m": [
+        0.0155,
+        0.023953,
+        0.53
+      ],
+      "triangles": 184,
+      "uv_layers": 1,
+      "materials": [
+        "Aged_Walnut"
+      ]
+    },
+    {
+      "name": "Red axe head",
+      "dimensions_blender_m": [
+        0.034,
+        0.29899,
+        0.119262
+      ],
+      "bounds_min_blender_m": [
+        -0.017,
+        -0.129176,
+        0.470455
+      ],
+      "bounds_max_blender_m": [
+        0.017,
+        0.169814,
+        0.589717
+      ],
+      "triangles": 128,
+      "uv_layers": 1,
+      "materials": [
+        "Oxide_Red_Paint"
+      ]
+    },
+    {
+      "name": "Rubber handle rib",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.1725
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.1675
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.001",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.160227
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.155227
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.002",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.147955
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.142955
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.003",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.135682
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.130682
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.004",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.123409
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.118409
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.005",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.111136
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.106136
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.006",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.098864
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.093864
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.007",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.086591
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.081591
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.008",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.074318
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.069318
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.009",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.062045
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.057045
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.010",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.049773
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.044773
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.011",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.0375
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.0325
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "Aged_Walnut"
+    },
+    {
+      "name": "Oxide_Red_Paint"
+    },
+    {
+      "name": "Worn_Blue_Steel"
+    },
+    {
+      "name": "Worn_Rubber"
+    }
+  ],
+  "textures": [
+    {
+      "source_image": "Aged_Walnut_Color",
+      "file": "textures/253928e98008_Aged_Walnut.png",
+      "sha256": "253928e98008bbb4b0cbd20ffd8f445ee9a569b075d7cbba4c00e2fff565a0a0",
+      "color_space": "sRGB"
+    },
+    {
+      "source_image": "Oxide_Red_Paint_Color",
+      "file": "textures/8df2dd76d508_Oxide_Red_Paint.png",
+      "sha256": "8df2dd76d508c4d5a0e7bd7f56af310d9814527bf2882d7f197123b16c45e923",
+      "color_space": "sRGB"
+    },
+    {
+      "source_image": "Worn_Blue_Steel_Color",
+      "file": "textures/3de046bc2371_Worn_Blue_Steel.png",
+      "sha256": "3de046bc23719a9cae8127b606d4e3b61b97c16a5de302fba75cfd0d1b59ebe0",
+      "color_space": "sRGB"
+    },
+    {
+      "source_image": "Worn_Rubber_Color",
+      "file": "textures/572b84a85368_Worn_Rubber.png",
+      "sha256": "572b84a8536838ffead5f303d1650e98b45a1f99e71a8b1585b8566bcf34db7c",
+      "color_space": "sRGB"
+    }
+  ],
+  "sha256": "19950f38ebe88f7a1d3913e156af215dcfc1b68a5f02aa49f6c3b0e19cfa8a71",
+  "notes": [
+    "URP materials and texture channel/color-space assignments require Unity review.",
+    "Static visual asset only; collider, interaction, Fusion authority and gameplay wiring are not included.",
+    "No Unity import or runtime verification is implied by this manifest."
+  ]
+}

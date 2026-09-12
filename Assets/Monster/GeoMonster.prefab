@@ -47,6 +47,7 @@ GameObject:
   - component: {fileID: 443128123557182051}
   - component: {fileID: 8758494920101728201}
   - component: {fileID: 6402907662145101722}
+  - component: {fileID: 7263248078544851093}
   m_Layer: 0
   m_Name: GeoMonster
   m_TagString: Untagged
@@ -344,7 +345,7 @@ MonoBehaviour:
   attackCooldown: 0.5
   attackDamage: 50
   jumpscareVideo: {fileID: 32900000, guid: 5b6480ddbfe16c74c807ff11feae65cb, type: 3}
-  lockerKillRange: 1.8
+  lockerEjectRange: 1.8
   movementAudioSource: {fileID: 6249528235719355067}
   attackAudioSource: {fileID: 4844267759709381364}
   footstepClips:
@@ -382,6 +383,7 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 6402907662145101722}
   - {fileID: 443128123557182051}
+  - {fileID: 7263248078544851093}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &6402907662145101722
 MonoBehaviour:
@@ -423,6 +425,23 @@ MonoBehaviour:
     MinImpactfulCollisionAlignment: 0.3
     ImpactStartCorrectionTime: 0.1
     ImpactCorrectionTimeComplete: 0.3
+--- !u!114 &7263248078544851093
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5379660736335971315}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c6bf643b96fedc458c27743745afdca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Monsters.MonsterCombatState
+  settings: {fileID: 11400000, guid: b06e5980b52a3f7408ec870d13a96611, type: 2}
+  isHenry: 0
+  _Health: 0
+  _IsDead:
+    RawValue: 0
 --- !u!1 &8149577694648986315
 GameObject:
   m_ObjectHideFlags: 0

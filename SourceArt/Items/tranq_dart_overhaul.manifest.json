@@ -1,0 +1,248 @@
+{
+  "schema_version": 1,
+  "asset_id": "tranq_dart_overhaul",
+  "source_blend": "assets/tranq_dart_overhaul.blend",
+  "export_file": "tranq_dart_overhaul.fbx",
+  "blender_version": "4.5.13 LTS",
+  "unity_editor": "6000.3.15f1",
+  "export_preset": {
+    "type": "static_mesh",
+    "unit": "meter",
+    "scale": 1,
+    "axis_forward": "-Z",
+    "axis_up": "Y",
+    "bake_space_transform": true,
+    "apply_scale_options": "FBX_SCALE_UNITS",
+    "triangulated": true,
+    "animation": false
+  },
+  "dimensions_blender_m": [
+    0.022,
+    0.1355,
+    0.019312
+  ],
+  "total_triangles": 1888,
+  "objects": [
+    {
+      "name": "Dart needle",
+      "dimensions_blender_m": [
+        0.0014,
+        0.033,
+        0.0014
+      ],
+      "bounds_min_blender_m": [
+        -0.0007,
+        -0.0765,
+        -0.0007
+      ],
+      "bounds_max_blender_m": [
+        0.0007,
+        -0.0435,
+        0.0007
+      ],
+      "triangles": 44,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Dart stabilizer",
+      "dimensions_blender_m": [
+        0.022,
+        0.022,
+        0.001
+      ],
+      "bounds_min_blender_m": [
+        -0.011,
+        0.037,
+        -0.0005
+      ],
+      "bounds_max_blender_m": [
+        0.011,
+        0.059,
+        0.0005
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Dart_Teal"
+      ]
+    },
+    {
+      "name": "Dart stabilizer.001",
+      "dimensions_blender_m": [
+        0.011626,
+        0.022,
+        0.019312
+      ],
+      "bounds_min_blender_m": [
+        -0.005813,
+        0.037,
+        -0.009656
+      ],
+      "bounds_max_blender_m": [
+        0.005813,
+        0.059,
+        0.009656
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Dart_Teal"
+      ]
+    },
+    {
+      "name": "Dart stabilizer.002",
+      "dimensions_blender_m": [
+        0.011626,
+        0.022,
+        0.019312
+      ],
+      "bounds_min_blender_m": [
+        -0.005813,
+        0.037,
+        -0.009656
+      ],
+      "bounds_max_blender_m": [
+        0.005813,
+        0.059,
+        0.009656
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Dart_Teal"
+      ]
+    },
+    {
+      "name": "Medical dart dose body",
+      "dimensions_blender_m": [
+        0.012,
+        0.065,
+        0.012
+      ],
+      "bounds_min_blender_m": [
+        -0.006,
+        -0.0325,
+        -0.006
+      ],
+      "bounds_max_blender_m": [
+        0.006,
+        0.0325,
+        0.006
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Medical_Ivory"
+      ]
+    },
+    {
+      "name": "Needle hub",
+      "dimensions_blender_m": [
+        0.008,
+        0.011,
+        0.008
+      ],
+      "bounds_min_blender_m": [
+        -0.004,
+        -0.0435,
+        -0.004
+      ],
+      "bounds_max_blender_m": [
+        0.004,
+        -0.0325,
+        0.004
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Tail plug",
+      "dimensions_blender_m": [
+        0.012,
+        0.016,
+        0.012
+      ],
+      "bounds_min_blender_m": [
+        -0.006,
+        0.031,
+        -0.006
+      ],
+      "bounds_max_blender_m": [
+        0.006,
+        0.047,
+        0.006
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Dart_Teal"
+      ]
+    },
+    {
+      "name": "Teal dose band",
+      "dimensions_blender_m": [
+        0.0124,
+        0.022,
+        0.0124
+      ],
+      "bounds_min_blender_m": [
+        -0.0062,
+        0.001,
+        -0.0062
+      ],
+      "bounds_max_blender_m": [
+        0.0062,
+        0.023,
+        0.0062
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Dart_Teal"
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "Dart_Teal"
+    },
+    {
+      "name": "Medical_Ivory"
+    },
+    {
+      "name": "Worn_Blue_Steel"
+    }
+  ],
+  "textures": [
+    {
+      "source_image": "Dart_Teal_Color",
+      "file": "textures/8c264196a480_Dart_Teal.png",
+      "sha256": "8c264196a4805f7418d891e0d0a03dfb8d3bf44dd58188c3c8ad5255d235d41a",
+      "color_space": "sRGB"
+    },
+    {
+      "source_image": "Medical_Ivory_Color",
+      "file": "textures/558207f5ac99_Medical_Ivory.png",
+      "sha256": "558207f5ac993bfce8ea08d17f99b839867f5428b1d772dbbe9ec01fdbd828a4",
+      "color_space": "sRGB"
+    },
+    {
+      "source_image": "Worn_Blue_Steel_Color",
+      "file": "textures/3de046bc2371_Worn_Blue_Steel.png",
+      "sha256": "3de046bc23719a9cae8127b606d4e3b61b97c16a5de302fba75cfd0d1b59ebe0",
+      "color_space": "sRGB"
+    }
+  ],
+  "sha256": "9b74e34c5d1a31bdadd28d10c0d94d098cc858ade4da8a7a455f894b160a8fce",
+  "notes": [
+    "URP materials and texture channel/color-space assignments require Unity review.",
+    "Static visual asset only; collider, interaction, Fusion authority and gameplay wiring are not included.",
+    "No Unity import or runtime verification is implied by this manifest."
+  ]
+}

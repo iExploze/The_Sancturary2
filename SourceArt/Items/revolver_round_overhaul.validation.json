@@ -1,0 +1,111 @@
+{
+  "asset_id": "revolver_round_overhaul",
+  "status": "passed",
+  "validation": "Blender FBX roundtrip only; Unity import and runtime not tested",
+  "blender_version": "4.5.13 LTS",
+  "fbx_sha256": "2df4be0f6fb53d2f1528fbadf13ba72962549933dba7c8c4000fca0ffdf306a2",
+  "checks": [
+    "FBX and texture hashes",
+    "portable texture references",
+    "mesh membership",
+    "world bounds and orientation",
+    "unit scale",
+    "triangle counts",
+    "UV layers",
+    "material assignments"
+  ],
+  "objects": [
+    {
+      "name": "Brass cartridge",
+      "dimensions_blender_m": [
+        0.011,
+        0.026,
+        0.011
+      ],
+      "bounds_min_blender_m": [
+        -0.0055,
+        -0.013,
+        -0.0055
+      ],
+      "bounds_max_blender_m": [
+        0.0055,
+        0.013,
+        0.0055
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Tarnished_Brass"
+      ]
+    },
+    {
+      "name": "Lead round nose",
+      "dimensions_blender_m": [
+        0.0108,
+        0.022,
+        0.0108
+      ],
+      "bounds_min_blender_m": [
+        -0.0054,
+        -0.025,
+        -0.0054
+      ],
+      "bounds_max_blender_m": [
+        0.0054,
+        -0.003,
+        0.0054
+      ],
+      "triangles": 528,
+      "uv_layers": 1,
+      "materials": [
+        "Dark_Iron"
+      ]
+    },
+    {
+      "name": "Primer",
+      "dimensions_blender_m": [
+        0.0046,
+        0.0005,
+        0.0046
+      ],
+      "bounds_min_blender_m": [
+        -0.0023,
+        0.01495,
+        -0.0023
+      ],
+      "bounds_max_blender_m": [
+        0.0023,
+        0.01545,
+        0.0023
+      ],
+      "triangles": 76,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Rim",
+      "dimensions_blender_m": [
+        0.012,
+        0.002,
+        0.012
+      ],
+      "bounds_min_blender_m": [
+        -0.006,
+        0.013,
+        -0.006
+      ],
+      "bounds_max_blender_m": [
+        0.006,
+        0.015,
+        0.006
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Tarnished_Brass"
+      ]
+    }
+  ]
+}

@@ -9,6 +9,23 @@ using NUnitAssert = NUnit.Framework.Assert;
 
 namespace TheSancturary.FusionPrototype.Tests
 {
+    // Deterministic scene tests use the existing local Fusion path. Online host/client
+    // acceptance is exercised separately; these tests must not depend on Photon login.
+    [SetUpFixture]
+    public sealed class IsolatedFusionPlayModeSessions
+    {
+        private string _previousAppId;
+        [OneTimeSetUp]
+        public void Begin()
+        {
+            var settings = Fusion.Photon.Realtime.PhotonAppSettings.Global.AppSettings;
+            _previousAppId = settings.AppIdFusion;
+            settings.AppIdFusion = string.Empty;
+        }
+        [OneTimeTearDown]
+        public void End() => Fusion.Photon.Realtime.PhotonAppSettings.Global.AppSettings.AppIdFusion = _previousAppId;
+    }
+
     internal static class FusionPlayModeTestSession
     {
         public static IEnumerator ResetExistingSession()

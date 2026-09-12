@@ -16,6 +16,7 @@ MonoBehaviour:
   itemId: tranq_gun
   category: 5
   temporaryIconLabel: TRANQ
+  thumbnail: {fileID: 21300000, guid: d2a9ef012cb895d468f8096190e9b7a3, type: 3}
   width: 3
   height: 2
   canRotate: 0
@@ -36,4 +37,16 @@ MonoBehaviour:
   useAudioClip: {fileID: 8300000, guid: f1791df89db4d6440905fadc2f008fd3, type: 3}
   dryFireAudioClip: {fileID: 8300000, guid: cfd1253fa985b294fabca7668cd1ceef, type: 3}
   impactAudioClip: {fileID: 0}
-  reloadAudioClip: {fileID: 8300000, guid: 33046812ea8445f4381c0e05f22d862f, type: 3}
+  reloadAudioClip: {fileID: 8300000, guid: 8af9e1c9c2cca584fb0ff7f2ac292bb6, type: 3}
+  combatSettings: {fileID: 11400000, guid: b06e5980b52a3f7408ec870d13a96611, type: 2}
+  range: 65
+  hipSpreadDegrees: 12
+  adsSpreadDegrees: 0.2
+  reloadDuration: 2.7
+  muzzleOffset: {x: 0.12654819, y: -0.19298738, z: 0.8917146}
+  adsMuzzleOffset: {x: 0, y: -0.037, z: 0.729}
+  equipAudioClip: {fileID: 8300000, guid: 23587f03c23f9af45b26570c3bd89d02, type: 3}
+  pickupAudioClip: {fileID: 0}
+  reloadInsertAudioClip: {fileID: 8300000, guid: 547f6513d97aa3d49b609886e274419e, type: 3}
+  reloadCloseAudioClip: {fileID: 8300000, guid: 98781d5e239b1da43a3bab6afa4c1bd7, type: 3}
+  completionAudioClip: {fileID: 0}

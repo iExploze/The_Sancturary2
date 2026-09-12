@@ -4,6 +4,8 @@
     "TheSancturary.Runtime",
     "Fusion.Runtime",
     "Fusion.Unity",
+    "Fusion.Realtime",
+    "Photon.Realtime",
     "Unity.InputSystem",
     "Unity.RenderPipelines.Core.Runtime",
     "Unity.RenderPipelines.Universal.Runtime",

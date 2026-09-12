@@ -87,6 +87,7 @@ namespace TheSancturary.Monsters
         [Networked] private byte JumpscareSequence { get; set; }
         [Networked] private PlayerRef JumpscareVictim { get; set; }
 
+        private bool _combatSuspended;
         private NavMeshAgent _agent;
         private NetworkTransform _networkTransform;
         private int _lastWaypointIndex = -1;
@@ -159,8 +160,22 @@ namespace TheSancturary.Monsters
 
         public override void FixedUpdateNetwork()
         {
+            MonsterCombatState combat = GetComponent<MonsterCombatState>();
+            if (combat != null && combat.IsIncapacitated)
+            {
+                _combatSuspended = true;
+                return;
+            }
             if (!HasStateAuthority || _agent == null || !_agent.enabled || !_agent.isOnNavMesh)
                 return;
+
+            if (_combatSuspended)
+            {
+                _combatSuspended = false;
+                TargetPlayer = PlayerRef.None;
+                IsMoving = false;
+                EnterAuthorityState(HenryMonsterState.Idle);
+            }
 
             switch (CurrentState)
             {
@@ -191,6 +206,8 @@ namespace TheSancturary.Monsters
 
         public override void Render()
         {
+            MonsterCombatState combat = GetComponent<MonsterCombatState>();
+            if (combat != null && combat.IsIncapacitated) return;
             PresentState(false);
             PresentMovementAudio(false);
             PresentTransformationAudio(false);

@@ -16,6 +16,7 @@ MonoBehaviour:
   itemId: sawed_off_shotgun
   category: 5
   temporaryIconLabel: SHOTGUN
+  thumbnail: {fileID: 21300000, guid: a29381920df058342b33d5ed6da314f5, type: 3}
   width: 3
   height: 2
   canRotate: 0
@@ -36,4 +37,16 @@ MonoBehaviour:
   useAudioClip: {fileID: 8300000, guid: 9b4bf3ed1f3d97042be21f177ac7a7b9, type: 3}
   dryFireAudioClip: {fileID: 8300000, guid: 103d60057d3c3494392b14819f5fcc4b, type: 3}
   impactAudioClip: {fileID: 0}
-  reloadAudioClip: {fileID: 8300000, guid: 33046812ea8445f4381c0e05f22d862f, type: 3}
+  reloadAudioClip: {fileID: 8300000, guid: 29128490e52c49c40b5294d35dbcff77, type: 3}
+  combatSettings: {fileID: 11400000, guid: b06e5980b52a3f7408ec870d13a96611, type: 2}
+  range: 65
+  hipSpreadDegrees: 18
+  adsSpreadDegrees: 0.3
+  reloadDuration: 2.4
+  muzzleOffset: {x: 0.13076502, y: -0.19838007, z: 0.81125253}
+  adsMuzzleOffset: {x: 0, y: -0.030000001, z: 0.63600004}
+  equipAudioClip: {fileID: 8300000, guid: 624dd74d3eaa54c418967e70681ca212, type: 3}
+  pickupAudioClip: {fileID: 0}
+  reloadInsertAudioClip: {fileID: 8300000, guid: 3e1efd1980740954d80567643e9fccee, type: 3}
+  reloadCloseAudioClip: {fileID: 8300000, guid: 9a21f846ed33f5e438e52999e916f98e, type: 3}
+  completionAudioClip: {fileID: 0}

@@ -17,6 +17,8 @@ namespace TheSancturary.Inventory
         [SerializeField] private Transform ownerFirstPersonAnchor;
         [SerializeField] private Transform thirdPersonAnchor;
         [SerializeField] private PlayerEquipmentRigController equipmentRig;
+        [SerializeField] private FirstPersonArms firstPersonArmsPrefab;
+        private FirstPersonArms _firstPersonArms;
 
         [Header("Action Audio")]
         [SerializeField] private AudioSource ownerAudioSource;
@@ -44,6 +46,7 @@ namespace TheSancturary.Inventory
         private ushort _lastPresentedActionSequence;
         private ushort _presentedActiveUseInstanceId;
         private InventoryItemUseKind _presentedActiveUseKind;
+        private float _unequipUntil;
 
         public HeldItemVisual CurrentHeldVisual =>
             _firstPersonHeldVisual != null
@@ -97,6 +100,22 @@ namespace TheSancturary.Inventory
 
             bool itemChanged = _heldDefinition != definition ||
                                _heldInstanceId != equippedId;
+            if (!itemChanged && _unequipUntil > 0f)
+            {
+                _unequipUntil = 0f;
+                _firstPersonHeldVisual?.CancelUnequip();
+            }
+            if (itemChanged && hasInputAuthority && _firstPersonHeldVisual != null)
+            {
+                if (_unequipUntil <= 0f)
+                {
+                    _unequipUntil = Time.unscaledTime + HeldItemVisual.UnequipDuration;
+                    _firstPersonHeldVisual.BeginUnequip();
+                    flashlight?.SetLightEnabled(false);
+                }
+                // Keep exactly one local representation while lowering the outgoing item.
+                if (Time.unscaledTime < _unequipUntil) return;
+            }
             if (itemChanged)
             {
                 ClearPresentation();
@@ -123,6 +142,10 @@ namespace TheSancturary.Inventory
                     ClearPresentation();
                     return;
                 }
+                if (_firstPersonArms == null && firstPersonArmsPrefab != null && _ownerCamera != null)
+                    _firstPersonArms = Instantiate(firstPersonArmsPrefab, _ownerCamera, false);
+                _firstPersonArms?.Bind(_firstPersonHeldVisual);
+                _firstPersonHeldVisual.SetAim(_ownerCamera, player.ItemUseController != null && player.ItemUseController.IsAiming);
             }
             else
             {
@@ -151,6 +174,7 @@ namespace TheSancturary.Inventory
 
         public void ClearPresentation()
         {
+            _unequipUntil = 0f;
             flashlight?.SetLightEnabled(false);
             equipmentRig?.Clear(this);
             ClearFirstPersonPresentation();
@@ -290,6 +314,12 @@ namespace TheSancturary.Inventory
 
         private void ClearFirstPersonPresentation()
         {
+            if (_firstPersonArms != null)
+            {
+                _firstPersonArms.gameObject.SetActive(false);
+                Destroy(_firstPersonArms.gameObject);
+                _firstPersonArms = null;
+            }
             DestroyHeldVisual(
                 ref _firstPersonHeldObject,
                 ref _firstPersonHeldVisual,
@@ -339,26 +369,17 @@ namespace TheSancturary.Inventory
                 return;
 
             ItemActionPresentation action = controller.LastAction;
-            if (action != ItemActionPresentation.Reload)
+            if (action == ItemActionPresentation.Reload)
+                _firstPersonHeldVisual?.PlayReloadFromElapsed(0);
+            else if (action != ItemActionPresentation.Complete)
             {
                 bool dryFire = action == ItemActionPresentation.DryFire;
                 _firstPersonHeldVisual?.PlayUse(dryFire);
-                _thirdPersonHeldVisual?.PlayUse(dryFire);
+                if (action == ItemActionPresentation.Fire || action == ItemActionPresentation.DryFire)
+                    _thirdPersonHeldVisual?.PresentRemoteFire(dryFire);
             }
 
-            AudioClip clip = action switch
-            {
-                ItemActionPresentation.DryFire =>
-                    definition.DryFireAudioClip,
-                ItemActionPresentation.Reload =>
-                    definition.ReloadAudioClip,
-                ItemActionPresentation.Fire =>
-                    definition.UseAudioClip,
-                ItemActionPresentation.Use =>
-                    definition.UseAudioClip,
-                _ => null
-            };
-            PlayActionAudio(clip);
+            // Audio is emitted once by the authoritative action event, including completion after consumption.
         }
 
         private void SyncActiveUsePresentation(
@@ -378,7 +399,6 @@ namespace TheSancturary.Inventory
                 if (_presentedActiveUseInstanceId != 0)
                 {
                     _firstPersonHeldVisual?.CancelUse();
-                    _thirdPersonHeldVisual?.CancelUse();
                 }
 
                 _presentedActiveUseInstanceId = 0;
@@ -392,16 +412,17 @@ namespace TheSancturary.Inventory
 
             float elapsedSeconds = Mathf.Max(
                 0f,
-                definition.UseDuration -
+                controller.ActiveDuration -
                 controller.ActiveUseRemainingSeconds);
-            _firstPersonHeldVisual?.PlayUseFromElapsed(false, elapsedSeconds);
-            _thirdPersonHeldVisual?.PlayUseFromElapsed(false, elapsedSeconds);
+            if (controller.IsReloading) _firstPersonHeldVisual?.PlayReloadFromElapsed(elapsedSeconds);
+            else _firstPersonHeldVisual?.PlayUseFromElapsed(false, elapsedSeconds);
             _presentedActiveUseInstanceId = equippedInstanceId;
             _presentedActiveUseKind = controller.ActiveUseKind;
         }
 
-        private void PlayActionAudio(AudioClip clip)
+        public void PlayActionAudio(AudioClip clip)
         {
+            ResolveReferences();
             if (clip == null)
                 return;
 
