@@ -607,12 +607,12 @@ namespace TheSancturary.Monsters
                 fixedTimeOffset);
         }
 
+        internal Quaternion VisualFacingRotation => _calmVisualLocalRotation * Quaternion.Euler(0f,
+            CurrentState is HenryMonsterState.Chase or HenryMonsterState.Attack ? angryVisualYawOffset : 0f, 0f);
+
         private void PresentVisualFacing()
         {
-            float yaw = CurrentState is HenryMonsterState.Chase or HenryMonsterState.Attack
-                ? angryVisualYawOffset
-                : 0f;
-            animator.transform.localRotation = _calmVisualLocalRotation * Quaternion.Euler(0f, yaw, 0f);
+            animator.transform.localRotation = VisualFacingRotation;
         }
 
         private void SampleReverseTransformationPose()

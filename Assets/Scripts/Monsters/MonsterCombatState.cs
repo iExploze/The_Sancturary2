@@ -33,14 +33,23 @@ namespace TheSancturary.Monsters
         public bool IsIncapacitated => IsDead || IsSleeping;
         public float SleepRemainingSeconds => Runner != null ? SleepTimer.RemainingTime(Runner) ?? 0f : 0f;
         private Animator _animator;
+        private HenryMonsterController _henryController;
         private Quaternion _livingRotation;
         private Vector3 _livingPosition;
         private bool _presentedSuppression;
         private ParticleSystem _sleepParticles;
+        private float _hitReactionStarted = float.NegativeInfinity;
+        private Vector3 _hitDirection;
+        private Quaternion _deathStartRotation;
+        private Vector3 _deathStartPosition;
+        private bool _deathPoseCaptured;
+        private Renderer[] _bodyRenderers;
 
         public override void Spawned()
         {
             _animator = GetComponentInChildren<Animator>(true);
+            _henryController = GetComponent<HenryMonsterController>();
+            _bodyRenderers = GetComponentsInChildren<Renderer>(true);
             if (_animator != null)
             {
                 _livingRotation = _animator.transform.localRotation;
@@ -49,6 +58,9 @@ namespace TheSancturary.Monsters
             if (HasStateAuthority) Health = MaximumHealth;
             _presentedContactSequence = ContactSequence;
             _presentedDeathEffect = IsDead;
+            // A late joiner receives terminal state without replaying an old collapse.
+            _deathPoseCaptured = IsDead;
+            if (IsDead) foreach (Renderer body in _bodyRenderers) body.enabled = false;
             ApplyPresentation();
         }
 
@@ -123,20 +135,9 @@ namespace TheSancturary.Monsters
             bool suppressed = IsIncapacitated;
             if (suppressed && !_presentedSuppression)
                 foreach (AudioSource source in GetComponentsInChildren<AudioSource>(true)) source.Stop();
-            if (_animator != null)
-            {
-                _animator.enabled = !suppressed;
-                float blend = 1f - Mathf.Exp(-Time.deltaTime * 8f);
-                _animator.transform.localRotation = Quaternion.Slerp(_animator.transform.localRotation,
-                    _livingRotation * (IsSleeping ? Quaternion.Euler(0, 0, 78) : Quaternion.identity), blend);
-                _animator.transform.localPosition = Vector3.Lerp(_animator.transform.localPosition,
-                    _livingPosition + (IsSleeping ? new Vector3(0, -0.45f, 0) : Vector3.zero), blend);
-            }
+            if (_animator != null) _animator.enabled = !suppressed;
             if (IsDead)
-            {
-                foreach (Renderer body in GetComponentsInChildren<Renderer>(true)) body.enabled = false;
                 foreach (Collider body in GetComponentsInChildren<Collider>(true)) body.enabled = false;
-            }
             if (IsSleeping && _sleepParticles == null && settings != null && settings.sleepEffect != null)
             {
                 _sleepParticles = Instantiate(settings.sleepEffect, transform.position + Vector3.up, Quaternion.identity, transform);
@@ -146,9 +147,60 @@ namespace TheSancturary.Monsters
             _presentedSuppression = suppressed;
         }
 
+        // Animator evaluation runs after Fusion Render. Apply additive visual poses last.
+        private void LateUpdate()
+        {
+            if (Object == null || !Object.IsValid || Runner == null) return;
+            bool suppressed = IsIncapacitated;
+            Quaternion facing = _henryController != null && !IsSleeping
+                ? _henryController.VisualFacingRotation : _livingRotation;
+            if (_animator != null && _animator.transform != transform)
+            {
+                _animator.enabled = !suppressed;
+                if (IsDead)
+                {
+                    if (!_deathPoseCaptured)
+                    {
+                        _deathStartRotation = _animator.transform.localRotation;
+                        _deathStartPosition = _animator.transform.localPosition;
+                        _deathPoseCaptured = true;
+                    }
+                    float duration = Mathf.Max(.01f, settings.deathVisibleSeconds);
+                    float progress = Mathf.Clamp01(1f - (RemovalTimer.RemainingTime(Runner) ?? 0f) / duration);
+                    float collapse = Mathf.SmoothStep(0f, 1f, progress / .85f);
+                    _animator.transform.localRotation = Quaternion.Slerp(_deathStartRotation,
+                        facing * Quaternion.Euler(-82f, 0f, 12f), collapse);
+                    _animator.transform.localPosition = Vector3.Lerp(_deathStartPosition,
+                        _livingPosition + new Vector3(0f, -.65f, -.12f), collapse);
+                    if (progress >= .92f)
+                        foreach (Renderer body in _bodyRenderers) if (body != null) body.enabled = false;
+                }
+                else
+                {
+                    float blend = 1f - Mathf.Exp(-Time.deltaTime * 8f);
+                    float elapsed = (Time.time - _hitReactionStarted) / .28f;
+                    float recoil = elapsed >= 0f && elapsed < 1f ? Mathf.Sin(elapsed * Mathf.PI) : 0f;
+                    Quaternion pose = IsSleeping ? Quaternion.Euler(0, 0, 78) :
+                        Quaternion.Euler(-_hitDirection.z * recoil * 9f, 0, _hitDirection.x * recoil * 7f);
+                    Vector3 offset = IsSleeping ? new Vector3(0, -.45f, 0) : _hitDirection * (recoil * .065f);
+                    _animator.transform.localRotation = recoil > 0f && !IsSleeping
+                        ? facing * pose
+                        : Quaternion.Slerp(_animator.transform.localRotation, facing * pose, blend);
+                    _animator.transform.localPosition = Vector3.Lerp(_animator.transform.localPosition,
+                        _livingPosition + offset, blend);
+                }
+            }
+        }
+
         private void PresentContact(Vector3 point, Vector3 normal, byte kind)
         {
             if (settings == null) return;
+            if (kind == 0 && !IsIncapacitated)
+            {
+                _hitReactionStarted = Time.time;
+                _hitDirection = transform.InverseTransformDirection(-normal.normalized);
+                _hitDirection.y = 0f;
+            }
             if (kind == 2)
             {
                 if (_presentedDeathEffect) return;

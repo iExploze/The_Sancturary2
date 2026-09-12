@@ -1,1132 +1,640 @@
 {
+  "revision": "2026-09-12 user audio revision",
   "license": "CC0-1.0",
   "sources": {
-    "Kenney": [
-      "https://kenney.nl/assets/impact-sounds",
-      "Kenney"
+    "revolver": [
+      "Bane_Sound",
+      "https://freesound.org/people/Bane_Sound/sounds/542549/"
     ],
-    "RPG": [
-      "https://kenney.nl/assets/rpg-audio",
-      "Kenney"
+    "shotgun": [
+      "LilMati",
+      "https://freesound.org/people/LilMati/sounds/405504/"
     ],
-    "Firearms": [
-      "https://opengameart.org/content/the-free-firearm-sound-library",
-      "Ben Jaszczak, Brian Nelson, Kevin Heras, Matthew Nanney"
+    "handling": [
+      "steprock",
+      "https://freesound.org/people/steprock/sounds/760469/"
     ],
-    "Melee": [
-      "https://opengameart.org/content/medieval-sound-effects-weapon-textures",
-      "Ben Jaszczak and Brian Nelson"
+    "reload": [
+      "SpringySpringo",
+      "https://opengameart.org/content/gun-reload-sounds"
     ],
-    "Wet": [
-      "https://opengameart.org/content/8-wet-squish-slurp-impacts",
-      "Independent.nu (Johannes Pinter), archived by qubodup"
-    ],
-    "Clicks": [
-      "https://opengameart.org/content/equipment-clicks-iii",
-      "LFA"
+    "foley": [
+      "OwlishMedia / owlstorm",
+      "https://opengameart.org/node/86682"
     ]
   },
-  "edits": "Mono 48kHz PCM16; silence trimming; DC removal; resampling/playback-rate edits; layers; peak balancing; 5ms anti-click fades. No generated audio.",
+  "edits": "Recorded/premade effects only. Mono 48k PCM16 conversion, selected excerpts, quiet-edge trimming, DC removal, gain and 2ms edge fades. No synthesis, generative audio, pitch shifts, time stretching or layering. Freesound files use public high-quality MP3 previews.",
   "files": [
     {
-      "filename": "item_revolver_fire.wav",
-      "duration": 1.35,
-      "peak_dbfs": -2.2750270437741618,
-      "rms_dbfs": -32.217027837696314,
-      "layers": [
-        {
-          "source": "Firearms",
-          "file": "Firearms\\Prepared SFX Library\\Smith & Wesson 642\\V_27P.wav",
-          "source_sha256": "dc9a11f7e6544139f38cadccf3373fed733f2e000caca1b2328575293838fc58",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_revolver_fire.wav",
+      "source": "revolver",
+      "recording": "542549.mp3",
+      "selection_seconds": [
+        0,
+        0.4527891156462585
+      ],
+      "source_sha256": "cc8770cc6022bb8b01f9bab00838e487d6f2ae5cc80a0844e93503c040dc9907",
+      "output_sha256": "bbacf7e97c1ae280058a8c1a40ded17ae492adfaded2e4c5be76ab3c7158e849",
+      "duration_seconds": 0.3954,
+      "peak": 0.85
     },
     {
-      "filename": "item_shotgun_fire.wav",
-      "duration": 1.8,
-      "peak_dbfs": -0.9999999999999997,
-      "rms_dbfs": -31.020850542434985,
-      "layers": [
-        {
-          "source": "Firearms",
-          "file": "Firearms\\Prepared SFX Library\\Nova\\O_21P.wav",
-          "source_sha256": "5661d0625e4634f19e6e316c13693b80c8e28cd9f716cf9c75c465153ae40815",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_shotgun_fire.wav",
+      "source": "shotgun",
+      "recording": "405504.mp3",
+      "selection_seconds": [
+        0,
+        2.4137414965986395
+      ],
+      "source_sha256": "3277ea2bf79924574e734ea3b0c14c8cc04a8f2bf944c0aa6d449af83b814195",
+      "output_sha256": "710e0287a880ec51383c3852132378caf8a5649febbfcd33e54729e8efd6e125",
+      "duration_seconds": 1.6554,
+      "peak": 0.93
     },
     {
-      "filename": "item_tranq_fire.wav",
-      "duration": 0.45,
-      "peak_dbfs": -8.000000000000002,
-      "rms_dbfs": -32.0776053801327,
-      "layers": [
-        {
-          "source": "Melee",
-          "file": "Melee\\Crossbow Shoot.wav",
-          "source_sha256": "d8c68f970540d73ab6fe2db5309166e6dd911876501a16bb4df43498247e19b2",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1.4,
-          "offset": 0,
-          "gain": 0.42
-        },
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            2.15,
-            2.5
-          ],
-          "playback_rate": 1.4,
-          "offset": 0.02,
-          "gain": 0.5
-        }
-      ]
+      "file": "item_tranq_fire.wav",
+      "source": "foley",
+      "recording": "foley/Water/spray-bottle.wav",
+      "selection_seconds": [
+        1.5,
+        2.16
+      ],
+      "source_sha256": "acd9700d1352e85dc39c63d24b93832672e4f69d79ff6681e761087a47ee692b",
+      "output_sha256": "c2466a26febb72b7c2a1b8bd97f3f7c82f88922292de998aada7035862a44f86",
+      "duration_seconds": 0.5937,
+      "peak": 0.45
     },
     {
-      "filename": "item_revolver_dry.wav",
-      "duration": 0.166,
-      "peak_dbfs": -12.0,
-      "rms_dbfs": -35.035600924024905,
-      "layers": [
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            7.95,
-            8.2
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_revolver_dry.wav",
+      "source": "handling",
+      "recording": "760469.mp3",
+      "selection_seconds": [
+        3.28,
+        3.48
+      ],
+      "source_sha256": "a9c01da5a222045aa7b9057953878c11cb6b20940a9b4a945cc24bcffcb15f58",
+      "output_sha256": "f20b2630c9e3cf572e622809ae73220b090b0019e4c24a0c8db0eeac171fb897",
+      "duration_seconds": 0.2,
+      "peak": 0.32
     },
     {
-      "filename": "item_shotgun_dry.wav",
-      "duration": 0.44097916666666664,
-      "peak_dbfs": -10.0,
-      "rms_dbfs": -29.990978377515948,
-      "layers": [
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            6.35,
-            6.75
-          ],
-          "playback_rate": 0.85,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_shotgun_dry.wav",
+      "source": "handling",
+      "recording": "760469.mp3",
+      "selection_seconds": [
+        18.15,
+        18.32
+      ],
+      "source_sha256": "a9c01da5a222045aa7b9057953878c11cb6b20940a9b4a945cc24bcffcb15f58",
+      "output_sha256": "ab775ee93ac4e0d8d2eed672df2acd30a4a9a0287ea770319f6e7f64e858a28e",
+      "duration_seconds": 0.107,
+      "peak": 0.32
     },
     {
-      "filename": "item_tranq_dry.wav",
-      "duration": 0.2116875,
-      "peak_dbfs": -15.0,
-      "rms_dbfs": -35.24794568481702,
-      "layers": [
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            18,
-            18.3
-          ],
-          "playback_rate": 1.3,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_tranq_dry.wav",
+      "source": "handling",
+      "recording": "760469.mp3",
+      "selection_seconds": [
+        5.36,
+        5.51
+      ],
+      "source_sha256": "a9c01da5a222045aa7b9057953878c11cb6b20940a9b4a945cc24bcffcb15f58",
+      "output_sha256": "bbb21ce742e07d87a851e310fe7f3d902cf71d42669cefe5d5db4dfea0055bb2",
+      "duration_seconds": 0.0725,
+      "peak": 0.32
     },
     {
-      "filename": "item_fireaxe_swing.wav",
-      "duration": 0.65,
-      "peak_dbfs": -7.605550009475369,
-      "rms_dbfs": -24.27573199896042,
-      "layers": [
-        {
-          "source": "Melee",
-          "file": "Melee\\Axe Swing.wav",
-          "source_sha256": "a27039c0778934e71e01b943cba04aa4cb788fd94e5e771b68374326494f38a4",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 0.83,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_reload_revolver.wav",
+      "source": "handling",
+      "recording": "760469.mp3",
+      "selection_seconds": [
+        4.35,
+        4.67
+      ],
+      "source_sha256": "a9c01da5a222045aa7b9057953878c11cb6b20940a9b4a945cc24bcffcb15f58",
+      "output_sha256": "a16188e86cd73351eba828ab943e4e7fb2cfff49a66fa27a0d3058e3c6a63fa0",
+      "duration_seconds": 0.3159,
+      "peak": 0.32
     },
     {
-      "filename": "item_crowbar_swing.wav",
-      "duration": 0.5,
-      "peak_dbfs": -9.0,
-      "rms_dbfs": -24.2396204173224,
-      "layers": [
-        {
-          "source": "Melee",
-          "file": "Melee\\Katana Swing.wav",
-          "source_sha256": "133860f84cb4c311cf273f3a16256a45568d7d4ce468eb081dd17e4e4bfa7487",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1.12,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_revolver_insert.wav",
+      "source": "handling",
+      "recording": "760469.mp3",
+      "selection_seconds": [
+        8.6,
+        9.27
+      ],
+      "source_sha256": "a9c01da5a222045aa7b9057953878c11cb6b20940a9b4a945cc24bcffcb15f58",
+      "output_sha256": "b580ec5d6f5ff6b61582a0b5816d42255a483df064d5e6f55d76d1dde4da7066",
+      "duration_seconds": 0.5195,
+      "peak": 0.32
     },
     {
-      "filename": "item_fireaxe_wood_impact.wav",
-      "duration": 0.364,
-      "peak_dbfs": -7.0608997825680095,
-      "rms_dbfs": -26.62924236983833,
-      "layers": [
-        {
-          "source": "Kenney",
-          "file": "Kenney\\Audio\\impactWood_heavy_001.ogg",
-          "source_sha256": "f1b07a53ac10c615fff9ba470511fdeb722b5902e1a8520759fc20ad6f546015",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 0.86,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_revolver_close.wav",
+      "source": "handling",
+      "recording": "760469.mp3",
+      "selection_seconds": [
+        7.15,
+        7.45
+      ],
+      "source_sha256": "a9c01da5a222045aa7b9057953878c11cb6b20940a9b4a945cc24bcffcb15f58",
+      "output_sha256": "000b255ca5454ab6cb1a8ea09b6363c20997f18ea04fe4773ce8479e47df9f34",
+      "duration_seconds": 0.2036,
+      "peak": 0.32
     },
     {
-      "filename": "item_crowbar_pry.wav",
-      "duration": 0.7798333333333334,
-      "peak_dbfs": -8.000000000000002,
-      "rms_dbfs": -27.022463501925543,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\creak2.ogg",
-          "source_sha256": "8a990afdc03aebb91d528f5385e2f95582dbfa8e2c12c71098ab01be9142294a",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 1
-        },
-        {
-          "source": "Kenney",
-          "file": "Kenney\\Audio\\impactMetal_medium_002.ogg",
-          "source_sha256": "7e89ce2ca0dbda95ea2b78d4b50791cab35c10d20e9f5ccd45dd0b00e99ff548",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0.12,
-          "gain": 0.55
-        }
-      ]
+      "file": "item_revolver_equip.wav",
+      "source": "handling",
+      "recording": "760469.mp3",
+      "selection_seconds": [
+        0.64,
+        1.03
+      ],
+      "source_sha256": "a9c01da5a222045aa7b9057953878c11cb6b20940a9b4a945cc24bcffcb15f58",
+      "output_sha256": "cf8b532c79aedb632f5beca382480f71821bf891771915a77dfc546e0fffdb47",
+      "duration_seconds": 0.39,
+      "peak": 0.32
     },
     {
-      "filename": "item_flashlight_toggle.wav",
-      "duration": 0.23810416666666667,
-      "peak_dbfs": -15.0,
-      "rms_dbfs": -33.39876824995832,
-      "layers": [
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            0.87,
-            1.12
-          ],
-          "playback_rate": 1.05,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_shotgun_equip.wav",
+      "source": "handling",
+      "recording": "760469.mp3",
+      "selection_seconds": [
+        15.8,
+        16.22
+      ],
+      "source_sha256": "a9c01da5a222045aa7b9057953878c11cb6b20940a9b4a945cc24bcffcb15f58",
+      "output_sha256": "d2bc5efdf6f1fa1d61d591b28971951ecbfb5a199a6745c8b63db11b9ee53ec2",
+      "duration_seconds": 0.3711,
+      "peak": 0.32
     },
     {
-      "filename": "item_revival_syringe_use.wav",
-      "duration": 0.21404166666666666,
-      "peak_dbfs": -13.0,
-      "rms_dbfs": -35.45342774268339,
-      "layers": [
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            9.57,
-            9.94
-          ],
-          "playback_rate": 1.13,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_reload_shotgun.wav",
+      "source": "reload",
+      "recording": "shotguncock_0.wav",
+      "selection_seconds": [
+        0,
+        0.23
+      ],
+      "source_sha256": "33e007321ba83301c861aef573f2c40b70bc62f8f24c0164877e6dd123e24371",
+      "output_sha256": "f79c710bf26debe88cfcaef7fa4dd51b53a760fb3ec1932fd7643badb37e0242",
+      "duration_seconds": 0.1882,
+      "peak": 0.4
     },
     {
-      "filename": "item_medkit_use.wav",
-      "duration": 0.7,
-      "peak_dbfs": -11.0,
-      "rms_dbfs": -33.54913311698301,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\handleSmallLeather.ogg",
-          "source_sha256": "ae3cbf695aa0a8b98b5a80a835be5a3ccbd5446a24db2235cd4c3cd6fc92ed96",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 1
-        },
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\cloth1.ogg",
-          "source_sha256": "ddb93a3671233f95da0e0b10367f082f7eb42fa6caaddcf776410aa8833c747d",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0.15,
-          "gain": 0.65
-        }
-      ]
+      "file": "item_shotgun_close.wav",
+      "source": "reload",
+      "recording": "shotguncock_0.wav",
+      "selection_seconds": [
+        0.23,
+        0.474
+      ],
+      "source_sha256": "33e007321ba83301c861aef573f2c40b70bc62f8f24c0164877e6dd123e24371",
+      "output_sha256": "9785dca7cbf27dde0aaa89f4e3ae321afe054a3d755ff6a00f159b9521e027bd",
+      "duration_seconds": 0.2438,
+      "peak": 0.4
     },
     {
-      "filename": "item_adrenaline_use.wav",
-      "duration": 0.3135625,
-      "peak_dbfs": -12.0,
-      "rms_dbfs": -35.00622178112575,
-      "layers": [
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            0.18,
-            0.55
-          ],
-          "playback_rate": 1.18,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_reload_tranq.wav",
+      "source": "reload",
+      "recording": "gunreload1.wav",
+      "selection_seconds": [
+        0.02,
+        0.3
+      ],
+      "source_sha256": "685cac6a184e3cc3ec09a25b6ddb1d6feffd86d469778f339aa423d384035c50",
+      "output_sha256": "f1f63d8ff1e1c6eda97170762152e31178ea0e311f4a0eb5616a37fe8ba248a2",
+      "duration_seconds": 0.2328,
+      "peak": 0.32
     },
     {
-      "filename": "item_reload_revolver.wav",
-      "duration": 0.3830625,
-      "peak_dbfs": -10.0,
-      "rms_dbfs": -28.636497968839972,
-      "layers": [
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            1.43,
-            1.91
-          ],
-          "playback_rate": 0.95,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_shotgun_insert.wav",
+      "source": "reload",
+      "recording": "gunreload1.wav",
+      "selection_seconds": [
+        0.6,
+        1.04
+      ],
+      "source_sha256": "685cac6a184e3cc3ec09a25b6ddb1d6feffd86d469778f339aa423d384035c50",
+      "output_sha256": "193e1dc86730ccd6dfca55591d29a7b4bbc8095acaab6895bd6c70187944793b",
+      "duration_seconds": 0.3585,
+      "peak": 0.32
     },
     {
-      "filename": "item_reload_shotgun.wav",
-      "duration": 0.5013958333333334,
-      "peak_dbfs": -8.000000000000002,
-      "rms_dbfs": -28.63753734236299,
-      "layers": [
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            2.64,
-            3.12
-          ],
-          "playback_rate": 0.84,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_tranq_insert.wav",
+      "source": "reload",
+      "recording": "gunreload1.wav",
+      "selection_seconds": [
+        0.6,
+        0.9
+      ],
+      "source_sha256": "685cac6a184e3cc3ec09a25b6ddb1d6feffd86d469778f339aa423d384035c50",
+      "output_sha256": "b19a696bc5d0d2d00c5c5004394b9b4af3fb5d1c5a287278030b92920118c4c0",
+      "duration_seconds": 0.2185,
+      "peak": 0.32
     },
     {
-      "filename": "item_reload_tranq.wav",
-      "duration": 0.3593125,
-      "peak_dbfs": -12.0,
-      "rms_dbfs": -32.5427889826181,
-      "layers": [
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            3.23,
-            3.63
-          ],
-          "playback_rate": 1.08,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_tranq_close.wav",
+      "source": "reload",
+      "recording": "gunreload1.wav",
+      "selection_seconds": [
+        1.2,
+        1.55
+      ],
+      "source_sha256": "685cac6a184e3cc3ec09a25b6ddb1d6feffd86d469778f339aa423d384035c50",
+      "output_sha256": "93ebade9d7f420b3c3aea981f84fb1b4ecd3b720ed9a4b21c61c894a22fcd7a3",
+      "duration_seconds": 0.35,
+      "peak": 0.32
     },
     {
-      "filename": "item_revolver_insert.wav",
-      "duration": 0.45,
-      "peak_dbfs": -13.0,
-      "rms_dbfs": -38.26392904550189,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\handleCoins.ogg",
-          "source_sha256": "8a91f969e932df709df80ee124d86a51389eed9b67f22e5e716bc2bbf60d8dab",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 0.6
-        },
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            12.12,
-            12.34
-          ],
-          "playback_rate": 1,
-          "offset": 0.04,
-          "gain": 0.55
-        }
-      ]
+      "file": "item_flashlight_equip.wav",
+      "source": "foley",
+      "recording": "foley/Cloth, Rustle/320138__owlstorm__blanket-movement-2.wav",
+      "selection_seconds": [
+        0.1,
+        0.6
+      ],
+      "source_sha256": "797e3917079898e11c8597721d9747cd619fc61a59fb9bfaf0e253b72d68d65b",
+      "output_sha256": "70e5a8ab7624b51679eab42b3f300ffa8a272dedc7115399ce0e00a1dfe91cb9",
+      "duration_seconds": 0.5,
+      "peak": 0.16
     },
     {
-      "filename": "item_shotgun_insert.wav",
-      "duration": 0.51725,
-      "peak_dbfs": -12.0,
-      "rms_dbfs": -40.98909568995837,
-      "layers": [
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            12.53,
-            12.98
-          ],
-          "playback_rate": 0.87,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_revival_syringe_equip.wav",
+      "source": "foley",
+      "recording": "foley/Cloth, Rustle/320142__owlstorm__blanket-movement-4.wav",
+      "selection_seconds": [
+        0.1,
+        0.6
+      ],
+      "source_sha256": "9b3c97b7ada8ee6ba2c05df379e4d89a6f4ba715cc90cdf11d4849f3aa0e05b0",
+      "output_sha256": "0c1189b1e650fe9412359d59db77f728105812409f71087e62e41885629ddae0",
+      "duration_seconds": 0.5,
+      "peak": 0.16
     },
     {
-      "filename": "item_tranq_insert.wav",
-      "duration": 0.4,
-      "peak_dbfs": -14.0,
-      "rms_dbfs": -40.66123260906232,
-      "layers": [
-        {
-          "source": "Melee",
-          "file": "Melee\\Crossbow Place Bolt.wav",
-          "source_sha256": "24b8d06db71d2f3b9acac0e4cf53c0561f2a6f41758da3ac74434f3cb69d0460",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1.65,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_medkit_equip.wav",
+      "source": "foley",
+      "recording": "foley/Cloth, Rustle/320144__owlstorm__blanket-movement-6.wav",
+      "selection_seconds": [
+        0.1,
+        0.6
+      ],
+      "source_sha256": "a082018a475c403f0168521c2bb6a443766f42a6da410a2e8a22cc3047d59ffb",
+      "output_sha256": "2dbd5f0469ff2742c50610e1c4885496ca78dc11827b6d1323f0e57fa53eeb0c",
+      "duration_seconds": 0.5,
+      "peak": 0.16
     },
     {
-      "filename": "item_revolver_close.wav",
-      "duration": 0.26358333333333334,
-      "peak_dbfs": -10.0,
-      "rms_dbfs": -33.184750742524685,
-      "layers": [
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            4.24,
-            4.7
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_adrenaline_equip.wav",
+      "source": "foley",
+      "recording": "foley/Cloth, Rustle/320138__owlstorm__blanket-movement-2.wav",
+      "selection_seconds": [
+        0.1,
+        0.6
+      ],
+      "source_sha256": "797e3917079898e11c8597721d9747cd619fc61a59fb9bfaf0e253b72d68d65b",
+      "output_sha256": "70e5a8ab7624b51679eab42b3f300ffa8a272dedc7115399ce0e00a1dfe91cb9",
+      "duration_seconds": 0.5,
+      "peak": 0.16
     },
     {
-      "filename": "item_shotgun_close.wav",
-      "duration": 0.5543125,
-      "peak_dbfs": -8.000000000000002,
-      "rms_dbfs": -28.883177208456857,
-      "layers": [
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            13.08,
-            13.65
-          ],
-          "playback_rate": 0.87,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_crowbar_equip.wav",
+      "source": "foley",
+      "recording": "foley/Cloth, Rustle/320142__owlstorm__blanket-movement-4.wav",
+      "selection_seconds": [
+        0.1,
+        0.6
+      ],
+      "source_sha256": "9b3c97b7ada8ee6ba2c05df379e4d89a6f4ba715cc90cdf11d4849f3aa0e05b0",
+      "output_sha256": "0c1189b1e650fe9412359d59db77f728105812409f71087e62e41885629ddae0",
+      "duration_seconds": 0.5,
+      "peak": 0.16
     },
     {
-      "filename": "item_tranq_close.wav",
-      "duration": 0.36122916666666666,
-      "peak_dbfs": -12.0,
-      "rms_dbfs": -33.51633303469997,
-      "layers": [
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            16.17,
-            16.65
-          ],
-          "playback_rate": 1.15,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_fireaxe_equip.wav",
+      "source": "foley",
+      "recording": "foley/Cloth, Rustle/320144__owlstorm__blanket-movement-6.wav",
+      "selection_seconds": [
+        0.1,
+        0.6
+      ],
+      "source_sha256": "a082018a475c403f0168521c2bb6a443766f42a6da410a2e8a22cc3047d59ffb",
+      "output_sha256": "2dbd5f0469ff2742c50610e1c4885496ca78dc11827b6d1323f0e57fa53eeb0c",
+      "duration_seconds": 0.5,
+      "peak": 0.16
     },
     {
-      "filename": "item_syringe_inject.wav",
-      "duration": 0.38433333333333336,
-      "peak_dbfs": -17.0,
-      "rms_dbfs": -38.049464992099345,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\cloth4.ogg",
-          "source_sha256": "e7ab9a6c4466dea874196c61f59bf1da05cfe58748f42fadd695d441a154a99b",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 0.3
-        },
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            20.8,
-            21.1
-          ],
-          "playback_rate": 1.5,
-          "offset": 0.05,
-          "gain": 0.3
-        }
-      ]
+      "file": "item_tranq_equip.wav",
+      "source": "foley",
+      "recording": "foley/Cloth, Rustle/320138__owlstorm__blanket-movement-2.wav",
+      "selection_seconds": [
+        0.1,
+        0.6
+      ],
+      "source_sha256": "797e3917079898e11c8597721d9747cd619fc61a59fb9bfaf0e253b72d68d65b",
+      "output_sha256": "70e5a8ab7624b51679eab42b3f300ffa8a272dedc7115399ce0e00a1dfe91cb9",
+      "duration_seconds": 0.5,
+      "peak": 0.16
     },
     {
-      "filename": "item_adrenaline_inject.wav",
-      "duration": 0.3814375,
-      "peak_dbfs": -14.0,
-      "rms_dbfs": -32.36911324805989,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\cloth2.ogg",
-          "source_sha256": "8a7451193c38bc05483aec25dd193e163a15d44cf7fff04ac7912573231b0201",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 0.4
-        },
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            18.5,
-            18.78
-          ],
-          "playback_rate": 1.4,
-          "offset": 0.08,
-          "gain": 0.4
-        }
-      ]
+      "file": "item_fireaxe_swing.wav",
+      "source": "foley",
+      "recording": "foley/Cloth, Rustle/320142__owlstorm__blanket-movement-4.wav",
+      "selection_seconds": [
+        0.2,
+        0.72
+      ],
+      "source_sha256": "9b3c97b7ada8ee6ba2c05df379e4d89a6f4ba715cc90cdf11d4849f3aa0e05b0",
+      "output_sha256": "47b56c6997f7e9b17e75571845ca4718c1853fb0e9c0eac6adecfa504d9a8fde",
+      "duration_seconds": 0.52,
+      "peak": 0.28
     },
     {
-      "filename": "item_medkit_treat.wav",
-      "duration": 0.65,
-      "peak_dbfs": -12.0,
-      "rms_dbfs": -36.21261892989118,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\clothBelt.ogg",
-          "source_sha256": "f29560a2aea95bbfeb643e1e8f56ec2b6f7e32f32ce4e140645a36db81de3253",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 1
-        },
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\cloth3.ogg",
-          "source_sha256": "a48632d17a4f1416541d261a32a31612e01267144c407fa3ecab3ff410f0085b",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0.18,
-          "gain": 1
-        }
-      ]
+      "file": "item_crowbar_swing.wav",
+      "source": "foley",
+      "recording": "foley/Cloth, Rustle/320144__owlstorm__blanket-movement-6.wav",
+      "selection_seconds": [
+        0.05,
+        0.48
+      ],
+      "source_sha256": "a082018a475c403f0168521c2bb6a443766f42a6da410a2e8a22cc3047d59ffb",
+      "output_sha256": "a59193afb1607651153549ce87bad74cef3349cdb21f31019d6af75a0ea07ebf",
+      "duration_seconds": 0.43,
+      "peak": 0.2161
     },
     {
-      "filename": "item_syringe_complete.wav",
-      "duration": 0.2291875,
-      "peak_dbfs": -17.0,
-      "rms_dbfs": -40.8577524027491,
-      "layers": [
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            17.43,
-            17.8
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_fireaxe_wood_impact.wav",
+      "source": "foley",
+      "recording": "foley/Impacts/hit.wav",
+      "selection_seconds": [
+        0,
+        0.3472562358276644
+      ],
+      "source_sha256": "7db1b151be34dd7721eb4eb8efd6f9123e660751e4317256dbc1abfd3abe7500",
+      "output_sha256": "244b2fc9686b800bf543435b79dff067e5bbb5bb3a5aa9411fbec27b91ba3f92",
+      "duration_seconds": 0.2007,
+      "peak": 0.65
     },
     {
-      "filename": "item_medkit_complete.wav",
-      "duration": 0.38433333333333336,
-      "peak_dbfs": -16.0,
-      "rms_dbfs": -36.449512503912985,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\cloth4.ogg",
-          "source_sha256": "e7ab9a6c4466dea874196c61f59bf1da05cfe58748f42fadd695d441a154a99b",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_crowbar_pry.wav",
+      "source": "foley",
+      "recording": "foley/Impacts/scrape2.wav",
+      "selection_seconds": [
+        0,
+        1.0216780045351475
+      ],
+      "source_sha256": "923ab149cb912995bc140370f20c99275c92687a160c767a3d122261cf6a8821",
+      "output_sha256": "d71fb7df348c5f0bbed031dc7c4423ae7f6a3f43a75aac795a2891b1ecd8ebf6",
+      "duration_seconds": 0.5728,
+      "peak": 0.48
     },
     {
-      "filename": "item_adrenaline_complete.wav",
-      "duration": 0.2936666666666667,
-      "peak_dbfs": -15.0,
-      "rms_dbfs": -33.82478362935088,
-      "layers": [
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            21.25,
-            21.65
-          ],
-          "playback_rate": 1.2,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_flashlight_toggle.wav",
+      "source": "foley",
+      "recording": "foley/Technology/mouse-clicks-scrolls.wav",
+      "selection_seconds": [
+        0.52,
+        0.63
+      ],
+      "source_sha256": "dd77764a64af240e57f15a822f48704c961008cced14a531388768c6ba15f6a8",
+      "output_sha256": "faed092ea601a527cfa823a7ea4112f586199e73c32d2746056877e16d521648",
+      "duration_seconds": 0.0742,
+      "peak": 0.25
     },
     {
-      "filename": "item_flashlight_equip.wav",
-      "duration": 0.2401875,
-      "peak_dbfs": -13.0,
-      "rms_dbfs": -37.20052436870132,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\beltHandle1.ogg",
-          "source_sha256": "2ef665bd8b65dbe669f4560be38a6d8f04a162e618b15a49e3e71b58e558aab0",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1.1,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_revival_syringe_use.wav",
+      "source": "foley",
+      "recording": "foley/Misc Foley/pill-bottle.wav",
+      "selection_seconds": [
+        0.42,
+        0.75
+      ],
+      "source_sha256": "ccc2d823aad2b98d1cf113a1b2e8403000d82ba7a2282097502f92afbe686c93",
+      "output_sha256": "0a1ba77efe821963414184b0e98284dfb6fe342667a073361893ed8eacdc9301",
+      "duration_seconds": 0.3248,
+      "peak": 0.24
     },
     {
-      "filename": "item_revival_syringe_equip.wav",
-      "duration": 0.5320833333333334,
-      "peak_dbfs": -13.0,
-      "rms_dbfs": -35.14160998626203,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\cloth1.ogg",
-          "source_sha256": "ddb93a3671233f95da0e0b10367f082f7eb42fa6caaddcf776410aa8833c747d",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1.1,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_adrenaline_use.wav",
+      "source": "foley",
+      "recording": "foley/Misc Foley/pill-bottle.wav",
+      "selection_seconds": [
+        1.62,
+        1.97
+      ],
+      "source_sha256": "ccc2d823aad2b98d1cf113a1b2e8403000d82ba7a2282097502f92afbe686c93",
+      "output_sha256": "49061b8a646692470fc76717454c6b9f9cb0389f60a0841328fbd0f7bf6dd2af",
+      "duration_seconds": 0.35,
+      "peak": 0.24
     },
     {
-      "filename": "item_medkit_equip.wav",
-      "duration": 0.25002083333333336,
-      "peak_dbfs": -13.0,
-      "rms_dbfs": -35.250126833144634,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\handleSmallLeather2.ogg",
-          "source_sha256": "a66f6db5918ad016c28a9f2768f127a7f39b5fa04481e5a3b4e78ebe2a1c282d",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1.1,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_syringe_complete.wav",
+      "source": "foley",
+      "recording": "foley/Misc Foley/pill-bottle.wav",
+      "selection_seconds": [
+        3.68,
+        4.06
+      ],
+      "source_sha256": "ccc2d823aad2b98d1cf113a1b2e8403000d82ba7a2282097502f92afbe686c93",
+      "output_sha256": "34e96dbb167fa99d96726feecf198876fe0ecb9b260647bb830f327c02269eb8",
+      "duration_seconds": 0.3661,
+      "peak": 0.24
     },
     {
-      "filename": "item_adrenaline_equip.wav",
-      "duration": 0.3467708333333333,
-      "peak_dbfs": -13.0,
-      "rms_dbfs": -31.822473683795334,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\cloth2.ogg",
-          "source_sha256": "8a7451193c38bc05483aec25dd193e163a15d44cf7fff04ac7912573231b0201",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1.1,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_adrenaline_complete.wav",
+      "source": "foley",
+      "recording": "foley/Misc Foley/pill-bottle.wav",
+      "selection_seconds": [
+        4.78,
+        5.23
+      ],
+      "source_sha256": "ccc2d823aad2b98d1cf113a1b2e8403000d82ba7a2282097502f92afbe686c93",
+      "output_sha256": "63dc75ec8e3d8cdf9d1f226ffd40b88c5ab652ee586e927734673847ca716544",
+      "duration_seconds": 0.3985,
+      "peak": 0.24
     },
     {
-      "filename": "item_crowbar_equip.wav",
-      "duration": 0.363375,
-      "peak_dbfs": -13.0,
-      "rms_dbfs": -31.994810155814896,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\drawKnife1.ogg",
-          "source_sha256": "276403e72c3b71c47bc24db3083970c23f8e5551ffa78f436f83483c56f3f0bb",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1.1,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_revolver_ammo_pickup.wav",
+      "source": "foley",
+      "recording": "foley/Misc Foley/pill-bottle.wav",
+      "selection_seconds": [
+        5.73,
+        6.25
+      ],
+      "source_sha256": "ccc2d823aad2b98d1cf113a1b2e8403000d82ba7a2282097502f92afbe686c93",
+      "output_sha256": "b1d0a34c54b26594bc3e7c881cf429de606d0a5e798890e75503c92dbc08d0d5",
+      "duration_seconds": 0.5079,
+      "peak": 0.24
     },
     {
-      "filename": "item_fireaxe_equip.wav",
-      "duration": 0.5283541666666667,
-      "peak_dbfs": -13.0,
-      "rms_dbfs": -36.91524149989194,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\clothBelt2.ogg",
-          "source_sha256": "d545b1d9f20e6188140aaf551a96f1e82fe0d15f7ca066fac8b065e1231e0038",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1.1,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_shotgun_shell_pickup.wav",
+      "source": "foley",
+      "recording": "foley/Misc Foley/pill-bottle.wav",
+      "selection_seconds": [
+        9.68,
+        10.06
+      ],
+      "source_sha256": "ccc2d823aad2b98d1cf113a1b2e8403000d82ba7a2282097502f92afbe686c93",
+      "output_sha256": "8624563fa8c3ed2bbe5a02e6a38bcc6f210a2f9e74057c69ecbdfbf95389cee4",
+      "duration_seconds": 0.3492,
+      "peak": 0.24
     },
     {
-      "filename": "item_revolver_equip.wav",
-      "duration": 0.3832291666666667,
-      "peak_dbfs": -13.0,
-      "rms_dbfs": -41.405021820071624,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\beltHandle2.ogg",
-          "source_sha256": "f3b692d5c83263c25bce779805b212dbab515d18a603c695fc6a1e8650cf5366",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1.1,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_tranq_dart_pickup.wav",
+      "source": "foley",
+      "recording": "foley/Misc Foley/pill-bottle.wav",
+      "selection_seconds": [
+        17.07,
+        17.41
+      ],
+      "source_sha256": "ccc2d823aad2b98d1cf113a1b2e8403000d82ba7a2282097502f92afbe686c93",
+      "output_sha256": "9ff40ece88c73a1ba54953edea2b2d202a8373464c905b56a9df67a47a49b021",
+      "duration_seconds": 0.2951,
+      "peak": 0.24
     },
     {
-      "filename": "item_shotgun_equip.wav",
-      "duration": 0.4250625,
-      "peak_dbfs": -13.0,
-      "rms_dbfs": -28.650265922160738,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\dropLeather.ogg",
-          "source_sha256": "097e1d3b74949b0145fda0519d40b7e0773ab82ec4858727f95be830927e1a45",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 0.8,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_medkit_use.wav",
+      "source": "foley",
+      "recording": "foley/Cloth, Rustle/212180__owlstorm__bag-zipper.wav",
+      "selection_seconds": [
+        1.72,
+        2.36
+      ],
+      "source_sha256": "d5a18e4610d72aece2c77afc400ee70d48f42820acde2008ca375f0d3c862272",
+      "output_sha256": "e500311ac76aaecd6bddadcd908f0fa48d573766458a53f8e3614f5586649291",
+      "duration_seconds": 0.5741,
+      "peak": 0.3
     },
     {
-      "filename": "item_tranq_equip.wav",
-      "duration": 0.3025833333333333,
-      "peak_dbfs": -13.0,
-      "rms_dbfs": -38.000617603586456,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\drawKnife3.ogg",
-          "source_sha256": "a11ae62fb1a628425769d11a9de394980ad8909c31f4c9a4316f226963e21caf",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1.1,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_medkit_treat.wav",
+      "source": "foley",
+      "recording": "foley/Paper/tissue-pull.wav",
+      "selection_seconds": [
+        0.57,
+        1.84
+      ],
+      "source_sha256": "d60247a46af9e59b885da9e49d60b8f3dcb91f394093e860e3d2b3ce7ade677b",
+      "output_sha256": "40c9dcbb684edc4ea114fef0c3590d9cb7d455f48e90fc4a4d2420d318b2ee66",
+      "duration_seconds": 1.2368,
+      "peak": 0.24
     },
     {
-      "filename": "item_revolver_ammo_pickup.wav",
-      "duration": 0.32245833333333335,
-      "peak_dbfs": -13.0,
-      "rms_dbfs": -35.04817966619055,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\handleCoins2.ogg",
-          "source_sha256": "4b857968d64f9ac9336a10ffac6694d7547e1f01566ad6857b30bc8db3ee6c32",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 1
-        }
-      ]
+      "file": "item_medkit_complete.wav",
+      "source": "foley",
+      "recording": "foley/Cloth, Rustle/212180__owlstorm__bag-zipper.wav",
+      "selection_seconds": [
+        5.4,
+        5.9
+      ],
+      "source_sha256": "d5a18e4610d72aece2c77afc400ee70d48f42820acde2008ca375f0d3c862272",
+      "output_sha256": "0090b94971fb79c539316ef1cd0c675857e87b3f7a0424fc3bab647d875c8924",
+      "duration_seconds": 0.4914,
+      "peak": 0.26
     },
     {
-      "filename": "item_shotgun_shell_pickup.wav",
-      "duration": 0.5,
-      "peak_dbfs": -14.0,
-      "rms_dbfs": -34.50274472006376,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\cloth1.ogg",
-          "source_sha256": "ddb93a3671233f95da0e0b10367f082f7eb42fa6caaddcf776410aa8833c747d",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 0.5
-        },
-        {
-          "source": "Kenney",
-          "file": "Kenney\\Audio\\impactTin_medium_001.ogg",
-          "source_sha256": "84253095543c094d83cd749f42ecfbc96e356b60385f18a192c18eafb25b3cc6",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0.04,
-          "gain": 0.4
-        }
-      ]
+      "file": "item_syringe_inject.wav",
+      "source": "foley",
+      "recording": "foley/Technology/plugpull.wav",
+      "selection_seconds": [
+        0,
+        0.41498866213151925
+      ],
+      "source_sha256": "fa980264466ad8f7a7acf271104340a9f90d93a5c3559d93902c82bfdaf9b63c",
+      "output_sha256": "98435397777fe734976cdfc990ab3c72209d59aba6fc4fd0ae38c475d14201c8",
+      "duration_seconds": 0.1985,
+      "peak": 0.18
     },
     {
-      "filename": "item_tranq_dart_pickup.wav",
-      "duration": 0.46108333333333335,
-      "peak_dbfs": -15.0,
-      "rms_dbfs": -33.7232085834153,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\cloth2.ogg",
-          "source_sha256": "8a7451193c38bc05483aec25dd193e163a15d44cf7fff04ac7912573231b0201",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 0.5
-        },
-        {
-          "source": "Kenney",
-          "file": "Kenney\\Audio\\impactGlass_medium_002.ogg",
-          "source_sha256": "48616f22c95589ed9fe55babf0fd012721d7b2ef1b9e85c2ad6408a2cd7c164f",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0.03,
-          "gain": 0.15
-        }
-      ]
+      "file": "item_adrenaline_inject.wav",
+      "source": "foley",
+      "recording": "foley/Water/spray-bottle.wav",
+      "selection_seconds": [
+        0.62,
+        0.91
+      ],
+      "source_sha256": "acd9700d1352e85dc39c63d24b93832672e4f69d79ff6681e761087a47ee692b",
+      "output_sha256": "2d690e1365281de07aed053a921609701a5b6971ad77d4683318e727532ac50f",
+      "duration_seconds": 0.2551,
+      "peak": 0.16
     },
     {
-      "filename": "monster_hit_1.wav",
-      "duration": 0.85,
-      "peak_dbfs": -7.000000000000001,
-      "rms_dbfs": -23.46396856902759,
-      "layers": [
-        {
-          "source": "Wet",
-          "file": "Wet\\impsplat\\impactsplat01.mp3.flac",
-          "source_sha256": "6aee77f43f194cb4ec58058644d8a9f7ec3825b4d1bf95db9efacf5a8897c449",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 1
-        },
-        {
-          "source": "Kenney",
-          "file": "Kenney\\Audio\\impactPunch_heavy_000.ogg",
-          "source_sha256": "b33a8f14068aec24ec69ba85e5e87fdc41228975f6a1a3e44a6e7d6fc3d9f8d8",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 0.65
-        }
-      ]
+      "file": "monster_hit_1.wav",
+      "source": "foley",
+      "recording": "foley/Impacts/fruit1.wav",
+      "selection_seconds": [
+        0,
+        0.4295691609977324
+      ],
+      "source_sha256": "f48f9caf344bbfc58415f7255b0f1f99d6ec789352592ae9be9aa0797e9b1e5b",
+      "output_sha256": "a07031783abf927e186763ba20bf26fe62aed95000970155ac05cc74822ef8dc",
+      "duration_seconds": 0.2991,
+      "peak": 0.58
     },
     {
-      "filename": "monster_hit_2.wav",
-      "duration": 0.85,
-      "peak_dbfs": -7.0,
-      "rms_dbfs": -23.22570726520524,
-      "layers": [
-        {
-          "source": "Wet",
-          "file": "Wet\\impsplat\\impactsplat02.mp3.flac",
-          "source_sha256": "164aea403082be4179208644dcd2f77d115c26f4e666c5911ba1e6fd89b0c925",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 1
-        },
-        {
-          "source": "Kenney",
-          "file": "Kenney\\Audio\\impactPunch_heavy_001.ogg",
-          "source_sha256": "f92f5cb6ba4ff2766497292ffd90865654317eeca976f5652e0708dbdcdc0dd9",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 0.65
-        }
-      ]
+      "file": "monster_hit_2.wav",
+      "source": "foley",
+      "recording": "foley/Impacts/fruit2.wav",
+      "selection_seconds": [
+        0,
+        0.40448979591836737
+      ],
+      "source_sha256": "78a11d5c51ac87835b3d4ac05175a3024d57403af79a555960065f32443a5ef8",
+      "output_sha256": "79ae9dd052d9d31186cb8d5968fa611009315f2545cc36576521e0d8999fe619",
+      "duration_seconds": 0.2819,
+      "peak": 0.58
     },
     {
-      "filename": "monster_hit_3.wav",
-      "duration": 0.74,
-      "peak_dbfs": -7.0,
-      "rms_dbfs": -22.215793903496902,
-      "layers": [
-        {
-          "source": "Wet",
-          "file": "Wet\\impsplat\\impactsplat03.mp3.flac",
-          "source_sha256": "036e610ddbf8767232b3bf084e134dd2d162d913fd3d0880305acbfd9df2ba8e",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 1
-        },
-        {
-          "source": "Kenney",
-          "file": "Kenney\\Audio\\impactPunch_heavy_002.ogg",
-          "source_sha256": "7993dd4c156b9979ad69f17be5ebe31850b16039a3857f8477141be54dfee1b3",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 0.65
-        }
-      ]
+      "file": "monster_hit_3.wav",
+      "source": "foley",
+      "recording": "foley/Impacts/fruit3.wav",
+      "selection_seconds": [
+        0,
+        0.4179591836734694
+      ],
+      "source_sha256": "323f252f328b61b3361f5f51cf4f8c07bc59a0bab0060457a48b45556f8fb4ca",
+      "output_sha256": "de2efee8585c1a38b2414fbd48fa3c9d970ef9576e0148d48f68bfbc224fc74e",
+      "duration_seconds": 0.2727,
+      "peak": 0.58
     },
     {
-      "filename": "monster_death_burst.wav",
-      "duration": 0.98575,
-      "peak_dbfs": -2.0,
-      "rms_dbfs": -17.44035748390466,
-      "layers": [
-        {
-          "source": "Wet",
-          "file": "Wet\\impsplat\\impactsplat04.mp3.flac",
-          "source_sha256": "7b97739eb84703bf9158e909c9edb33731ba9cde7b96a3a21304a67ffbebf6e7",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 0.72,
-          "offset": 0,
-          "gain": 1
-        },
-        {
-          "source": "Wet",
-          "file": "Wet\\impsplat\\impactsplat07.mp3.flac",
-          "source_sha256": "adae57b90523d754a7b0221876d1c3e4c7b90d5ded732af4895c5b8d0489b640",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 0.82,
-          "offset": 0.15,
-          "gain": 1
-        },
-        {
-          "source": "Kenney",
-          "file": "Kenney\\Audio\\impactPunch_heavy_003.ogg",
-          "source_sha256": "4ab53b26f4ea575120dcc1348526c9e0db2afc6af7a442aa0489bdead2ca80b6",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 0.65,
-          "offset": 0,
-          "gain": 0.8
-        }
-      ]
+      "file": "monster_death_burst.wav",
+      "source": "foley",
+      "recording": "foley/Impacts/shouldergrab.wav",
+      "selection_seconds": [
+        0,
+        4.366375
+      ],
+      "source_sha256": "13fa57a5d81879458297ba2c45365931ba94e60a6126976dc1eed81abddabc63",
+      "output_sha256": "1fe01f227ed408183983adaf4c8c28309d93f396e7be0092f4e15fdd02383d79",
+      "duration_seconds": 0.1873,
+      "peak": 0.7
     },
     {
-      "filename": "monster_dart_contact.wav",
-      "duration": 0.3,
-      "peak_dbfs": -14.0,
-      "rms_dbfs": -31.932654596917224,
-      "layers": [
-        {
-          "source": "RPG",
-          "file": "RPG\\Audio\\cloth1.ogg",
-          "source_sha256": "ddb93a3671233f95da0e0b10367f082f7eb42fa6caaddcf776410aa8833c747d",
-          "range_seconds": [
-            null,
-            null
-          ],
-          "playback_rate": 1,
-          "offset": 0,
-          "gain": 0.4
-        },
-        {
-          "source": "Clicks",
-          "file": "equipment_clicks3.wav",
-          "source_sha256": "1cd2612f226886a7c0badbe26e9732e097a448e97cbea72a3e3cd2c8aa91ace8",
-          "range_seconds": [
-            18,
-            18.3
-          ],
-          "playback_rate": 1.5,
-          "offset": 0,
-          "gain": 0.3
-        }
-      ]
+      "file": "monster_dart_contact.wav",
+      "source": "foley",
+      "recording": "foley/Impacts/tap.wav",
+      "selection_seconds": [
+        0,
+        0.9520181405895691
+      ],
+      "source_sha256": "0802bdebc98e4c596bf0c1654e56f2f66d4d876b9123769525fcec7ff8b241cf",
+      "output_sha256": "b0dc08fa10992e05acfe144a01b24019d50b66078ff8eaeb4fca1103238eea1e",
+      "duration_seconds": 0.1658,
+      "peak": 0.2
+    },
+    {
+      "file": "item_reload_single_round.wav",
+      "source": "handling",
+      "recording": "760469.mp3",
+      "selection_seconds": [
+        8.6,
+        9.27
+      ],
+      "source_sha256": "a9c01da5a222045aa7b9057953878c11cb6b20940a9b4a945cc24bcffcb15f58",
+      "output_sha256": "b580ec5d6f5ff6b61582a0b5816d42255a483df064d5e6f55d76d1dde4da7066",
+      "duration_seconds": 0.5195,
+      "peak": 0.32
     }
   ]
 }

@@ -7,6 +7,27 @@ namespace TheSancturary.FusionPrototype.Tests
 {
     public sealed class ItemCombatTests
     {
+        [TestCase("RevolverAmmo")]
+        [TestCase("ShotgunShell")]
+        [TestCase("TranqDart")]
+        public void AmmunitionOffersForgivingPickupAndConsistentDropBounds(string name)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/Inventory/Prefabs/World" + name + ".prefab");
+            var box = prefab.GetComponent<BoxCollider>();
+            Assert.That(box, Is.Not.Null);
+            Assert.That(box.isTrigger, Is.False, "Both local targeting and authority raycast solid colliders.");
+            Assert.That(box.size.x, Is.GreaterThanOrEqualTo(.18f));
+            Assert.That(box.size.y, Is.GreaterThanOrEqualTo(.10f));
+            Assert.That(box.size.z, Is.GreaterThanOrEqualTo(.18f));
+            var physics = prefab.GetComponent<WorldItemPhysics>();
+            Assert.That(physics.LocalBounds.size, Is.EqualTo(box.size));
+            Assert.That(physics.PhysicalColliders, Does.Contain(box));
+            var item = new SerializedObject(prefab.GetComponent<WorldInventoryItem>());
+            Assert.That(item.FindProperty("pickupColliders").GetArrayElementAtIndex(0).objectReferenceValue,
+                Is.EqualTo(box));
+        }
+
         [Test]
         public void AuthoredBalanceUsesActualCylinderAndThreeHenryHits()
         {

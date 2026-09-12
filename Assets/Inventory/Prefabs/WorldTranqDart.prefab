@@ -316,7 +316,7 @@ GameObject:
   - component: {fileID: 2331761116169821053}
   - component: {fileID: 8097048107229632031}
   - component: {fileID: 2506851565836324742}
-  - component: {fileID: 538320340672730695}
+  - component: {fileID: 2663743812210293657}
   m_Layer: 9
   m_Name: WorldTranqDart
   m_TagString: Untagged
@@ -460,9 +460,9 @@ MonoBehaviour:
   networkObject: {fileID: 8827894910281459329}
   body: {fileID: 2331761116169821053}
   physicalColliders:
-  - {fileID: 538320340672730695}
+  - {fileID: 2663743812210293657}
   localBoundsCenter: {x: 0, y: 0.016, z: 0}
-  localBoundsSize: {x: 0.019312501, y: 0.022000004, z: 0.1355}
+  localBoundsSize: {x: 0.18, y: 0.1, z: 0.18}
   stationarySceneSupply: 0
 --- !u!114 &2506851565836324742
 MonoBehaviour:
@@ -481,15 +481,15 @@ MonoBehaviour:
   visualRoot: {fileID: 3937606558296048101}
   labelTransform: {fileID: 0}
   pickupColliders:
-  - {fileID: 538320340672730695}
+  - {fileID: 2663743812210293657}
   worldItemPhysics: {fileID: 8097048107229632031}
   _IsCollected:
     RawValue: 0
   _LoadedAmmunition: 0
   _DropPosePrepared:
     RawValue: 0
---- !u!64 &538320340672730695
-MeshCollider:
+--- !u!65 &2663743812210293657
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -506,10 +506,9 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 4300000, guid: 28d35a2a0f664f04d965d0b82327338f, type: 2}
+  serializedVersion: 3
+  m_Size: {x: 0.18, y: 0.1, z: 0.18}
+  m_Center: {x: 0, y: 0.016, z: 0}
 --- !u!1 &3422062260396497710
 GameObject:
   m_ObjectHideFlags: 0

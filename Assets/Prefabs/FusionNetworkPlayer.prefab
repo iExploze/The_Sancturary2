@@ -629,7 +629,6 @@ MonoBehaviour:
   ownerFirstPersonAnchor: {fileID: 5658212836864350396}
   thirdPersonAnchor: {fileID: 5663497845637678998}
   equipmentRig: {fileID: 8508785990334962809}
-  firstPersonArmsPrefab: {fileID: 1884131543023118692, guid: 4b97b47fe43842047804eae1ba55affb, type: 3}
   ownerAudioSource: {fileID: 7593962408230321345}
   spatialAudioSource: {fileID: 3678016109987678052}
   flashlightItemId: flashlight

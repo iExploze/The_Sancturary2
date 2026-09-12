@@ -40,6 +40,36 @@ namespace TheSancturary.FusionPrototype.Tests
         }
 
         [UnityTest]
+        public IEnumerator HitRecoilsAndDeathCollapsesWithoutMovingNetworkRoot()
+        {
+            foreach (bool henry in new[] { false, true })
+            {
+                var monster = SpawnMonster(henry);
+                yield return null;
+                var visual = monster.GetComponentInChildren<Animator>(true).transform;
+                Quaternion resting = visual.localRotation;
+                Assert.That(Contact(monster, Definition("old_revolver")), Is.True);
+                yield return new WaitForSeconds(.10f);
+                yield return new WaitForEndOfFrame();
+                Assert.That(Quaternion.Angle(resting, visual.localRotation), Is.GreaterThan(.1f),
+                    "Accepted normal contact should visibly recoil after animation evaluation.");
+                Assert.That(Contact(monster, Definition("sawed_off_shotgun")), Is.True);
+                Vector3 rootPosition = monster.transform.position;
+                Quaternion beforeCollapse = visual.localRotation;
+                Assert.That(monster.GetComponentsInChildren<Collider>(true).All(c => !c.enabled), Is.True);
+                yield return new WaitForSeconds(.20f);
+                yield return new WaitForEndOfFrame();
+                Assert.That(monster != null && monster.Object.IsValid, Is.True);
+                Assert.That(monster.GetComponentsInChildren<Renderer>(true).Any(r => r.enabled), Is.True,
+                    "Body must remain visible during the collapse.");
+                Assert.That(Quaternion.Angle(beforeCollapse, visual.localRotation), Is.GreaterThan(2f));
+                Assert.That(Vector3.Distance(rootPosition, monster.transform.position), Is.LessThan(.001f));
+                yield return Until(() => monster == null || monster.Object == null || !monster.Object.IsValid,
+                    3, "Collapsed monster did not despawn.");
+            }
+        }
+
+        [UnityTest]
         public IEnumerator SharedReceiverHasExactHitCountsAndOneDeath()
         {
             InventoryItemDefinition revolver = Definition("old_revolver");

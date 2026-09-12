@@ -55,7 +55,7 @@ Controls require a living, non-hidden actor in staging and use the existing auth
 | Small / medium / long test items | 2 each | Existing inventory footprint tests; no use action invented |
 | Cabinet / maintenance / cage key | 1 each | Matched to file cabinet, safe Door C, and labelled bedside storage respectively |
 
-The integrated [item overhaul](ITEM_OVERHAUL.md) adds single-item equipment, derived owner arms, authored handling clips, shared monster health/sleep/death, and spatial item/contact audio. Geo starts at 300 HP and Henry at 75 HP. Existing staging controls reset encounters and replenish supplies. See that handoff for tuning, current validation results, licenses and the full solo/host/client acceptance pass.
+The integrated [item overhaul](ITEM_OVERHAUL.md) adds single-item equipment, item-only owner presentation, authored handling clips, shared monster health/sleep/death, and spatial item/contact audio. Geo starts at 300 HP and Henry at 75 HP. Existing staging controls reset encounters and replenish supplies. See that handoff for tuning, current validation results, licenses and the full solo/host/client acceptance pass.
 
 Functional interaction instances include file-cabinet drawers, bedside drawers, aid-kit door, all four existing door variants in the safe bay, two danger-room doors, four hiding lockers (one safe, three in danger), the existing light switch, three keyed storage/door targets and two tool obstacles. No required test item is hidden behind progression; locks do not gate general movement.
 

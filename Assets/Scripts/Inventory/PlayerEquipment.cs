@@ -17,8 +17,6 @@ namespace TheSancturary.Inventory
         [SerializeField] private Transform ownerFirstPersonAnchor;
         [SerializeField] private Transform thirdPersonAnchor;
         [SerializeField] private PlayerEquipmentRigController equipmentRig;
-        [SerializeField] private FirstPersonArms firstPersonArmsPrefab;
-        private FirstPersonArms _firstPersonArms;
 
         [Header("Action Audio")]
         [SerializeField] private AudioSource ownerAudioSource;
@@ -142,9 +140,6 @@ namespace TheSancturary.Inventory
                     ClearPresentation();
                     return;
                 }
-                if (_firstPersonArms == null && firstPersonArmsPrefab != null && _ownerCamera != null)
-                    _firstPersonArms = Instantiate(firstPersonArmsPrefab, _ownerCamera, false);
-                _firstPersonArms?.Bind(_firstPersonHeldVisual);
                 _firstPersonHeldVisual.SetAim(_ownerCamera, player.ItemUseController != null && player.ItemUseController.IsAiming);
             }
             else
@@ -314,12 +309,6 @@ namespace TheSancturary.Inventory
 
         private void ClearFirstPersonPresentation()
         {
-            if (_firstPersonArms != null)
-            {
-                _firstPersonArms.gameObject.SetActive(false);
-                Destroy(_firstPersonArms.gameObject);
-                _firstPersonArms = null;
-            }
             DestroyHeldVisual(
                 ref _firstPersonHeldObject,
                 ref _firstPersonHeldVisual,
