@@ -677,6 +677,8 @@ namespace TheSancturary.FusionPrototype
             IsInVent = false;
             itemUseController?.CancelAllAuthoritative();
             DisableFlashlightAuthoritative();
+            if (_respawnSettings != null)
+                RespawnTimer = TickTimer.CreateFromSeconds(Runner, _respawnSettings.RespawnDelaySeconds);
             ReleaseCurrentLockerAfterInvalidation();
             return true;
         }
@@ -1303,19 +1305,7 @@ namespace TheSancturary.FusionPrototype
             Health = Mathf.Max(0f, Health - healthToSubtract);
             TimeSinceDamage = 0f;
             if (Health <= 0f)
-            {
-                IsDead = true;
-                IsInVent = false;
-                itemUseController?.CancelAllAuthoritative();
-                DisableFlashlightAuthoritative();
-                if (_respawnSettings != null)
-                {
-                    RespawnTimer = TickTimer.CreateFromSeconds(
-                        Runner,
-                        _respawnSettings.RespawnDelaySeconds);
-                }
-                ReleaseCurrentLockerAfterInvalidation();
-            }
+                KillInstantlyAuthoritative();
         }
 
         private bool TryRespawnAuthoritative()
@@ -1360,12 +1350,13 @@ namespace TheSancturary.FusionPrototype
                 return;
 
             NetworkBehaviourId lockerId = CurrentLocker;
-            CurrentLocker = default;
             if (Runner.TryFindBehaviour(lockerId, out NetworkBehaviour behaviour) &&
                 behaviour is LockerController locker)
             {
                 locker.ReleaseInvalidOccupantAuthoritative(this);
             }
+            CurrentLocker = default;
+            IsHiddenInLocker = false;
         }
 
         public void BeginLocalDeathSequence(VideoClip jumpscareClip)
