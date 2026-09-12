@@ -17,6 +17,8 @@ namespace TheSancturary.Inventory
         [SerializeField] private Collider[] physicalColliders;
         [SerializeField] private Vector3 localBoundsCenter;
         [SerializeField] private Vector3 localBoundsSize = Vector3.one * 0.1f;
+        [SerializeField, Tooltip("Keep an authored testing supply on its tray. Dynamically dropped copies retain normal physics.")]
+        private bool stationarySceneSupply;
 
         private bool _dropPoseStaged;
         private bool _dropPoseActivated;
@@ -52,6 +54,7 @@ namespace TheSancturary.Inventory
                             networkObject != null &&
                             networkObject.IsValid &&
                             networkObject.HasStateAuthority &&
+                            !(stationarySceneSupply && networkObject.NetworkTypeId.IsSceneObject) &&
                             (networkObject.NetworkTypeId.IsSceneObject ||
                              _dropPoseActivated);
 
@@ -67,6 +70,23 @@ namespace TheSancturary.Inventory
             body.isKinematic = false;
             body.useGravity = true;
             body.WakeUp();
+        }
+
+        public void ResetSandboxPose(Pose pose)
+        {
+            ResolveReferences();
+            NetworkTransform networkTransform = GetComponent<NetworkTransform>();
+            if (networkObject == null || !networkObject.IsValid || !networkObject.HasStateAuthority ||
+                !TheSancturary.FusionPrototype.SandboxSession.IsActiveFor(networkTransform)) return;
+            StopMotion();
+            if (body != null)
+            {
+                body.isKinematic = true;
+                body.position = pose.position;
+                body.rotation = pose.rotation;
+            }
+            transform.SetPositionAndRotation(pose.position, pose.rotation);
+            networkTransform.Teleport(pose.position, pose.rotation);
         }
 
         /// <summary>

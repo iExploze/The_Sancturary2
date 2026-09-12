@@ -106,6 +106,11 @@ namespace TheSancturary.Monsters
         public Transform CurrentTarget =>
             TryResolvePlayer(TargetPlayer, out FusionNetworkPlayer player) ? player.transform : null;
 
+        public void ConfigureSandboxPatrol(Transform[] points)
+        {
+            if (SandboxSession.IsActiveFor(this) && HasStateAuthority) patrolWaypoints = points;
+        }
+
         private void Awake()
         {
             ResolveReferences();
@@ -263,7 +268,7 @@ namespace TheSancturary.Monsters
                     HasChaseLineOfSight(target))
                 {
                     PlayerRef victim = TargetPlayer;
-                    target.TakeDamage(attackDamage);
+                    target.TakeMonsterDamage(attackDamage);
                     if (target.IsDeadOrPending)
                     {
                         LethalAttack = true;
@@ -297,7 +302,7 @@ namespace TheSancturary.Monsters
             foreach (PlayerRef playerRef in Runner.ActivePlayers)
             {
                 bool valid = TryResolvePlayer(playerRef, out FusionNetworkPlayer candidate);
-                bool alive = valid && !candidate.IsDeadOrPending;
+                bool alive = valid && !candidate.IsDeadOrPending && !SandboxSession.IsProtected(candidate);
                 bool hidden = valid && candidate.IsHiddenInLocker;
                 float distance = valid ? HorizontalDistance(transform.position, candidate.transform.position) : -1f;
                 bool inRange = valid && distance <= detectionDistance;
@@ -386,7 +391,7 @@ namespace TheSancturary.Monsters
             bool valid = TryResolvePlayer(playerRef, out player);
             return HenryMonsterRules.CanMaintainChase(
                 valid,
-                valid && !player.IsDeadOrPending,
+                valid && !player.IsDeadOrPending && !SandboxSession.IsProtected(player),
                 valid && player.IsHiddenInLocker);
         }
 
@@ -506,7 +511,7 @@ namespace TheSancturary.Monsters
             }
 
             float speed = CurrentState == HenryMonsterState.Chase ? chaseSpeed : patrolSpeed;
-            transform.position += Vector3.ClampMagnitude(velocity, speed) * Runner.DeltaTime;
+            transform.position = SandboxSession.ConstrainMonsterStep(this, transform.position, transform.position + Vector3.ClampMagnitude(velocity, speed) * Runner.DeltaTime, _agent.radius);
             _agent.nextPosition = transform.position;
             transform.rotation = Quaternion.RotateTowards(
                 transform.rotation,

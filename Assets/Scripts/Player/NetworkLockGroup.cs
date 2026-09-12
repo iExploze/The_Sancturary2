@@ -23,6 +23,11 @@ namespace TheSancturary.FusionPrototype
         public string RequiredKeyDisplayName => requiredKeyDisplayName;
         public bool ConsumeKeyOnUnlock => consumeKeyOnUnlock;
 
+        public void ResetSandboxLock()
+        {
+            if (HasStateAuthority && SandboxSession.IsActiveFor(this)) IsUnlocked = !needsKey;
+        }
+
         public override void Spawned()
         {
             if (HasStateAuthority && !needsKey)

@@ -116,6 +116,11 @@ namespace TheSancturary.Monsters
             }
         }
 
+        public void ConfigureSandboxPatrol(Transform[] points)
+        {
+            if (SandboxSession.IsActiveFor(this) && HasStateAuthority) patrolWaypoints = points;
+        }
+
         private void Awake()
         {
             ResolveReferences();
@@ -289,7 +294,7 @@ namespace TheSancturary.Monsters
             {
                 DamageApplied = true;
                 PlayerRef victim = TargetPlayer;
-                target.TakeDamage(attackDamage);
+                target.TakeMonsterDamage(attackDamage);
                 if (target.IsDeadOrPending)
                 {
                     LethalAttack = true;
@@ -493,7 +498,7 @@ namespace TheSancturary.Monsters
         {
             if (!TryResolvePlayer(playerRef, out player))
                 return false;
-            return !player.IsDeadOrPending;
+            return !player.IsDeadOrPending && !SandboxSession.IsProtected(player);
         }
 
         private bool TryResolvePlayer(PlayerRef playerRef, out FusionNetworkPlayer player)
@@ -760,7 +765,7 @@ namespace TheSancturary.Monsters
                     ? chaseSpeed
                     : patrolSpeed;
             Vector3 movement = Vector3.ClampMagnitude(velocity, configuredSpeed) * Runner.DeltaTime;
-            transform.position += movement;
+            transform.position = SandboxSession.ConstrainMonsterStep(this, transform.position, transform.position + movement, _agent.radius);
             _agent.nextPosition = transform.position;
 
             Quaternion targetRotation = Quaternion.LookRotation(velocity);
