@@ -97,15 +97,6 @@ Build complete vertical slices instead of isolated speculative systems. Prefer f
 
 Codex may create temporary Editor scripts, setup tools, generators, or migration commands when they make a task reliable and repeatable. Mark task-specific tools as temporary, use them, verify their output, and remove the tool and its matching `.meta` file before handoff. Keep a tool permanently only when it supports an ongoing workflow and Ian explicitly approves it.
 
-## BlenderMCP and art source
-
-- Keep accepted production `.blend` sources under `ArtSource/Blender/`, outside `Assets/`; use explicit FBX exports into existing Unity feature/art locations. Never export automatically on save.
-- The external BlenderWithMCPtest sandbox is scratch space. After promotion, the repository source is authoritative; do not migrate experimental maps or sandbox contents wholesale.
-- Keep machine-specific MCP configuration out of Git. Codex orchestrates BlenderMCP and UnityMCP independently through the filesystem/FBX handoff.
-- BlenderMCP may inspect Vlad-owned assets, but must not substantially redesign or overwrite his work without explicit instruction. Preserve the existing ownership rules.
-- Use UnityMCP for Unity import, serialization, and prefab/scene integration; keep normal C# edits as direct filesystem edits. Carefully review binary and `.meta` changes and preserve GUIDs.
-- Follow `BLENDER_UNITY_PIPELINE.md` for source validation, scale, export, and review conventions.
-
 ## When Unity validation is required
 
 Launch Unity, use MCP, or run batch mode when at least one of these applies:
