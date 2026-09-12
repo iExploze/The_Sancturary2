@@ -23,7 +23,7 @@ Blender owns the editable structure; Unity owns gameplay, collision, navigation 
 
 The 40 × 30 m envelope, central divider, west/east test regions and south/east sightlines evolve the inspected GrayboxPrototype. The southwest is protected staging; its southeast bay is an enclosed flashlight test area. A four-metre entrance leads east into danger. Two northern cross-connections form a loop around solid occluders; the northwest has two door/hiding rooms. Main ceilings are 4 m high, accommodating the actual Geo agent's 3.3 m height (Henry: 0.84 m; both agent radii: 0.38 m). Canonical player standing height/radius: 1.65/0.32 m. The two danger-room door instances are scaled to fit these test clearances; source prefabs are unchanged.
 
-There is no scene asset named mapv01 in the checkout. The newly merged `Sancturary_V01_Hospital.unity` was inspected as the intended v0.1 reference. The sandbox uses its existing URP pipeline and read-only hospital Volume profile, black sky ambient, zero environment reflection, and linear grey fog. Restrained local spots illuminate staging; weaker orientation pools leave dark danger space. The dark bay's existing switch controls a test light, initially off. No auto-exposure mechanism was added.
+There is no scene asset named mapv01 in the checkout. The newly merged `Sancturary_V01_Hospital.unity` was inspected as the intended v0.1 reference. The sandbox uses its existing URP pipeline and read-only hospital Volume profile, black sky ambient, zero environment reflection, and linear grey fog. Seven overlapping neutral-white ceiling lights provide bright indoor equipment-room illumination in staging; weaker orientation pools leave dark danger space. The dark bay's existing switch controls a test light, initially off. No auto-exposure mechanism was added.
 
 ## Controls
 
@@ -119,3 +119,11 @@ The existing untracked Ethan monster `.meta` files are preserved and excluded fr
 6. Have both players request the same pickup and monster spawn nearly simultaneously. Expect one item owner and one active monster. Have the client select/reset/despawn/restock while the host observes. Drop items, consume medicine/ammo, restock repeatedly and confirm no accumulating dynamic pickups or duplicated held equipment.
 7. Join another player after items are collected, a door is opened and a monster is active. Expect current replicated state and a safe spawn. Disconnect an equipment owner and restock; repeat with four players if available.
 8. In the dark bay with its switch off, compare flashlight off/on at nearby corners and down the longer view. Judge navigation readability and flashlight response on your monitor. Verify no vent interaction is presented and normal hospital/menu behavior is unchanged.
+
+## Equipment-room lighting revision
+
+The safe equipment room now uses seven broad neutral-white ceiling spots (intensity 28, range 10 m, 145-degree outer cone), redistributed across the weapons, utilities, medical, tools and control stations. This replaces the five narrow, dim pools. Soft shadows preserve item shape and table contrast. The dark-bay light, danger lights, shared Volume and global rendering settings are unchanged.
+
+Validated in Unity 6000.3.15f1 with one-player Play Mode and actual screenshots: all 60 runtime world/key pickups had an unobstructed staging-light path within the useful light cone/range, ignoring their own colliders. Equipment overview and weapon-table views were visually inspected; Console check returned no errors or warnings. This lighting-only revision did not rerun the Windows build or host/client test. Screenshot: `Library/CodexSandbox/staging-brighter-play.png`.
+
+Manual check: open SandboxPrototype, Play with the flashlight off, and walk each equipment aisle. Expect readable items and surfaces without blown-out white tables. For multiplayer, launch SandboxLaunch on host/client and compare the same stations; lights are scene-local presentation and add no replicated state. Check the enclosed dark bay separately with its switch off.
