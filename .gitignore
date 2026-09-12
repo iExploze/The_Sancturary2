@@ -46,6 +46,10 @@
 *.blend1
 *.blend1.meta
 
+# Additional numbered Blender backups and simulation caches in production sources.
+/ArtSource/Blender/**/*.blend[0-9]*
+/ArtSource/Blender/**/blendcache_*/
+
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
 /[Mm]emoryCaptures/
