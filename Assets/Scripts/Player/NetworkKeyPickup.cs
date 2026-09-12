@@ -29,6 +29,14 @@ namespace TheSancturary.FusionPrototype
 
         public InteractionTarget PromptTarget => interactionTarget;
         public string ItemId => itemId;
+
+        public void ResetSandboxSupply(bool available, Pose pose)
+        {
+            if (!HasStateAuthority || !SandboxSession.IsActiveFor(this) || !Object.NetworkTypeId.IsSceneObject) return;
+            worldItemPhysics?.ResetSandboxPose(pose);
+            IsCollected = !available;
+            ApplyCollectedState(IsCollected);
+        }
         public string ItemDisplayName => itemDisplayName;
         public bool IsAvailable => _spawned && !IsCollected;
 

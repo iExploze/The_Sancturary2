@@ -79,6 +79,16 @@ namespace TheSancturary.Inventory
             ConfigureInteractionTarget();
         }
 
+        public void ResetSandboxSupply(bool available, Pose pose)
+        {
+            if (!HasStateAuthority || !SandboxSession.IsActiveFor(this) || !Object.NetworkTypeId.IsSceneObject) return;
+            worldItemPhysics?.ResetSandboxPose(pose);
+            IsCollected = !available;
+            LoadedAmmunition = definition != null ? definition.InitialLoadedAmmunition : (byte)0;
+            DropPosePrepared = true;
+            ApplyCollectedState(IsCollected);
+        }
+
         public bool InitializeDroppedStateBeforeSpawn(
             byte loadedAmmunition,
             Vector3 position,

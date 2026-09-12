@@ -44,6 +44,14 @@ namespace TheSancturary.Inventory
         private bool _presentationInitialized;
 
         public string RequiredItemId => requiredItemId;
+
+        public void ResetSandboxTarget()
+        {
+            if (!HasStateAuthority || !TheSancturary.FusionPrototype.SandboxSession.IsActiveFor(this)) return;
+            AcceptedHits = 0;
+            IsCompleted = false;
+            ApplyReplicatedPresentation();
+        }
         public int RequiredHits => Mathf.Clamp(requiredHits, 1, byte.MaxValue);
 
         public override void Spawned()

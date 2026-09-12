@@ -180,6 +180,7 @@ namespace TheSancturary.FusionPrototype
         private float _nextLookYawMismatchWarningTime;
 #endif
         private int _pendingDamage;
+        private int _pendingMonsterDamage;
         private byte _lastAudioEventSequence;
         private float _lastRenderedHealth;
         private float _damagePulse;
@@ -202,7 +203,7 @@ namespace TheSancturary.FusionPrototype
         private ushort _lastPresentedTeleportSequence;
         private LevelRespawnSettings _respawnSettings;
 
-        public bool IsDeadOrPending => IsDead || Health - _pendingDamage <= 0f;
+        public bool IsDeadOrPending => IsDead || Health - _pendingDamage - (SandboxSession.IsProtected(this) ? 0 : _pendingMonsterDamage) <= 0f;
         public bool IsLockerInputLocked => CurrentLocker.IsValid;
         public bool IsLocalPauseInputBlocked => HasInputAuthority && _localPauseInputBlocked;
         public NetworkPlayerInventory Inventory => inventory;
@@ -669,6 +670,7 @@ namespace TheSancturary.FusionPrototype
                 return false;
 
             _pendingDamage = 0;
+            _pendingMonsterDamage = 0;
             Health = 0f;
             TimeSinceDamage = 0f;
             IsDead = true;
@@ -690,6 +692,7 @@ namespace TheSancturary.FusionPrototype
                 return false;
 
             _pendingDamage = transition.PendingDamage;
+            _pendingMonsterDamage = 0;
             Health = transition.Health;
             TimeSinceDamage = transition.TimeSinceDamage;
             return true;
@@ -706,6 +709,7 @@ namespace TheSancturary.FusionPrototype
                 return false;
 
             _pendingDamage = transition.PendingDamage;
+            _pendingMonsterDamage = 0;
             Health = transition.Health;
             Stamina = transition.Stamina;
             IsDead = transition.IsDead;
@@ -1252,6 +1256,11 @@ namespace TheSancturary.FusionPrototype
                     SprintLocked = true;
                 }
 #endif
+                if (_pendingMonsterDamage > 0)
+                {
+                    if (!SandboxSession.IsProtected(this)) TakeDamage(_pendingMonsterDamage);
+                    _pendingMonsterDamage = 0;
+                }
                 if (_pendingDamage > 0)
                 {
                     int damage = _pendingDamage;
@@ -1271,6 +1280,12 @@ namespace TheSancturary.FusionPrototype
 
                 itemUseController?.TickAuthoritative();
             }
+        }
+
+        public void TakeMonsterDamage(int damage)
+        {
+            if (!HasStateAuthority || IsDead || damage <= 0 || SandboxSession.IsProtected(this)) return;
+            _pendingMonsterDamage = (int)System.Math.Min(int.MaxValue, (long)_pendingMonsterDamage + damage);
         }
 
         public void TakeDamage(int healthToSubtract)
@@ -1310,6 +1325,7 @@ namespace TheSancturary.FusionPrototype
                 return false;
 
             _pendingDamage = 0;
+            _pendingMonsterDamage = 0;
             Health = maximumHealth;
             Stamina = maximumStamina;
             IsDead = false;
