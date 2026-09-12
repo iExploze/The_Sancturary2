@@ -1,5 +1,43 @@
 # Hospital sparse prop pass
 
+## Placement correction pass
+
+17 existing props were repositioned in the Blender planning layout first, then the same positions were applied to their existing Unity prefab instances. No props were added or removed. All existing rotations already aligned the intended usable faces correctly, so no rotation changes were necessary.
+
+| Category | Repositioned | Result |
+| --- | --- | --- |
+| Service/storage shelves | 8 | Records (2), Staff Room (1), Service Storage (3), Maintenance (1), Power Room (1); rear mesh clearance approximately 0.05 m |
+| File cabinets | 2 | Administration and Records; approximately 0.05 m from wall, drawers open into room |
+| Medical Bedside | 2 | Patient 01 and 03, alongside the upper/head half of the existing bed; approximately 0.15 m between mesh bounds |
+| Bathroom fixtures | 2 | Toilet and washbasin rear faces approximately 0.05 m from the bathroom wall |
+| Electrical boxes | 3 | Maintenance and Power Room; rear faces approximately 0.05 m from wall |
+| Hiding lockers | 0 | All four already had approximately 0.054 m rear clearance and correct facing; all four were checked and retained |
+
+Bedside positions are now `(-31.1, 0, 4.133)` and `(-31.1, 0, 16.333)`. Their fronts face east into player-accessible space. Beds, chairs, desks, tables, the starting shelf and its four independent flashlights retain their previous placements. Hallway density and the one-interactable-per-normal-room distribution are unchanged. No locks or gameplay changes were introduced.
+
+Blender top views cover admissions, administration, ward and service areas. The saved source retains its architecture geometry/transform fingerprint. In Unity, comparison against the captured live scene baseline identifies exactly 17 changed prefab-instance blocks, containing only position changes. Architecture, lighting, Volume, all 35 baked reflection probes, materials, scripts and gameplay references are unchanged. The existing NavMesh asset was updated in place with its GUID preserved; the existing room exclusions for Geo navigation remain in force.
+
+### Correction validation
+
+- Unity 6000.3.15f1 loaded the intended scene and launched its existing Fusion debug Host/player setup. No project C# changes were needed.
+- Inspected every dressed area from the live player camera; saved 28 room/hall screenshots. Reviewed top views and the changed furniture at eye height.
+- All 61 prop mesh bounds are clear of walls; inspected moved collider bounds. No moved prop bounds overlap another prop. Both bedside units have a measured 0.150 m side gap from the bed. All 30 drawers' mesh bounds clear walls at full extension.
+- All four lockers passed player-requested entry and exit, reaching Occupied and then ClosedFree.
+- Both relocated bedside units and both relocated file cabinets opened through the player interaction flow with `IsLocked=false`.
+- All four starting flashlights were collected independently, with availability decreasing one at a time; a collected flashlight was equipped and lit for the visual review.
+- All 17 existing room doors opened through player requests during traversal preparation.
+- The real player completed a continuous 391.1 m, 64-waypoint traversal in 224.3 seconds, visiting all 28 mapped areas, including every dressed room and major hallway. Movement used a temporary virtual gamepad through existing Fusion input; there was no teleport after the initial route placement. Initial test setup was adjusted to respect rooms deliberately excluded from Geo's NavMesh and to select the gamepad input scheme; the final run completed without a stall.
+- Both bedside drawers were retargeted in their open positions and closed successfully; all four tested storage units ended closed. Opening tests and full-extension bounds checks found no wall/bed obstruction.
+- All ten chase-loop NavMesh segments remained complete and all four Geo locker approach points remained on the NavMesh. No live Geo chase or separate client instance was run.
+- Final scene validation found zero missing scripts and zero broken prefabs. Unity returned to Edit Mode, ready with no pending compilation or import; no project compiler errors were reported. Temporary test code ran in memory and added no project scripts.
+- The existing UI `Selectable.OnEnable` IndexOutOfRangeException recurred at player spawn. It also existed before this pass, originates in inventory UI creation, and was left unchanged because UI/gameplay code is outside this placement task.
+
+Evidence for this correction is in `Library/HospitalAlignment/` and `E:/BlenderWithMCPtest/tmp/alignment-*`. The previous dressing-pass validation below describes the earlier milestone.
+
+### Ian's focused placement check
+
+Open the hospital scene directly and press Play. Collect and equip a flashlight, visit Patient 01 and Patient 03, and inspect the bedside spacing and drawer access from both sides. Check the storage-room shelves, both file cabinets and all four lockers. Walk both loops and the room thresholds for shoulder clearance. In a host/client session, open a relocated drawer and enter a locker from each peer; verify the existing replicated states and exclusive locker occupancy. Client replication and subjective movement feel still need Ian's manual check.
+
 Blender planning file: `E:/BlenderWithMCPtest/assets/Sancturary_v0_1_Hospital_PropLayout.blend`.
 Unity scene: `Assets/Scenes/Sancturary_V01_Hospital.unity` (Unity 6000.3.15f1).
 Placement manifest: `E:/BlenderWithMCPtest/exports/sancturary_v01_hospitalbase/prop_layout.json`.
