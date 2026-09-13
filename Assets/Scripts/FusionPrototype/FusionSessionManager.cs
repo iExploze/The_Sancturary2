@@ -127,6 +127,7 @@ namespace TheSancturary.FusionPrototype
             // the presentation correct for every peer and for late joiners.
             return UnityEngine.Object
                 .FindObjectsByType<FusionLobbyPlayerState>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)
+                .Where(player => player.Object != null && player.Object.IsValid)
                 .OrderBy(player => player.Slot)
                 .ToArray();
         }

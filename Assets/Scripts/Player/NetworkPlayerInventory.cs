@@ -466,6 +466,7 @@ namespace TheSancturary.FusionPrototype
             entry.Rotated = rotated;
             Entries.Set(index, entry);
             Revision++;
+            GetComponent<NetworkItemUseController>()?.CancelActiveUseAuthoritative();
         }
 
         private void ProcessEquipAuthoritative(ushort instanceId)
@@ -475,6 +476,7 @@ namespace TheSancturary.FusionPrototype
                 EquippedInstanceId = 0;
                 FlashlightEnabled = false;
                 Revision++;
+                GetComponent<NetworkItemUseController>()?.EquipmentChangedAuthoritative();
                 return;
             }
 
@@ -489,18 +491,25 @@ namespace TheSancturary.FusionPrototype
             EquippedInstanceId = instanceId;
             FlashlightEnabled = false;
             Revision++;
+            GetComponent<NetworkItemUseController>()?.EquipmentChangedAuthoritative();
         }
 
         private void ProcessReloadAuthoritative(
             ushort sourceInstanceId,
             ushort targetInstanceId)
         {
-            if (sourceInstanceId == 0 ||
+            if (!GetComponent<NetworkItemUseController>().TryBeginReloadAuthoritative(sourceInstanceId, targetInstanceId))
+                SendOwnerRejection(InventoryRequestRejection.InvalidRequest);
+        }
+
+        public bool CommitReloadAuthoritative(ushort sourceInstanceId, ushort targetInstanceId)
+        {
+            if (!HasStateAuthority || !IsInstanceEquippedAuthoritative(targetInstanceId) || sourceInstanceId == 0 ||
                 targetInstanceId == 0 ||
                 sourceInstanceId == targetInstanceId)
             {
                 SendOwnerRejection(InventoryRequestRejection.InvalidRequest);
-                return;
+                return false;
             }
 
             int sourceIndex = FindEntryIndex(sourceInstanceId);
@@ -508,7 +517,7 @@ namespace TheSancturary.FusionPrototype
             if (sourceIndex < 0 || targetIndex < 0)
             {
                 SendOwnerRejection(InventoryRequestRejection.InvalidRequest);
-                return;
+                return false;
             }
 
             NetworkInventoryEntry sourceEntry = Entries.Get(sourceIndex);
@@ -535,7 +544,7 @@ namespace TheSancturary.FusionPrototype
                     out ItemGameplayRules.ReloadTransition transition))
             {
                 SendOwnerRejection(InventoryRequestRejection.InvalidRequest);
-                return;
+                return false;
             }
 
             targetEntry.LoadedAmmunition = transition.LoadedAmmunition;
@@ -548,8 +557,7 @@ namespace TheSancturary.FusionPrototype
             }
 
             Revision++;
-            GetComponent<NetworkItemUseController>()?
-                .PresentReloadAuthoritative(targetInstanceId);
+            return true;
         }
 
         private void ProcessDropAuthoritative(ushort instanceId)

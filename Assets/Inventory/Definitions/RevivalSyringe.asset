@@ -16,6 +16,7 @@ MonoBehaviour:
   itemId: revival_syringe
   category: 2
   temporaryIconLabel: REVIVE
+  thumbnail: {fileID: 21300000, guid: afb44dfedc6bcee4198ec8902feb4820, type: 3}
   width: 2
   height: 1
   canRotate: 1
@@ -28,7 +29,7 @@ MonoBehaviour:
   useKind: 2
   holdStyle: 1
   holdPose: 1
-  useDuration: 1.5
+  useDuration: 2.7
   useCooldown: 0.25
   compatibleAmmoItemId: 
   ammunitionCapacity: 0
@@ -37,3 +38,15 @@ MonoBehaviour:
   dryFireAudioClip: {fileID: 0}
   impactAudioClip: {fileID: 0}
   reloadAudioClip: {fileID: 0}
+  combatSettings: {fileID: 11400000, guid: b06e5980b52a3f7408ec870d13a96611, type: 2}
+  range: 65
+  hipSpreadDegrees: 12
+  adsSpreadDegrees: 0.3
+  reloadDuration: 2.5
+  muzzleOffset: {x: 0.12, y: -0.12, z: 0.5}
+  adsMuzzleOffset: {x: 0, y: -0.02, z: 0.5}
+  equipAudioClip: {fileID: 8300000, guid: e3f7ce871614f394d9f2d8fd3785e0d4, type: 3}
+  pickupAudioClip: {fileID: 0}
+  reloadInsertAudioClip: {fileID: 8300000, guid: 1e44141dedcb2944aada10777f2107d9, type: 3}
+  reloadCloseAudioClip: {fileID: 0}
+  completionAudioClip: {fileID: 8300000, guid: 1239b471e2168cf44967e9004185fa78, type: 3}

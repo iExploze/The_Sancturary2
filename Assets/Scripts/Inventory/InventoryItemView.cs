@@ -62,6 +62,17 @@ namespace TheSancturary.Inventory
                 ? instance.Definition.DisplayName
                 : instance.Definition.TemporaryIconLabel;
             Stretch(_label.rectTransform, 6f);
+            if (instance.Definition.Thumbnail != null)
+            {
+                var iconObject = new GameObject("Item thumbnail", typeof(RectTransform), typeof(Image));
+                iconObject.transform.SetParent(transform, false);
+                var icon = iconObject.GetComponent<Image>();
+                icon.sprite = instance.Definition.Thumbnail;
+                icon.preserveAspect = true;
+                icon.raycastTarget = false;
+                Stretch(icon.rectTransform, 5f);
+                _label.text = string.Empty;
+            }
 
             _equippedIndicator = CreateText("Equipped", transform, font, 11, TextAnchor.LowerRight);
             _equippedIndicator.text = equipped ? "EQUIPPED" : string.Empty;

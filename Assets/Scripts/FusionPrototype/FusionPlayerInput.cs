@@ -11,7 +11,9 @@ namespace TheSancturary.FusionPrototype
         Interact,
         UseEquipped,
         LobbyReady,
-        DebugExhaustion
+        DebugExhaustion,
+        Aim,
+        Reload
     }
 
     public enum InventoryInputCommandType : byte

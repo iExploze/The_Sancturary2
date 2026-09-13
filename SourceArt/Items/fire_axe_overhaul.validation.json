@@ -1,0 +1,387 @@
+{
+  "asset_id": "fire_axe_overhaul",
+  "status": "passed",
+  "validation": "Blender FBX roundtrip only; Unity import and runtime not tested",
+  "blender_version": "4.5.13 LTS",
+  "fbx_sha256": "19950f38ebe88f7a1d3913e156af215dcfc1b68a5f02aa49f6c3b0e19cfa8a71",
+  "checks": [
+    "FBX and texture hashes",
+    "portable texture references",
+    "mesh membership",
+    "world bounds and orientation",
+    "unit scale",
+    "triangle counts",
+    "UV layers",
+    "material assignments"
+  ],
+  "objects": [
+    {
+      "name": "Exposed cutting edge",
+      "dimensions_blender_m": [
+        0.036,
+        0.039657,
+        0.119661
+      ],
+      "bounds_min_blender_m": [
+        -0.018,
+        0.130157,
+        0.470179
+      ],
+      "bounds_max_blender_m": [
+        0.018,
+        0.169814,
+        0.58984
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Head wedge",
+      "dimensions_blender_m": [
+        0.039,
+        0.024,
+        0.024
+      ],
+      "bounds_min_blender_m": [
+        -0.0195,
+        -0.024,
+        0.528
+      ],
+      "bounds_max_blender_m": [
+        0.0195,
+        0.0,
+        0.552
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Hickory handle",
+      "dimensions_blender_m": [
+        0.031,
+        0.06166,
+        0.718996
+      ],
+      "bounds_min_blender_m": [
+        -0.0155,
+        -0.037706,
+        -0.188996
+      ],
+      "bounds_max_blender_m": [
+        0.0155,
+        0.023953,
+        0.53
+      ],
+      "triangles": 184,
+      "uv_layers": 1,
+      "materials": [
+        "Aged_Walnut"
+      ]
+    },
+    {
+      "name": "Red axe head",
+      "dimensions_blender_m": [
+        0.034,
+        0.29899,
+        0.119262
+      ],
+      "bounds_min_blender_m": [
+        -0.017,
+        -0.129176,
+        0.470455
+      ],
+      "bounds_max_blender_m": [
+        0.017,
+        0.169814,
+        0.589717
+      ],
+      "triangles": 128,
+      "uv_layers": 1,
+      "materials": [
+        "Oxide_Red_Paint"
+      ]
+    },
+    {
+      "name": "Rubber handle rib",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.1725
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.1675
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.001",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.160227
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.155227
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.002",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.147955
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.142955
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.003",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.135682
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.130682
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.004",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.123409
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.118409
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.005",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.111136
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.106136
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.006",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.098864
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.093864
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.007",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.086591
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.081591
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.008",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.074318
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.069318
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.009",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.062045
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.057045
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.010",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.049773
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.044773
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    },
+    {
+      "name": "Rubber handle rib.011",
+      "dimensions_blender_m": [
+        0.038,
+        0.038,
+        0.005
+      ],
+      "bounds_min_blender_m": [
+        -0.019,
+        -0.015,
+        -0.0375
+      ],
+      "bounds_max_blender_m": [
+        0.019,
+        0.023,
+        -0.0325
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Rubber"
+      ]
+    }
+  ]
+}

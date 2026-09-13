@@ -50,6 +50,8 @@ namespace TheSancturary.Inventory
         [SerializeField] private string itemId;
         [SerializeField] private InventoryItemCategory category;
         [SerializeField, TextArea(1, 2)] private string temporaryIconLabel;
+        [SerializeField] private Sprite thumbnail;
+        public Sprite Thumbnail => thumbnail;
 
         [Header("Grid")]
         [SerializeField, Min(1)] private int width = 1;
@@ -81,6 +83,33 @@ namespace TheSancturary.Inventory
         [SerializeField] private AudioClip dryFireAudioClip;
         [SerializeField] private AudioClip impactAudioClip;
         [SerializeField] private AudioClip reloadAudioClip;
+
+        [Header("Combat and Handling")]
+        [SerializeField] private ItemCombatSettings combatSettings;
+        [SerializeField, Min(0.1f)] private float range = 65f;
+        [SerializeField, Range(0f, 35f)] private float hipSpreadDegrees = 12f;
+        [SerializeField, Range(0f, 5f)] private float adsSpreadDegrees = 0.3f;
+        [SerializeField, Min(0.1f)] private float reloadDuration = 2.5f;
+        [SerializeField] private Vector3 muzzleOffset = new(0.12f, -0.12f, 0.5f);
+        [SerializeField] private Vector3 adsMuzzleOffset = new(0, -0.02f, 0.5f);
+        [SerializeField] private AudioClip equipAudioClip;
+        [SerializeField] private AudioClip pickupAudioClip;
+        [SerializeField] private AudioClip reloadInsertAudioClip;
+        [SerializeField] private AudioClip reloadCloseAudioClip;
+        [SerializeField] private AudioClip completionAudioClip;
+
+        public ItemCombatSettings CombatSettings => combatSettings;
+        public float Range => Mathf.Max(0.1f, range);
+        public float HipSpreadDegrees => hipSpreadDegrees;
+        public float AdsSpreadDegrees => adsSpreadDegrees;
+        public float ReloadDuration => Mathf.Max(0.1f, reloadDuration);
+        public Vector3 MuzzleOffset => muzzleOffset;
+        public Vector3 AdsMuzzleOffset => adsMuzzleOffset;
+        public AudioClip EquipAudioClip => equipAudioClip;
+        public AudioClip PickupAudioClip => pickupAudioClip;
+        public AudioClip ReloadInsertAudioClip => reloadInsertAudioClip;
+        public AudioClip ReloadCloseAudioClip => reloadCloseAudioClip;
+        public AudioClip CompletionAudioClip => completionAudioClip;
 
         public string DisplayName => displayName;
         public string ItemId => itemId;

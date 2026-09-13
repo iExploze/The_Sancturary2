@@ -1,0 +1,410 @@
+{
+  "asset_id": "sawed_off_overhaul",
+  "status": "passed",
+  "validation": "Blender FBX roundtrip only; Unity import and runtime not tested",
+  "blender_version": "4.5.13 LTS",
+  "fbx_sha256": "84f9fe27025ad2103ff1e8fefc7e91843b84e366590aa00b27a70e09210f8378",
+  "checks": [
+    "FBX and texture hashes",
+    "portable texture references",
+    "mesh membership",
+    "world bounds and orientation",
+    "unit scale",
+    "triangle counts",
+    "UV layers",
+    "material assignments"
+  ],
+  "objects": [
+    {
+      "name": "Breech latch",
+      "dimensions_blender_m": [
+        0.016,
+        0.03,
+        0.006
+      ],
+      "bounds_min_blender_m": [
+        -0.008,
+        -0.04,
+        0.053
+      ],
+      "bounds_max_blender_m": [
+        0.008,
+        -0.01,
+        0.059
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Fastener slot",
+      "dimensions_blender_m": [
+        0.0003,
+        0.005,
+        0.001
+      ],
+      "bounds_min_blender_m": [
+        0.02905,
+        -0.0175,
+        0.0285
+      ],
+      "bounds_max_blender_m": [
+        0.02935,
+        -0.0125,
+        0.0295
+      ],
+      "triangles": 12,
+      "uv_layers": 1,
+      "materials": [
+        "Dark_Iron"
+      ]
+    },
+    {
+      "name": "Fastener slot.001",
+      "dimensions_blender_m": [
+        0.0003,
+        0.005,
+        0.001
+      ],
+      "bounds_min_blender_m": [
+        0.02305,
+        0.0595,
+        -0.0595
+      ],
+      "bounds_max_blender_m": [
+        0.02335,
+        0.0645,
+        -0.0585
+      ],
+      "triangles": 12,
+      "uv_layers": 1,
+      "materials": [
+        "Dark_Iron"
+      ]
+    },
+    {
+      "name": "Front sight blade",
+      "dimensions_blender_m": [
+        0.003,
+        0.008,
+        0.01
+      ],
+      "bounds_min_blender_m": [
+        -0.0015,
+        -0.439,
+        0.059
+      ],
+      "bounds_max_blender_m": [
+        0.0015,
+        -0.431,
+        0.069
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Front sight ramp",
+      "dimensions_blender_m": [
+        0.01,
+        0.022,
+        0.012
+      ],
+      "bounds_min_blender_m": [
+        -0.005,
+        -0.446,
+        0.049
+      ],
+      "bounds_max_blender_m": [
+        0.005,
+        -0.424,
+        0.061
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Hinge pin",
+      "dimensions_blender_m": [
+        0.06,
+        0.016,
+        0.016
+      ],
+      "bounds_min_blender_m": [
+        -0.03,
+        -0.083,
+        0.004
+      ],
+      "bounds_max_blender_m": [
+        0.03,
+        -0.067,
+        0.02
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Rear sight bridge",
+      "dimensions_blender_m": [
+        0.018,
+        0.014,
+        0.025
+      ],
+      "bounds_min_blender_m": [
+        -0.009,
+        -0.014,
+        0.0375
+      ],
+      "bounds_max_blender_m": [
+        0.009,
+        0.0,
+        0.0625
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Rear sight left",
+      "dimensions_blender_m": [
+        0.003,
+        0.01,
+        0.011
+      ],
+      "bounds_min_blender_m": [
+        -0.0075,
+        -0.012,
+        0.0585
+      ],
+      "bounds_max_blender_m": [
+        -0.0045,
+        -0.002,
+        0.0695
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Rear sight right",
+      "dimensions_blender_m": [
+        0.003,
+        0.01,
+        0.011
+      ],
+      "bounds_min_blender_m": [
+        0.0045,
+        -0.012,
+        0.0585
+      ],
+      "bounds_max_blender_m": [
+        0.0075,
+        -0.002,
+        0.0695
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Receiver",
+      "dimensions_blender_m": [
+        0.052,
+        0.1,
+        0.065
+      ],
+      "bounds_min_blender_m": [
+        -0.026,
+        -0.075,
+        -0.0175
+      ],
+      "bounds_max_blender_m": [
+        0.026,
+        0.025,
+        0.0475
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Single barrel",
+      "dimensions_blender_m": [
+        0.032,
+        0.375,
+        0.032
+      ],
+      "bounds_min_blender_m": [
+        -0.016,
+        -0.46,
+        0.018
+      ],
+      "bounds_max_blender_m": [
+        0.016,
+        -0.085,
+        0.05
+      ],
+      "triangles": 768,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Slotted fastener",
+      "dimensions_blender_m": [
+        0.002,
+        0.008,
+        0.008
+      ],
+      "bounds_min_blender_m": [
+        0.027,
+        -0.019,
+        0.025
+      ],
+      "bounds_max_blender_m": [
+        0.029,
+        -0.011,
+        0.033
+      ],
+      "triangles": 60,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Slotted fastener.001",
+      "dimensions_blender_m": [
+        0.002,
+        0.008,
+        0.008
+      ],
+      "bounds_min_blender_m": [
+        0.021,
+        0.058,
+        -0.063
+      ],
+      "bounds_max_blender_m": [
+        0.023,
+        0.066,
+        -0.055
+      ],
+      "triangles": 60,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Trigger",
+      "dimensions_blender_m": [
+        0.009,
+        0.006,
+        0.028
+      ],
+      "bounds_min_blender_m": [
+        -0.0045,
+        -0.032,
+        -0.039
+      ],
+      "bounds_max_blender_m": [
+        0.0045,
+        -0.026,
+        -0.011
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Trigger guard",
+      "dimensions_blender_m": [
+        0.006,
+        0.068076,
+        0.050714
+      ],
+      "bounds_min_blender_m": [
+        -0.003,
+        -0.070303,
+        -0.065471
+      ],
+      "bounds_max_blender_m": [
+        0.003,
+        -0.002227,
+        -0.014758
+      ],
+      "triangles": 576,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Walnut fore-end",
+      "dimensions_blender_m": [
+        0.045,
+        0.2,
+        0.034
+      ],
+      "bounds_min_blender_m": [
+        -0.0225,
+        -0.3,
+        -0.015
+      ],
+      "bounds_max_blender_m": [
+        0.0225,
+        -0.1,
+        0.019
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Aged_Walnut"
+      ]
+    },
+    {
+      "name": "Walnut pistol grip",
+      "dimensions_blender_m": [
+        0.04,
+        0.150222,
+        0.136865
+      ],
+      "bounds_min_blender_m": [
+        -0.02,
+        -0.02166,
+        -0.118985
+      ],
+      "bounds_max_blender_m": [
+        0.02,
+        0.128561,
+        0.017879
+      ],
+      "triangles": 136,
+      "uv_layers": 1,
+      "materials": [
+        "Aged_Walnut"
+      ]
+    }
+  ]
+}

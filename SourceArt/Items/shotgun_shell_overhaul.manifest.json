@@ -1,0 +1,326 @@
+{
+  "schema_version": 1,
+  "asset_id": "shotgun_shell_overhaul",
+  "source_blend": "assets/shotgun_shell_overhaul.blend",
+  "export_file": "shotgun_shell_overhaul.fbx",
+  "blender_version": "4.5.13 LTS",
+  "unity_editor": "6000.3.15f1",
+  "export_preset": {
+    "type": "static_mesh",
+    "unit": "meter",
+    "scale": 1,
+    "axis_forward": "-Z",
+    "axis_up": "Y",
+    "bake_space_transform": true,
+    "apply_scale_options": "FBX_SCALE_UNITS",
+    "triangulated": true,
+    "animation": false
+  },
+  "dimensions_blender_m": [
+    0.022,
+    0.0638,
+    0.022
+  ],
+  "total_triangles": 2476,
+  "objects": [
+    {
+      "name": "Brass shell base",
+      "dimensions_blender_m": [
+        0.021,
+        0.012,
+        0.021
+      ],
+      "bounds_min_blender_m": [
+        -0.0105,
+        0.012,
+        -0.0105
+      ],
+      "bounds_max_blender_m": [
+        0.0105,
+        0.024,
+        0.0105
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Tarnished_Brass"
+      ]
+    },
+    {
+      "name": "Crimp face",
+      "dimensions_blender_m": [
+        0.019,
+        0.0007,
+        0.019
+      ],
+      "bounds_min_blender_m": [
+        -0.0095,
+        -0.03655,
+        -0.0095
+      ],
+      "bounds_max_blender_m": [
+        0.0095,
+        -0.03585,
+        0.0095
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Oxide_Red_Paint"
+      ]
+    },
+    {
+      "name": "Crimp seam",
+      "dimensions_blender_m": [
+        0.009,
+        0.0005,
+        0.0005
+      ],
+      "bounds_min_blender_m": [
+        0.0,
+        -0.03725,
+        -0.00025
+      ],
+      "bounds_max_blender_m": [
+        0.009,
+        -0.03675,
+        0.00025
+      ],
+      "triangles": 192,
+      "uv_layers": 1,
+      "materials": [
+        "Dark_Iron"
+      ]
+    },
+    {
+      "name": "Crimp seam.001",
+      "dimensions_blender_m": [
+        0.004933,
+        0.0005,
+        0.008044
+      ],
+      "bounds_min_blender_m": [
+        -0.000217,
+        -0.03725,
+        -0.000125
+      ],
+      "bounds_max_blender_m": [
+        0.004717,
+        -0.03675,
+        0.007919
+      ],
+      "triangles": 192,
+      "uv_layers": 1,
+      "materials": [
+        "Dark_Iron"
+      ]
+    },
+    {
+      "name": "Crimp seam.002",
+      "dimensions_blender_m": [
+        0.004933,
+        0.0005,
+        0.008044
+      ],
+      "bounds_min_blender_m": [
+        -0.004717,
+        -0.03725,
+        -0.000125
+      ],
+      "bounds_max_blender_m": [
+        0.000217,
+        -0.03675,
+        0.007919
+      ],
+      "triangles": 192,
+      "uv_layers": 1,
+      "materials": [
+        "Dark_Iron"
+      ]
+    },
+    {
+      "name": "Crimp seam.003",
+      "dimensions_blender_m": [
+        0.009,
+        0.0005,
+        0.0005
+      ],
+      "bounds_min_blender_m": [
+        -0.009,
+        -0.03725,
+        -0.00025
+      ],
+      "bounds_max_blender_m": [
+        0.0,
+        -0.03675,
+        0.00025
+      ],
+      "triangles": 192,
+      "uv_layers": 1,
+      "materials": [
+        "Dark_Iron"
+      ]
+    },
+    {
+      "name": "Crimp seam.004",
+      "dimensions_blender_m": [
+        0.004933,
+        0.0005,
+        0.008044
+      ],
+      "bounds_min_blender_m": [
+        -0.004717,
+        -0.03725,
+        -0.007919
+      ],
+      "bounds_max_blender_m": [
+        0.000217,
+        -0.03675,
+        0.000125
+      ],
+      "triangles": 192,
+      "uv_layers": 1,
+      "materials": [
+        "Dark_Iron"
+      ]
+    },
+    {
+      "name": "Crimp seam.005",
+      "dimensions_blender_m": [
+        0.004933,
+        0.0005,
+        0.008044
+      ],
+      "bounds_min_blender_m": [
+        -0.000217,
+        -0.03725,
+        -0.007919
+      ],
+      "bounds_max_blender_m": [
+        0.004717,
+        -0.03675,
+        0.000125
+      ],
+      "triangles": 192,
+      "uv_layers": 1,
+      "materials": [
+        "Dark_Iron"
+      ]
+    },
+    {
+      "name": "Oxblood plastic hull",
+      "dimensions_blender_m": [
+        0.02,
+        0.05,
+        0.02
+      ],
+      "bounds_min_blender_m": [
+        -0.01,
+        -0.036,
+        -0.01
+      ],
+      "bounds_max_blender_m": [
+        0.01,
+        0.014,
+        0.01
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Oxide_Red_Paint"
+      ]
+    },
+    {
+      "name": "Shell primer",
+      "dimensions_blender_m": [
+        0.006,
+        0.0005,
+        0.006
+      ],
+      "bounds_min_blender_m": [
+        -0.003,
+        0.02605,
+        -0.003
+      ],
+      "bounds_max_blender_m": [
+        0.003,
+        0.02655,
+        0.003
+      ],
+      "triangles": 92,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Shell rim",
+      "dimensions_blender_m": [
+        0.022,
+        0.002,
+        0.022
+      ],
+      "bounds_min_blender_m": [
+        -0.011,
+        0.024,
+        -0.011
+      ],
+      "bounds_max_blender_m": [
+        0.011,
+        0.026,
+        0.011
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Tarnished_Brass"
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "Dark_Iron"
+    },
+    {
+      "name": "Oxide_Red_Paint"
+    },
+    {
+      "name": "Tarnished_Brass"
+    },
+    {
+      "name": "Worn_Blue_Steel"
+    }
+  ],
+  "textures": [
+    {
+      "source_image": "Dark_Iron_Color",
+      "file": "textures/569460d206a4_Dark_Iron.png",
+      "sha256": "569460d206a45105847f4dbbc6a72b28417be9139410a65504e89096cccfd28e",
+      "color_space": "sRGB"
+    },
+    {
+      "source_image": "Oxide_Red_Paint_Color",
+      "file": "textures/8df2dd76d508_Oxide_Red_Paint.png",
+      "sha256": "8df2dd76d508c4d5a0e7bd7f56af310d9814527bf2882d7f197123b16c45e923",
+      "color_space": "sRGB"
+    },
+    {
+      "source_image": "Tarnished_Brass_Color",
+      "file": "textures/c67bb8a6a0ec_Tarnished_Brass.png",
+      "sha256": "c67bb8a6a0ec5f5c020108cf8b690aba36e85baf7917e6ea3c5dc5473c431faf",
+      "color_space": "sRGB"
+    },
+    {
+      "source_image": "Worn_Blue_Steel_Color",
+      "file": "textures/3de046bc2371_Worn_Blue_Steel.png",
+      "sha256": "3de046bc23719a9cae8127b606d4e3b61b97c16a5de302fba75cfd0d1b59ebe0",
+      "color_space": "sRGB"
+    }
+  ],
+  "sha256": "65c902a9fefe74b6d4d770cb2e01c51992cdf4880c5292eeae1e4ddffa3cd82e",
+  "notes": [
+    "URP materials and texture channel/color-space assignments require Unity review.",
+    "Static visual asset only; collider, interaction, Fusion authority and gameplay wiring are not included.",
+    "No Unity import or runtime verification is implied by this manifest."
+  ]
+}

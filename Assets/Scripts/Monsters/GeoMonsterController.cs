@@ -93,6 +93,7 @@ namespace TheSancturary.Monsters
         [Networked] private NetworkBehaviourId WitnessedLocker { get; set; }
         [Networked] private PlayerRef WitnessedLockerPlayer { get; set; }
 
+        private bool _combatSuspended;
         private NavMeshAgent _agent;
         private NetworkTransform _networkTransform;
         private int _lastWaypointIndex = -1;
@@ -165,8 +166,22 @@ namespace TheSancturary.Monsters
 
         public override void FixedUpdateNetwork()
         {
+            MonsterCombatState combat = GetComponent<MonsterCombatState>();
+            if (combat != null && combat.IsIncapacitated)
+            {
+                _combatSuspended = true;
+                return;
+            }
             if (!HasStateAuthority || _agent == null || !_agent.enabled || !_agent.isOnNavMesh)
                 return;
+
+            if (_combatSuspended)
+            {
+                _combatSuspended = false;
+                WitnessedLocker = default;
+                WitnessedLockerPlayer = PlayerRef.None;
+                ClearTargetAndScan();
+            }
 
             switch (CurrentState)
             {
@@ -193,6 +208,8 @@ namespace TheSancturary.Monsters
 
         public override void Render()
         {
+            MonsterCombatState combat = GetComponent<MonsterCombatState>();
+            if (combat != null && combat.IsIncapacitated) return;
             PresentState(false);
             PresentAudioEvents();
             PresentChaseScream();

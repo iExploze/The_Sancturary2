@@ -1,0 +1,455 @@
+{
+  "schema_version": 1,
+  "asset_id": "sawed_off_overhaul",
+  "source_blend": "assets/sawed_off_overhaul.blend",
+  "export_file": "sawed_off_overhaul.fbx",
+  "blender_version": "4.5.13 LTS",
+  "unity_editor": "6000.3.15f1",
+  "export_preset": {
+    "type": "static_mesh",
+    "unit": "meter",
+    "scale": 1,
+    "axis_forward": "-Z",
+    "axis_up": "Y",
+    "bake_space_transform": true,
+    "apply_scale_options": "FBX_SCALE_UNITS",
+    "triangulated": true,
+    "animation": false
+  },
+  "dimensions_blender_m": [
+    0.06,
+    0.588561,
+    0.188485
+  ],
+  "total_triangles": 2976,
+  "objects": [
+    {
+      "name": "Breech latch",
+      "dimensions_blender_m": [
+        0.016,
+        0.03,
+        0.006
+      ],
+      "bounds_min_blender_m": [
+        -0.008,
+        -0.04,
+        0.053
+      ],
+      "bounds_max_blender_m": [
+        0.008,
+        -0.01,
+        0.059
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Fastener slot",
+      "dimensions_blender_m": [
+        0.0003,
+        0.005,
+        0.001
+      ],
+      "bounds_min_blender_m": [
+        0.02905,
+        -0.0175,
+        0.0285
+      ],
+      "bounds_max_blender_m": [
+        0.02935,
+        -0.0125,
+        0.0295
+      ],
+      "triangles": 12,
+      "uv_layers": 1,
+      "materials": [
+        "Dark_Iron"
+      ]
+    },
+    {
+      "name": "Fastener slot.001",
+      "dimensions_blender_m": [
+        0.0003,
+        0.005,
+        0.001
+      ],
+      "bounds_min_blender_m": [
+        0.02305,
+        0.0595,
+        -0.0595
+      ],
+      "bounds_max_blender_m": [
+        0.02335,
+        0.0645,
+        -0.0585
+      ],
+      "triangles": 12,
+      "uv_layers": 1,
+      "materials": [
+        "Dark_Iron"
+      ]
+    },
+    {
+      "name": "Front sight blade",
+      "dimensions_blender_m": [
+        0.003,
+        0.008,
+        0.01
+      ],
+      "bounds_min_blender_m": [
+        -0.0015,
+        -0.439,
+        0.059
+      ],
+      "bounds_max_blender_m": [
+        0.0015,
+        -0.431,
+        0.069
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Front sight ramp",
+      "dimensions_blender_m": [
+        0.01,
+        0.022,
+        0.012
+      ],
+      "bounds_min_blender_m": [
+        -0.005,
+        -0.446,
+        0.049
+      ],
+      "bounds_max_blender_m": [
+        0.005,
+        -0.424,
+        0.061
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Hinge pin",
+      "dimensions_blender_m": [
+        0.06,
+        0.016,
+        0.016
+      ],
+      "bounds_min_blender_m": [
+        -0.03,
+        -0.083,
+        0.004
+      ],
+      "bounds_max_blender_m": [
+        0.03,
+        -0.067,
+        0.02
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Rear sight bridge",
+      "dimensions_blender_m": [
+        0.018,
+        0.014,
+        0.025
+      ],
+      "bounds_min_blender_m": [
+        -0.009,
+        -0.014,
+        0.0375
+      ],
+      "bounds_max_blender_m": [
+        0.009,
+        0.0,
+        0.0625
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Rear sight left",
+      "dimensions_blender_m": [
+        0.003,
+        0.01,
+        0.011
+      ],
+      "bounds_min_blender_m": [
+        -0.0075,
+        -0.012,
+        0.0585
+      ],
+      "bounds_max_blender_m": [
+        -0.0045,
+        -0.002,
+        0.0695
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Rear sight right",
+      "dimensions_blender_m": [
+        0.003,
+        0.01,
+        0.011
+      ],
+      "bounds_min_blender_m": [
+        0.0045,
+        -0.012,
+        0.0585
+      ],
+      "bounds_max_blender_m": [
+        0.0075,
+        -0.002,
+        0.0695
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Receiver",
+      "dimensions_blender_m": [
+        0.052,
+        0.1,
+        0.065
+      ],
+      "bounds_min_blender_m": [
+        -0.026,
+        -0.075,
+        -0.0175
+      ],
+      "bounds_max_blender_m": [
+        0.026,
+        0.025,
+        0.0475
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Single barrel",
+      "dimensions_blender_m": [
+        0.032,
+        0.375,
+        0.032
+      ],
+      "bounds_min_blender_m": [
+        -0.016,
+        -0.46,
+        0.018
+      ],
+      "bounds_max_blender_m": [
+        0.016,
+        -0.085,
+        0.05
+      ],
+      "triangles": 768,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Slotted fastener",
+      "dimensions_blender_m": [
+        0.002,
+        0.008,
+        0.008
+      ],
+      "bounds_min_blender_m": [
+        0.027,
+        -0.019,
+        0.025
+      ],
+      "bounds_max_blender_m": [
+        0.029,
+        -0.011,
+        0.033
+      ],
+      "triangles": 60,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Slotted fastener.001",
+      "dimensions_blender_m": [
+        0.002,
+        0.008,
+        0.008
+      ],
+      "bounds_min_blender_m": [
+        0.021,
+        0.058,
+        -0.063
+      ],
+      "bounds_max_blender_m": [
+        0.023,
+        0.066,
+        -0.055
+      ],
+      "triangles": 60,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Trigger",
+      "dimensions_blender_m": [
+        0.009,
+        0.006,
+        0.028
+      ],
+      "bounds_min_blender_m": [
+        -0.0045,
+        -0.032,
+        -0.039
+      ],
+      "bounds_max_blender_m": [
+        0.0045,
+        -0.026,
+        -0.011
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Trigger guard",
+      "dimensions_blender_m": [
+        0.006,
+        0.068076,
+        0.050714
+      ],
+      "bounds_min_blender_m": [
+        -0.003,
+        -0.070303,
+        -0.065471
+      ],
+      "bounds_max_blender_m": [
+        0.003,
+        -0.002227,
+        -0.014758
+      ],
+      "triangles": 576,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Walnut fore-end",
+      "dimensions_blender_m": [
+        0.045,
+        0.2,
+        0.034
+      ],
+      "bounds_min_blender_m": [
+        -0.0225,
+        -0.3,
+        -0.015
+      ],
+      "bounds_max_blender_m": [
+        0.0225,
+        -0.1,
+        0.019
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Aged_Walnut"
+      ]
+    },
+    {
+      "name": "Walnut pistol grip",
+      "dimensions_blender_m": [
+        0.04,
+        0.150222,
+        0.136865
+      ],
+      "bounds_min_blender_m": [
+        -0.02,
+        -0.02166,
+        -0.118985
+      ],
+      "bounds_max_blender_m": [
+        0.02,
+        0.128561,
+        0.017879
+      ],
+      "triangles": 136,
+      "uv_layers": 1,
+      "materials": [
+        "Aged_Walnut"
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "Aged_Walnut"
+    },
+    {
+      "name": "Dark_Iron"
+    },
+    {
+      "name": "Worn_Blue_Steel"
+    }
+  ],
+  "textures": [
+    {
+      "source_image": "Aged_Walnut_Color",
+      "file": "textures/253928e98008_Aged_Walnut.png",
+      "sha256": "253928e98008bbb4b0cbd20ffd8f445ee9a569b075d7cbba4c00e2fff565a0a0",
+      "color_space": "sRGB"
+    },
+    {
+      "source_image": "Dark_Iron_Color",
+      "file": "textures/569460d206a4_Dark_Iron.png",
+      "sha256": "569460d206a45105847f4dbbc6a72b28417be9139410a65504e89096cccfd28e",
+      "color_space": "sRGB"
+    },
+    {
+      "source_image": "Worn_Blue_Steel_Color",
+      "file": "textures/3de046bc2371_Worn_Blue_Steel.png",
+      "sha256": "3de046bc23719a9cae8127b606d4e3b61b97c16a5de302fba75cfd0d1b59ebe0",
+      "color_space": "sRGB"
+    }
+  ],
+  "sha256": "84f9fe27025ad2103ff1e8fefc7e91843b84e366590aa00b27a70e09210f8378",
+  "notes": [
+    "URP materials and texture channel/color-space assignments require Unity review.",
+    "Static visual asset only; collider, interaction, Fusion authority and gameplay wiring are not included.",
+    "No Unity import or runtime verification is implied by this manifest."
+  ]
+}
