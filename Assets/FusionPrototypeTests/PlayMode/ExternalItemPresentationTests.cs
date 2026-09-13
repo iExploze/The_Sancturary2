@@ -111,8 +111,8 @@ namespace TheSancturary.FusionPrototype.Tests
                 Assert.That(after.LoadedAmmunition, Is.EqualTo(before.LoadedAmmunition));
                 remote.CancelUse();
                 if (definition.UseKind != InventoryItemUseKind.Firearm) continue;
-                // Route through the same confirmed event consumed by remote players.
-                _player.ItemUseController.PresentReloadAuthoritative(id);
+                // Direct presentation must remain independent of authoritative reload gameplay.
+                remote.PlayRemoteReload();
                 yield return new WaitForSeconds(.15f);
                 Assert.That(remote.IsUsePresentationActive, Is.True, definition.ItemId + " external reload missing.");
                 Assert.That(Equipment.FirstPersonHeldVisual.IsUsePresentationActive, Is.False,

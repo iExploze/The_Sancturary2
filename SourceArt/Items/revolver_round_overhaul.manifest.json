@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "asset_id": "revolver_round_overhaul",
+  "source_blend": "assets/revolver_round_overhaul.blend",
+  "export_file": "revolver_round_overhaul.fbx",
+  "blender_version": "4.5.13 LTS",
+  "unity_editor": "6000.3.15f1",
+  "export_preset": {
+    "type": "static_mesh",
+    "unit": "meter",
+    "scale": 1,
+    "axis_forward": "-Z",
+    "axis_up": "Y",
+    "bake_space_transform": true,
+    "apply_scale_options": "FBX_SCALE_UNITS",
+    "triangulated": true,
+    "animation": false
+  },
+  "dimensions_blender_m": [
+    0.012,
+    0.04045,
+    0.012
+  ],
+  "total_triangles": 1364,
+  "objects": [
+    {
+      "name": "Brass cartridge",
+      "dimensions_blender_m": [
+        0.011,
+        0.026,
+        0.011
+      ],
+      "bounds_min_blender_m": [
+        -0.0055,
+        -0.013,
+        -0.0055
+      ],
+      "bounds_max_blender_m": [
+        0.0055,
+        0.013,
+        0.0055
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Tarnished_Brass"
+      ]
+    },
+    {
+      "name": "Lead round nose",
+      "dimensions_blender_m": [
+        0.0108,
+        0.022,
+        0.0108
+      ],
+      "bounds_min_blender_m": [
+        -0.0054,
+        -0.025,
+        -0.0054
+      ],
+      "bounds_max_blender_m": [
+        0.0054,
+        -0.003,
+        0.0054
+      ],
+      "triangles": 528,
+      "uv_layers": 1,
+      "materials": [
+        "Dark_Iron"
+      ]
+    },
+    {
+      "name": "Primer",
+      "dimensions_blender_m": [
+        0.0046,
+        0.0005,
+        0.0046
+      ],
+      "bounds_min_blender_m": [
+        -0.0023,
+        0.01495,
+        -0.0023
+      ],
+      "bounds_max_blender_m": [
+        0.0023,
+        0.01545,
+        0.0023
+      ],
+      "triangles": 76,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Rim",
+      "dimensions_blender_m": [
+        0.012,
+        0.002,
+        0.012
+      ],
+      "bounds_min_blender_m": [
+        -0.006,
+        0.013,
+        -0.006
+      ],
+      "bounds_max_blender_m": [
+        0.006,
+        0.015,
+        0.006
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Tarnished_Brass"
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "Dark_Iron"
+    },
+    {
+      "name": "Tarnished_Brass"
+    },
+    {
+      "name": "Worn_Blue_Steel"
+    }
+  ],
+  "textures": [
+    {
+      "source_image": "Dark_Iron_Color",
+      "file": "textures/569460d206a4_Dark_Iron.png",
+      "sha256": "569460d206a45105847f4dbbc6a72b28417be9139410a65504e89096cccfd28e",
+      "color_space": "sRGB"
+    },
+    {
+      "source_image": "Tarnished_Brass_Color",
+      "file": "textures/c67bb8a6a0ec_Tarnished_Brass.png",
+      "sha256": "c67bb8a6a0ec5f5c020108cf8b690aba36e85baf7917e6ea3c5dc5473c431faf",
+      "color_space": "sRGB"
+    },
+    {
+      "source_image": "Worn_Blue_Steel_Color",
+      "file": "textures/3de046bc2371_Worn_Blue_Steel.png",
+      "sha256": "3de046bc23719a9cae8127b606d4e3b61b97c16a5de302fba75cfd0d1b59ebe0",
+      "color_space": "sRGB"
+    }
+  ],
+  "sha256": "2df4be0f6fb53d2f1528fbadf13ba72962549933dba7c8c4000fca0ffdf306a2",
+  "notes": [
+    "URP materials and texture channel/color-space assignments require Unity review.",
+    "Static visual asset only; collider, interaction, Fusion authority and gameplay wiring are not included.",
+    "No Unity import or runtime verification is implied by this manifest."
+  ]
+}

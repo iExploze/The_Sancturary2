@@ -16,6 +16,7 @@ MonoBehaviour:
   itemId: old_revolver
   category: 5
   temporaryIconLabel: REVOLVER
+  thumbnail: {fileID: 21300000, guid: e3423ea41bc184f46b681eedde87b91b, type: 3}
   width: 2
   height: 2
   canRotate: 0
@@ -37,3 +38,15 @@ MonoBehaviour:
   dryFireAudioClip: {fileID: 8300000, guid: 84dac96280e03ab4aba1a634f9ff61d3, type: 3}
   impactAudioClip: {fileID: 0}
   reloadAudioClip: {fileID: 8300000, guid: a2eed27e1ac503f4286ac6e22a31151b, type: 3}
+  combatSettings: {fileID: 11400000, guid: b06e5980b52a3f7408ec870d13a96611, type: 2}
+  range: 65
+  hipSpreadDegrees: 12
+  adsSpreadDegrees: 0.3
+  reloadDuration: 6.2
+  muzzleOffset: {x: 0.15754023, y: -0.18321705, z: 0.5883391}
+  adsMuzzleOffset: {x: 0.0000000031489638, y: -0.016499996, z: 0.44400004}
+  equipAudioClip: {fileID: 8300000, guid: 89997c6b4e6e4e74584720d2ac59753c, type: 3}
+  pickupAudioClip: {fileID: 0}
+  reloadInsertAudioClip: {fileID: 8300000, guid: 36528764efccfe544a71fe9a4a0070ec, type: 3}
+  reloadCloseAudioClip: {fileID: 8300000, guid: f39aec7893980d7499d7bc73d1587616, type: 3}
+  completionAudioClip: {fileID: 0}

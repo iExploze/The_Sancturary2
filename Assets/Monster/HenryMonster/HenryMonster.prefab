@@ -370,6 +370,7 @@ GameObject:
   - component: {fileID: 1238004870288425106}
   - component: {fileID: 56851844014699796}
   - component: {fileID: 876467543067213265}
+  - component: {fileID: 1094467442544903731}
   m_Layer: 0
   m_Name: HenryMonster
   m_TagString: Untagged
@@ -416,6 +417,7 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 5296329410619130773}
   - {fileID: 876467543067213265}
+  - {fileID: 1094467442544903731}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &5296329410619130773
 MonoBehaviour:
@@ -530,6 +532,7 @@ MonoBehaviour:
   lostTargetGracePeriod: 0.35
   transformationDuration: 3.292
   transformationClip: {fileID: -1422011007694221501, guid: a7d3383f81f178a46bb584b65946ebcf, type: 3}
+  angryVisualYawOffset: 90
   attackRange: 1.05
   attackAnimation: {fileID: -1422011007694221501, guid: 1fb1590a848474e4d9a583351950da07, type: 3}
   attackAnimationSpeed: 2
@@ -548,6 +551,23 @@ MonoBehaviour:
   _CurrentState: 0
   _PatrolDestination: {x: 0, y: 0, z: 0}
   _IsMoving:
+    RawValue: 0
+--- !u!114 &1094467442544903731
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6466991422298046791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c6bf643b96fedc458c27743745afdca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TheSancturary.Runtime::TheSancturary.Monsters.MonsterCombatState
+  settings: {fileID: 11400000, guid: b06e5980b52a3f7408ec870d13a96611, type: 2}
+  isHenry: 1
+  _Health: 0
+  _IsDead:
     RawValue: 0
 --- !u!1 &7757857081697494325
 GameObject:

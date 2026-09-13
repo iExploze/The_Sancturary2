@@ -16,6 +16,7 @@ MonoBehaviour:
   itemId: crowbar
   category: 4
   temporaryIconLabel: PRY
+  thumbnail: {fileID: 21300000, guid: efe7d5c7b73957641a20f38e3dabfd5b, type: 3}
   width: 3
   height: 1
   canRotate: 1
@@ -37,3 +38,14 @@ MonoBehaviour:
   dryFireAudioClip: {fileID: 0}
   impactAudioClip: {fileID: 8300000, guid: 8b0018c77854b6c47b7ee8b1e8ee2407, type: 3}
   reloadAudioClip: {fileID: 0}
+  combatSettings: {fileID: 11400000, guid: b06e5980b52a3f7408ec870d13a96611, type: 2}
+  range: 65
+  hipSpreadDegrees: 12
+  adsSpreadDegrees: 0.3
+  reloadDuration: 2.5
+  muzzleOffset: {x: 0.12, y: -0.12, z: 0.5}
+  equipAudioClip: {fileID: 8300000, guid: ec481744b3135d14a98a08974788ec7a, type: 3}
+  pickupAudioClip: {fileID: 0}
+  reloadInsertAudioClip: {fileID: 0}
+  reloadCloseAudioClip: {fileID: 0}
+  completionAudioClip: {fileID: 0}

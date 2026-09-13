@@ -171,7 +171,7 @@ namespace TheSancturary.FusionPrototype.Tests
                 AmmunitionCapacity = 1,
                 UseAudioName = "item_tranq_fire",
                 DryFireAudioName = "item_tranq_dry",
-                ReloadAudioName = "item_reload_single_round"
+                ReloadAudioName = "item_reload_tranq"
             },
             new ExpectedItem
             {
@@ -188,7 +188,7 @@ namespace TheSancturary.FusionPrototype.Tests
                 AmmunitionCapacity = 1,
                 UseAudioName = "item_shotgun_fire",
                 DryFireAudioName = "item_shotgun_dry",
-                ReloadAudioName = "item_reload_single_round"
+                ReloadAudioName = "item_reload_shotgun"
             },
             new ExpectedItem
             {

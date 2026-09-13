@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8653200417697493101}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: EffectOrigin
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -41,7 +41,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6900445342487627578}
   - component: {fileID: 1002836732020420532}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: HeldFlashlightRemote
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -81,6 +81,12 @@ MonoBehaviour:
   leftHandGrip: {fileID: 2917294177287058210}
   effectOrigin: {fileID: 8653200417697493101}
   muzzleLight: {fileID: 0}
+  equipClip: {fileID: 0}
+  useClip: {fileID: 0}
+  reloadClip: {fileID: 0}
+  dryFireClip: {fileID: 0}
+  rearSight: {fileID: 0}
+  frontSight: {fileID: 0}
   equipDuration: 0.2
   ownerEquipPositionOffset: {x: 0, y: -0.12, z: -0.08}
   remoteEquipPositionOffset: {x: 0, y: -0.08, z: -0.04}
@@ -99,7 +105,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 704806626802565287}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: VisualRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -134,7 +140,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2917294177287058210}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: LeftHandGrip
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -165,7 +171,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5352302292464615837}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: RightHandGrip
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -199,7 +205,7 @@ GameObject:
   - component: {fileID: 4506642969669630107}
   - component: {fileID: 9138383865280535437}
   - component: {fileID: 2821523289770609573}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}

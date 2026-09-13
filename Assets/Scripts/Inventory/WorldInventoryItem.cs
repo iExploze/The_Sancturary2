@@ -170,6 +170,7 @@ namespace TheSancturary.Inventory
                 return false;
             }
 
+            requestingPlayer.ItemUseController?.PresentPickupAuthoritative(definition.ItemId);
             if (Object.NetworkTypeId.IsSceneObject)
             {
                 IsCollected = true;

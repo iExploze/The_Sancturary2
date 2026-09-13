@@ -51,6 +51,14 @@ namespace TheSancturary.FusionPrototype
                 }
         }
         public override void Despawned(NetworkRunner runner, bool hasState) => Sessions.Remove(this);
+        public override void FixedUpdateNetwork()
+        {
+            if (HasStateAuthority && ActiveMonster.IsValid && !Runner.TryFindObject(ActiveMonster, out _))
+            {
+                ActiveMonster = default;
+                Status = "Monster defeated. Reset encounter for another test.";
+            }
+        }
         private void OnDestroy()
         {
             Sessions.Remove(this);
@@ -70,7 +78,17 @@ namespace TheSancturary.FusionPrototype
                     if (direction.sqrMagnitude > 0.001f) label.transform.rotation = Quaternion.LookRotation(direction);
                 }
             if (statusDisplay != null)
-                statusDisplay.text = $"MONSTER: {MonsterName} | {(ActiveMonster.IsValid ? "ACTIVE" : "NONE")}\n{Status}";
+            {
+                string encounter = "NONE";
+                if (ActiveMonster.IsValid && Runner.TryFindObject(ActiveMonster, out NetworkObject monster))
+                {
+                    MonsterCombatState combat = monster.GetComponent<MonsterCombatState>();
+                    encounter = combat != null
+                        ? $"{combat.Health}/{combat.MaximumHealth} HP" + (combat.IsSleeping ? $" | SLEEP {combat.SleepRemainingSeconds:0}s" : "")
+                        : "ACTIVE";
+                }
+                statusDisplay.text = $"MONSTER: {MonsterName} | {encounter}\n{Status}";
+            }
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]

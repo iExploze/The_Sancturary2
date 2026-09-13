@@ -33,6 +33,16 @@ namespace TheSancturary.FusionPrototype.Tests
             NUnitAssert.That(
                 animator.GetLayerName(3),
                 Is.EqualTo("Item Pose - Two Hand"));
+            // The spawn faces Door_A; a sprint reaches its collider before the
+            // velocity assertion. Measure locomotion on an isolated temporary floor.
+            Vector3 originalPosition = player.transform.position;
+            AnimatorCullingMode originalCulling = animator.cullingMode;
+            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+            GameObject movementFloor = new GameObject("Temporary locomotion test floor");
+            movementFloor.transform.position = new Vector3(0f, 30f, 0f);
+            movementFloor.AddComponent<BoxCollider>().size = new Vector3(40f, 1f, 40f);
+            Physics.SyncTransforms();
+            controller.Teleport(new Vector3(0f, 30.6f, 0f));
             yield return WaitUntil(() => controller.Grounded, 5f, "Player did not begin grounded.");
 
             yield return HoldKeys(keyboard, 0.6f, Key.W);
@@ -64,7 +74,7 @@ namespace TheSancturary.FusionPrototype.Tests
             yield return HoldKeys(keyboard, 0.8f, Key.LeftShift, Key.W);
             localVelocity = player.transform.InverseTransformDirection(controller.Velocity);
             NUnitAssert.That((bool)player.IsSprinting, Is.True, "Shift+W must activate sprinting.");
-            NUnitAssert.That(localVelocity.z, Is.GreaterThan(2.5f), "Shift+W must reach forward sprint velocity.");
+            NUnitAssert.That(localVelocity.z, Is.GreaterThan(2.5f), $"Shift+W must reach forward sprint velocity. Position={player.transform.position}, maxSpeed={controller.maxSpeed}, aiming={player.ItemUseController.IsAiming}.");
             NUnitAssert.That(Mathf.Abs(localVelocity.x), Is.LessThan(0.2f), "Forward sprint must not add lateral velocity.");
             NUnitAssert.That(animator.GetFloat("MoveY"), Is.GreaterThan(1.1f), "Forward sprint must occupy the >1 MoveY range.");
             NUnitAssert.That(player.Stamina, Is.LessThan(sprintStaminaBefore), "Valid forward sprint must drain stamina.");
@@ -82,31 +92,34 @@ namespace TheSancturary.FusionPrototype.Tests
             yield return ReleaseAndSettle(keyboard, controller);
 
             int airborneLayer = animator.GetLayerIndex("Airborne");
-            NUnitAssert.That(animator.GetCurrentAnimatorStateInfo(airborneLayer).IsName("Grounded Pass Through"), Is.True);
+            NUnitAssert.That(animator.GetCurrentAnimatorStateInfo(airborneLayer).IsName("Grounded Pass-Through"), Is.True);
             InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.Space));
             NUnitAssert.That(
-                animator.GetCurrentAnimatorStateInfo(airborneLayer).IsName("Grounded Pass Through"),
+                animator.GetCurrentAnimatorStateInfo(airborneLayer).IsName("Grounded Pass-Through"),
                 Is.True,
                 "Jump input alone must not pre-empt the grounded animation state.");
             yield return WaitUntil(() => !controller.Grounded, 2f, "Jump did not make the controller airborne.");
             yield return WaitUntil(
-                () => animator.GetCurrentAnimatorStateInfo(airborneLayer).IsName("Airborne"),
+                () => (animator.GetCurrentAnimatorStateInfo(airborneLayer).IsName("Jump Start") || animator.GetCurrentAnimatorStateInfo(airborneLayer).IsName("Falling")),
                 1f,
                 "Animator did not enter Airborne after the controller left the ground.");
             InputSystem.QueueStateEvent(keyboard, new KeyboardState());
             yield return WaitUntil(() => controller.Grounded, 3f, "Player did not land after jumping.");
             yield return WaitUntil(
-                () => animator.GetCurrentAnimatorStateInfo(airborneLayer).IsName("Grounded Pass Through"),
+                () => animator.GetCurrentAnimatorStateInfo(airborneLayer).IsName("Grounded Pass-Through"),
                 1f,
                 "Animator did not return to locomotion after landing.");
 
             controller.Teleport(player.transform.position + Vector3.up * 2f);
             yield return WaitUntil(() => !controller.Grounded, 1f, "Ungrounded teleport did not begin falling.");
             yield return WaitUntil(
-                () => animator.GetCurrentAnimatorStateInfo(airborneLayer).IsName("Airborne"),
+                () => (animator.GetCurrentAnimatorStateInfo(airborneLayer).IsName("Jump Start") || animator.GetCurrentAnimatorStateInfo(airborneLayer).IsName("Falling")),
                 1f,
                 "Airborne animation must activate without jump input when the controller leaves the ground.");
             yield return WaitUntil(() => controller.Grounded, 3f, "Player did not land after the unprompted fall.");
+            controller.Teleport(originalPosition);
+            animator.cullingMode = originalCulling;
+            Object.Destroy(movementFloor);
         }
 
         [UnityTest]
@@ -346,8 +359,12 @@ namespace TheSancturary.FusionPrototype.Tests
 
         private static IEnumerator HoldKeys(Keyboard keyboard, float seconds, params Key[] keys)
         {
-            InputSystem.QueueStateEvent(keyboard, new KeyboardState(keys));
-            yield return new WaitForSeconds(seconds);
+            float until = Time.time + seconds;
+            while (Time.time < until)
+            {
+                InputSystem.QueueStateEvent(keyboard, new KeyboardState(keys));
+                yield return null;
+            }
         }
 
         private static IEnumerator ReleaseAndSettle(Keyboard keyboard, NetworkCharacterController controller)

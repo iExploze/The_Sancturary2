@@ -47,15 +47,15 @@ Controls require a living, non-hidden actor in staging and use the existing auth
 | Med kit | 4 | Existing timed full heal |
 | Revival syringe | 4 | Existing timed teammate revival |
 | Adrenaline | 4 | Existing timed stamina/sprint effect |
-| Crowbar / fire axe | 2 each | Existing tool actions against their matching resettable test obstacles; no invented monster melee damage |
-| Old revolver | 2 | Existing firing/dry-fire presentation, ammunition consumption and reload |
-| Tranq gun | 2 | Existing firing/dry-fire presentation, ammunition consumption and reload |
-| Sawed-off shotgun | 2 | Existing firing/dry-fire presentation, ammunition consumption and reload |
+| Crowbar / fire axe | 2 each | Matching resettable tool obstacles; animation-timed monster strikes for 25 damage |
+| Old revolver | 2 | Six-round timed reload, ADS and 25 damage per accepted monster hit |
+| Tranq gun | 2 | Long rifle, one dart, timed loading and ADS; refreshable 60-second monster sleep |
+| Sawed-off shotgun | 2 | One-shell break-action reload and ADS; one confirmed monster hit kills |
 | Revolver ammo / tranq darts / shotgun shells | 8 each | Matching existing ammunition IDs; normal inventory/reload rules |
 | Small / medium / long test items | 2 each | Existing inventory footprint tests; no use action invented |
 | Cabinet / maintenance / cage key | 1 each | Matched to file cabinet, safe Door C, and labelled bedside storage respectively |
 
-**Firearms are incomplete combat implementations:** the inspected item-use controller consumes rounds and emits firing/reload presentation but does not implement monster bullet damage, tranquilization, or shotgun hit effects. The sandbox preserves that limitation.
+The integrated [item overhaul](ITEM_OVERHAUL.md) adds single-item equipment, item-only owner presentation, authored handling clips, shared monster health/sleep/death, and spatial item/contact audio. Geo starts at 300 HP and Henry at 75 HP. Existing staging controls reset encounters and replenish supplies. See that handoff for tuning, current validation results, licenses and the full solo/host/client acceptance pass.
 
 Functional interaction instances include file-cabinet drawers, bedside drawers, aid-kit door, all four existing door variants in the safe bay, two danger-room doors, four hiding lockers (one safe, three in danger), the existing light switch, three keyed storage/door targets and two tool obstacles. No required test item is hidden behind progression; locks do not gate general movement.
 

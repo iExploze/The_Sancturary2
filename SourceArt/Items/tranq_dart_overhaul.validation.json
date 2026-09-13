@@ -1,0 +1,203 @@
+{
+  "asset_id": "tranq_dart_overhaul",
+  "status": "passed",
+  "validation": "Blender FBX roundtrip only; Unity import and runtime not tested",
+  "blender_version": "4.5.13 LTS",
+  "fbx_sha256": "9b74e34c5d1a31bdadd28d10c0d94d098cc858ade4da8a7a455f894b160a8fce",
+  "checks": [
+    "FBX and texture hashes",
+    "portable texture references",
+    "mesh membership",
+    "world bounds and orientation",
+    "unit scale",
+    "triangle counts",
+    "UV layers",
+    "material assignments"
+  ],
+  "objects": [
+    {
+      "name": "Dart needle",
+      "dimensions_blender_m": [
+        0.0014,
+        0.033,
+        0.0014
+      ],
+      "bounds_min_blender_m": [
+        -0.0007,
+        -0.0765,
+        -0.0007
+      ],
+      "bounds_max_blender_m": [
+        0.0007,
+        -0.0435,
+        0.0007
+      ],
+      "triangles": 44,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Dart stabilizer",
+      "dimensions_blender_m": [
+        0.022,
+        0.022,
+        0.001
+      ],
+      "bounds_min_blender_m": [
+        -0.011,
+        0.037,
+        -0.0005
+      ],
+      "bounds_max_blender_m": [
+        0.011,
+        0.059,
+        0.0005
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Dart_Teal"
+      ]
+    },
+    {
+      "name": "Dart stabilizer.001",
+      "dimensions_blender_m": [
+        0.011626,
+        0.022,
+        0.019312
+      ],
+      "bounds_min_blender_m": [
+        -0.005813,
+        0.037,
+        -0.009656
+      ],
+      "bounds_max_blender_m": [
+        0.005813,
+        0.059,
+        0.009656
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Dart_Teal"
+      ]
+    },
+    {
+      "name": "Dart stabilizer.002",
+      "dimensions_blender_m": [
+        0.011626,
+        0.022,
+        0.019312
+      ],
+      "bounds_min_blender_m": [
+        -0.005813,
+        0.037,
+        -0.009656
+      ],
+      "bounds_max_blender_m": [
+        0.005813,
+        0.059,
+        0.009656
+      ],
+      "triangles": 108,
+      "uv_layers": 1,
+      "materials": [
+        "Dart_Teal"
+      ]
+    },
+    {
+      "name": "Medical dart dose body",
+      "dimensions_blender_m": [
+        0.012,
+        0.065,
+        0.012
+      ],
+      "bounds_min_blender_m": [
+        -0.006,
+        -0.0325,
+        -0.006
+      ],
+      "bounds_max_blender_m": [
+        0.006,
+        0.0325,
+        0.006
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Medical_Ivory"
+      ]
+    },
+    {
+      "name": "Needle hub",
+      "dimensions_blender_m": [
+        0.008,
+        0.011,
+        0.008
+      ],
+      "bounds_min_blender_m": [
+        -0.004,
+        -0.0435,
+        -0.004
+      ],
+      "bounds_max_blender_m": [
+        0.004,
+        -0.0325,
+        0.004
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Worn_Blue_Steel"
+      ]
+    },
+    {
+      "name": "Tail plug",
+      "dimensions_blender_m": [
+        0.012,
+        0.016,
+        0.012
+      ],
+      "bounds_min_blender_m": [
+        -0.006,
+        0.031,
+        -0.006
+      ],
+      "bounds_max_blender_m": [
+        0.006,
+        0.047,
+        0.006
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Dart_Teal"
+      ]
+    },
+    {
+      "name": "Teal dose band",
+      "dimensions_blender_m": [
+        0.0124,
+        0.022,
+        0.0124
+      ],
+      "bounds_min_blender_m": [
+        -0.0062,
+        0.001,
+        -0.0062
+      ],
+      "bounds_max_blender_m": [
+        0.0062,
+        0.023,
+        0.0062
+      ],
+      "triangles": 380,
+      "uv_layers": 1,
+      "materials": [
+        "Dart_Teal"
+      ]
+    }
+  ]
+}

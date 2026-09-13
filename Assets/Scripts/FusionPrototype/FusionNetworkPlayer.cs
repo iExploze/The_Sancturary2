@@ -428,6 +428,10 @@ namespace TheSancturary.FusionPrototype
                 _submittedInteractionCommandSequence;
             input.Buttons.Set(FusionPlayerButton.Jump, !IsLockerInputLocked && _jumpAction.IsPressed());
             input.Buttons.Set(FusionPlayerButton.Sprint, !IsLockerInputLocked && _sprintAction.IsPressed());
+            input.Buttons.Set(FusionPlayerButton.Aim, !IsLockerInputLocked && !IsDeadOrPending &&
+                Mouse.current != null && Mouse.current.rightButton.isPressed);
+            input.Buttons.Set(FusionPlayerButton.Reload, !IsLockerInputLocked && !IsDeadOrPending &&
+                Keyboard.current != null && Keyboard.current.rKey.isPressed);
             input.Buttons.Set(
                 FusionPlayerButton.UseEquipped,
                 !IsLockerInputLocked &&
@@ -1107,6 +1111,9 @@ namespace TheSancturary.FusionPrototype
                     ProcessInteractionRequest(input.InteractionTarget);
                 }
 
+                itemUseController?.SetAimRequested(input.Buttons.IsSet(FusionPlayerButton.Aim));
+                if (!IsLockerInputLocked && pressed.IsSet(FusionPlayerButton.Reload))
+                    itemUseController?.ReloadEquippedAuthoritative();
                 if (!IsLockerInputLocked && pressed.IsSet(FusionPlayerButton.UseEquipped))
                     itemUseController?.TryUseEquippedAuthoritative();
 
@@ -1147,7 +1154,8 @@ namespace TheSancturary.FusionPrototype
                 ItemGameplayRules.ResolveSprintLocked(
                     SprintLocked,
                     adrenalineActive);
-            bool wantsToSprint = input.Buttons.IsSet(FusionPlayerButton.Sprint) &&
+            bool aiming = itemUseController != null && itemUseController.IsAiming;
+            bool wantsToSprint = !aiming && input.Buttons.IsSet(FusionPlayerButton.Sprint) &&
                 VentTraversalRules.CanSprint(
                     IsInVent,
                     IsCrouched,
@@ -1162,6 +1170,15 @@ namespace TheSancturary.FusionPrototype
 
             IsSprinting = wantsToSprint;
             networkController.maxSpeed = IsCrouched ? crouchSpeed : wantsToSprint ? sprintSpeed : walkSpeed;
+            networkController.maxSpeed = ItemCombatRules.MovementLimit(networkController.maxSpeed,
+                itemUseController?.EquippedDefinition?.CombatSettings != null
+                    ? itemUseController.EquippedDefinition.CombatSettings.adsWalkSpeed : 1.1f, aiming);
+            if (aiming)
+            {
+                Vector3 velocity = networkController.Velocity;
+                Vector3 horizontal = Vector3.ClampMagnitude(new Vector3(velocity.x, 0, velocity.z), networkController.maxSpeed);
+                networkController.Velocity = new Vector3(horizontal.x, velocity.y, horizontal.z);
+            }
             networkController.acceleration = wantsToSprint ? sprintAcceleration : walkAcceleration;
             networkController.braking = braking;
             networkController.gravity = gravity;
