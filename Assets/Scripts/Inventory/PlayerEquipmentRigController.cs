@@ -118,12 +118,12 @@ namespace TheSancturary.Inventory
             _holdPose = equipment != null
                 ? holdPose
                 : InventoryHoldPose.None;
-            ApplyHoldPose();
             if (!changed)
                 return;
 
             _currentRightWeight = 0f;
             _currentLeftWeight = 0f;
+            ApplyHoldPose();
             _activationPending = equipment != null;
             _inactiveResetFrames = _activationPending ? 1 : 0;
             SetArmLayersActive(false, false);
@@ -181,6 +181,7 @@ namespace TheSancturary.Inventory
                 DesiredLeftWeight,
                 delta);
 
+            ApplyHoldPose();
             UpdateBlendedTarget(
                 _rightGripSource,
                 rightHandTarget,
@@ -263,7 +264,7 @@ namespace TheSancturary.Inventory
                         oneHandLayer,
                         _holdPose is InventoryHoldPose.OneHandedCarry or
                             InventoryHoldPose.Pistol
-                            ? holdPoseLayerWeight
+                            ? holdPoseLayerWeight * _currentRightWeight
                             : 0f);
                 }
 
@@ -273,7 +274,7 @@ namespace TheSancturary.Inventory
                         twoHandLayer,
                         _holdPose is InventoryHoldPose.LongGun or
                             InventoryHoldPose.TwoHandedTool
-                            ? holdPoseLayerWeight
+                            ? holdPoseLayerWeight * _currentRightWeight
                             : 0f);
                 }
             }

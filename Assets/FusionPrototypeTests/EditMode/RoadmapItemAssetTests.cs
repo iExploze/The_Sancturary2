@@ -119,8 +119,8 @@ namespace TheSancturary.FusionPrototype.Tests
                 CanRotate = true,
                 CanEquip = true,
                 UseKind = InventoryItemUseKind.Crowbar,
-                HoldStyle = InventoryHoldStyle.OneHanded,
-                HoldPose = InventoryHoldPose.OneHandedCarry,
+                HoldStyle = InventoryHoldStyle.TwoHanded,
+                HoldPose = InventoryHoldPose.TwoHandedTool,
                 UseAudioName = "item_crowbar_swing",
                 ImpactAudioName = "item_crowbar_pry"
             },
@@ -507,6 +507,23 @@ namespace TheSancturary.FusionPrototype.Tests
                 AssertHeldPrefab(expected.OwnerHeldPrefabPath, expected);
                 AssertHeldPrefab(expected.RemoteHeldPrefabPath, expected);
             }
+        }
+
+        [TestCase("Crowbar", "crowbar_overhaul")]
+        [TestCase("FireAxe", "fire_axe_overhaul")]
+        [TestCase("RevivalSyringe", "revival_syringe_overhaul")]
+        [TestCase("TranqGun", "tranq_rifle_overhaul")]
+        [TestCase("SawedOffShotgun", "sawed_off_overhaul")]
+        public void RebuiltExternalItemsUseCurrentModelAssets(string item, string model)
+        {
+            var prefab = LoadRequiredAsset<GameObject>(PrefabFolder + "/Held" + item + "Remote.prefab");
+            var meshes = prefab.GetComponentsInChildren<MeshFilter>(true);
+            Assert.That(meshes, Is.Not.Empty);
+            foreach (var filter in meshes)
+                Assert.That(AssetDatabase.GetAssetPath(filter.sharedMesh), Is.EqualTo(
+                    "Assets/Inventory/Generated/Models/ItemOverhaul/" + model + ".fbx"), filter.name);
+            Assert.That(prefab.GetComponentsInChildren<Renderer>(true)
+                .SelectMany(renderer => renderer.sharedMaterials).All(material => material != null), Is.True);
         }
 
         [TestCase("Adrenaline", "Assets/Props/Medical Glass_8.prefab")]

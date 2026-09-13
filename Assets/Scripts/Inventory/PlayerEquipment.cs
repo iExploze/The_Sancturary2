@@ -359,13 +359,15 @@ namespace TheSancturary.Inventory
 
             ItemActionPresentation action = controller.LastAction;
             if (action == ItemActionPresentation.Reload)
+            {
                 _firstPersonHeldVisual?.PlayReloadFromElapsed(0);
+                _thirdPersonHeldVisual?.PlayRemoteReload();
+            }
             else if (action != ItemActionPresentation.Complete)
             {
                 bool dryFire = action == ItemActionPresentation.DryFire;
                 _firstPersonHeldVisual?.PlayUse(dryFire);
-                if (action == ItemActionPresentation.Fire || action == ItemActionPresentation.DryFire)
-                    _thirdPersonHeldVisual?.PresentRemoteFire(dryFire);
+                _thirdPersonHeldVisual?.PlayUse(dryFire);
             }
 
             // Audio is emitted once by the authoritative action event, including completion after consumption.
