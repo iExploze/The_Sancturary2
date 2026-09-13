@@ -206,10 +206,10 @@ namespace TheSancturary.Monsters
                 if (_presentedDeathEffect) return;
                 _presentedDeathEffect = true;
             }
-            ParticleSystem effect = kind == 2 ? settings.deathEffect : kind == 0 ? settings.hitEffect : null;
+            ParticleSystem effect = kind == 2 ? settings.deathEffect : settings.hitEffect;
             if (effect != null)
             {
-                ParticleSystem burst = Instantiate(effect, point,
+                ParticleSystem burst = Instantiate(effect, point + normal.normalized * .06f,
                     Quaternion.LookRotation(normal.sqrMagnitude > 0.001f ? normal : Vector3.up));
                 burst.Play();
                 Destroy(burst.gameObject, 6f);
@@ -218,18 +218,33 @@ namespace TheSancturary.Monsters
                 settings.monsterImpacts != null && settings.monsterImpacts.Length > 0
                     ? settings.monsterImpacts[Random.Range(0, settings.monsterImpacts.Length)] : null;
             if (clip != null)
-            {
-                GameObject voice = new GameObject("Monster contact audio");
-                voice.transform.position = point;
-                AudioSource audio = voice.AddComponent<AudioSource>();
-                audio.outputAudioMixerGroup = settings.effectsMixer;
-                audio.spatialBlend = 1;
-                audio.minDistance = 2;
-                audio.maxDistance = 28;
-                audio.rolloffMode = AudioRolloffMode.Linear;
-                audio.PlayOneShot(clip);
-                Destroy(voice, clip.length + 0.2f);
-            }
+                PlayContactAudio(clip, point, 1f, 0.65f, "Monster contact audio");
+
+            // One local voice per accepted replicated contact, including lethal hits.
+            // Keep it independent of the monster so sleep/death suppression cannot cut it off.
+            AudioClip hurtVoice = isHenry ? settings.henryHurtVoice : settings.geoHurtVoice;
+            if (hurtVoice != null)
+                PlayContactAudio(hurtVoice, point,
+                    isHenry ? settings.henryHurtPitch : settings.geoHurtPitch,
+                    settings.hurtVoiceVolume, isHenry ? "Henry hurt scream" : "Geo hurt growl");
+        }
+
+        private void PlayContactAudio(AudioClip clip, Vector3 point, float pitch, float volume, string name)
+        {
+            GameObject voice = new GameObject(name);
+            voice.transform.position = point;
+            AudioSource audio = voice.AddComponent<AudioSource>();
+            audio.outputAudioMixerGroup = settings.effectsMixer;
+            audio.spatialBlend = 1;
+            audio.minDistance = 5;
+            audio.maxDistance = 35;
+            audio.pitch = Mathf.Clamp(pitch, .3f, 2f);
+            audio.volume = volume;
+            audio.priority = 32;
+            audio.rolloffMode = AudioRolloffMode.Linear;
+            audio.clip = clip;
+            audio.Play();
+            Destroy(voice, clip.length / audio.pitch + 0.2f);
         }
     }
 }

@@ -70,6 +70,36 @@ namespace TheSancturary.FusionPrototype.Tests
         }
 
         [UnityTest]
+        public IEnumerator ConfirmedHitsProduceDistinctHurtVoicesAndVisibleBloodOnce()
+        {
+            foreach (bool henry in new[] { false, true })
+            {
+                var monster = SpawnMonster(henry);
+                var definition = Definition("old_revolver");
+                var settings = definition.CombatSettings;
+                string voiceName = henry ? "Henry hurt scream" : "Geo hurt growl";
+                Assert.That(settings.geoHurtVoice, Is.Not.SameAs(settings.henryHurtVoice));
+                Assert.That(Contact(monster, definition), Is.True);
+                yield return new WaitForSeconds(.1f);
+                var voices = Object.FindObjectsByType<AudioSource>(FindObjectsSortMode.None)
+                    .Where(s => s.name == voiceName).ToArray();
+                Assert.That(voices.Length, Is.EqualTo(1), "Each confirmed hit should play one hurt voice.");
+                Assert.That(voices[0].clip, Is.SameAs(henry ? settings.henryHurtVoice : settings.geoHurtVoice));
+                Assert.That(voices[0].pitch, henry ? Is.GreaterThan(1f) : Is.LessThan(1f));
+                Assert.That(voices[0].spatialBlend, Is.EqualTo(1f));
+                var blood = Object.FindObjectsByType<ParticleSystem>(FindObjectsSortMode.None)
+                    .FirstOrDefault(p => p.name == "MonsterContact(Clone)" && p.particleCount >= 20);
+                Assert.That(blood, Is.Not.Null, "Confirmed hit must create a visible blood burst.");
+                monster.Render();
+                monster.Render();
+                Assert.That(Object.FindObjectsByType<AudioSource>(FindObjectsSortMode.None)
+                    .Count(s => s.name == voiceName), Is.EqualTo(1), "Render replayed the same hit.");
+                _player.Runner.Despawn(monster.Object);
+                yield return new WaitForSeconds(1.5f);
+            }
+        }
+
+        [UnityTest]
         public IEnumerator SharedReceiverHasExactHitCountsAndOneDeath()
         {
             InventoryItemDefinition revolver = Definition("old_revolver");
