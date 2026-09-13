@@ -218,15 +218,9 @@ namespace TheSancturary.Monsters
                 settings.monsterImpacts != null && settings.monsterImpacts.Length > 0
                     ? settings.monsterImpacts[Random.Range(0, settings.monsterImpacts.Length)] : null;
             if (clip != null)
-                PlayContactAudio(clip, point, 1f, 0.65f, "Monster contact audio");
+                PlayContactAudio(clip, point, 1f, kind == 2 ? 1f : 0.65f,
+                    kind == 2 ? "Monster death audio" : "Monster contact audio");
 
-            // One local voice per accepted replicated contact, including lethal hits.
-            // Keep it independent of the monster so sleep/death suppression cannot cut it off.
-            AudioClip hurtVoice = isHenry ? settings.henryHurtVoice : settings.geoHurtVoice;
-            if (hurtVoice != null)
-                PlayContactAudio(hurtVoice, point,
-                    isHenry ? settings.henryHurtPitch : settings.geoHurtPitch,
-                    settings.hurtVoiceVolume, isHenry ? "Henry hurt scream" : "Geo hurt growl");
         }
 
         private void PlayContactAudio(AudioClip clip, Vector3 point, float pitch, float volume, string name)

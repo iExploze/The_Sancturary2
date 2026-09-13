@@ -68,3 +68,7 @@ The Freesound selections use the publicly available high-quality MP3 previews, c
 - `henry_hurt_scream.wav`: pauliuw, `high_pitch_scream.mp3` from [High pitch scream sounds(2)](https://opengameart.org/content/high-pitch-scream-sounds2), CC0 1.0. First 1.4 seconds selected, quiet edges trimmed, mono conversion, 48 kHz resampling, peak 0.85 and 10 ms fades. Playback pitch 1.15 emphasizes a shrill creature scream for Henry.
 
 Both are premade recordings, not generated audio. Source excerpts are stored in-game as adapted effects. The existing wet contact sounds remain underneath the hurt voices. Voice settings are editable in ItemCombatSettings.
+
+## Uploaded death-audio revision
+
+The Geo/Henry hurt vocal assets and their playback were removed at Ian's request. `monster_death_uploaded.mp3` is an unchanged copy of the user-provided `ragecore29-htf-blood-splatter-explode-478992.mp3`. Used as the death sound for both monsters at full AudioSource volume and original pitch. The earlier hurt-vocal source entries above are historical; those two WAVs are no longer shipped.

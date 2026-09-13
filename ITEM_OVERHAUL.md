@@ -130,3 +130,11 @@ The existing MonsterContact particle prefab now emits 36 initial blood droplets 
 Manual check: open SandboxPrototype, spawn Geo, then shoot or hit with a crowbar/axe. Expect one low hurt growl and a clear red burst at each accepted hit. Reset with Henry and expect a distinct shrill scream. Try a tranq hit and a lethal shotgun hit, then a miss: misses must produce no monster feedback. Repeat in SandboxLaunch as host and client, with the other player observing nearby. Confirm both hear the matching voice and see blood once per hit. Audio character and loudness still need Ian's listening pass.
 
 Validation for this revision: Unity 6000.3.15f1 batch import/compilation and native prefab serialization completed. Two focused PlayMode tests passed: distinct hurt voices/visible blood/no replay, and existing exact damage/death rules. Temporary setup script and meta removed. No fresh host/client run or subjective listening/visual-quality pass was performed.
+
+## Death-audio / reduced-blood revision
+
+Removed both monster hurt voices and their unused settings/assets. Ordinary wet contact sounds remain. Hit and death particle burst counts and emission rates are now 25% of the preceding revision (hit burst: 36 to 9; flow: 45 to 11.25 particles/sec). The uploaded MP3 is used unchanged for both monsters' death sound, at volume 1 and original pitch. Death playback remains detached from the body so despawning cannot cut it short; the existing replicated contact/death guard prevents duplicate playback.
+
+Manual check: shoot/hit Geo and Henry; expect no growl/scream and substantially less blood. Kill each with a shotgun; expect the supplied loud death effect once, continuing after despawn. Repeat with a nearby host/client observer. No gameplay damage or replicated-state changes.
+
+Validated in Unity 6000.3.15f1: import/compilation and native asset serialization succeeded; the focused PlayMode test passed for both monsters (no hurt voice, quarter hit burst, supplied death clip at full volume, one playback per death). Uploaded source and imported copy have identical SHA-256 hashes. No fresh host/client or subjective listening pass.
