@@ -75,7 +75,9 @@ namespace TheSancturary.Inventory
         {
             ResolveReferences();
             if (itemPitchPivot != null)
-                _itemPitchRestRotation = itemPitchPivot.localRotation;
+                _itemPitchRestRotation = player != null
+                    ? Quaternion.Inverse(player.transform.rotation) * itemPitchPivot.rotation
+                    : itemPitchPivot.localRotation;
             DisablePresentation();
         }
 
@@ -83,7 +85,9 @@ namespace TheSancturary.Inventory
         {
             ResolveReferences();
             if (itemPitchPivot != null)
-                _itemPitchRestRotation = itemPitchPivot.localRotation;
+                _itemPitchRestRotation = player != null
+                    ? Quaternion.Inverse(player.transform.rotation) * itemPitchPivot.rotation
+                    : itemPitchPivot.localRotation;
             _presentationWasValid = false;
         }
 
@@ -125,7 +129,7 @@ namespace TheSancturary.Inventory
             }
 
             float chestPitch = _smoothedPitch * chestPitchFraction;
-            ApplyItemPitch(_smoothedPitch - chestPitch);
+            ApplyItemPitch(_smoothedPitch);
             ApplyChestLook(chestPitch);
             ApplyHeadLook(_smoothedPitch);
         }
@@ -135,8 +139,11 @@ namespace TheSancturary.Inventory
             if (itemPitchPivot == null)
                 return;
 
-            itemPitchPivot.localRotation =
-                _itemPitchRestRotation * Quaternion.Euler(pitch, 0f, 0f);
+            // Keep the item attached to the torso, but do not inherit crouch
+            // and locomotion chest tilt as additional weapon aim.
+            Transform facing = player != null ? player.transform : transform;
+            itemPitchPivot.rotation = facing.rotation *
+                Quaternion.Euler(pitch, 0f, 0f) * _itemPitchRestRotation;
         }
 
         private void ApplyHeadLook(float pitch)

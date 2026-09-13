@@ -56,7 +56,7 @@ Transform:
   m_GameObject: {fileID: 3717869008160322773}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.12, y: -0.155, z: 0.06}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -151,6 +151,9 @@ MonoBehaviour:
   ownerEquipPositionOffset: {x: 0, y: -0.12, z: -0.08}
   remoteEquipPositionOffset: {x: 0, y: -0.08, z: -0.04}
   equipRotationOffset: {x: 12, y: 0, z: 4}
+  remoteReloadDuration: 1.1
+  remoteReloadPositionOffset: {x: 0, y: -0.1, z: -0.04}
+  remoteReloadRotationOffset: {x: 18, y: -15, z: -25}
   muzzleFlashDuration: 0.055
   muzzleFlashIntensity: 8
 --- !u!1 &8084540690921007717

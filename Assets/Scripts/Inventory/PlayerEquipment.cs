@@ -339,7 +339,9 @@ namespace TheSancturary.Inventory
                 return;
 
             ItemActionPresentation action = controller.LastAction;
-            if (action != ItemActionPresentation.Reload)
+            if (action == ItemActionPresentation.Reload)
+                _thirdPersonHeldVisual?.PlayRemoteReload();
+            else
             {
                 bool dryFire = action == ItemActionPresentation.DryFire;
                 _firstPersonHeldVisual?.PlayUse(dryFire);

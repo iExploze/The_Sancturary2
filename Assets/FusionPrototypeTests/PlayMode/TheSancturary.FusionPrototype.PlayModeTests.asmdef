@@ -7,7 +7,9 @@
     "Unity.InputSystem",
     "Unity.RenderPipelines.Core.Runtime",
     "Unity.RenderPipelines.Universal.Runtime",
-    "UnityEngine.TestRunner"
+    "UnityEngine.TestRunner",
+    "Fusion.Realtime",
+    "Photon.Realtime"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

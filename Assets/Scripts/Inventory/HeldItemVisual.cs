@@ -23,7 +23,8 @@ namespace TheSancturary.Inventory
             RevolverRecoil,
             TranqRecoil,
             ShotgunRecoil,
-            DryFire
+            DryFire,
+            Reload
         }
 
         [Header("Visual References")]
@@ -41,6 +42,11 @@ namespace TheSancturary.Inventory
             new(0f, -0.08f, -0.04f);
         [SerializeField] private Vector3 equipRotationOffset =
             new(12f, 0f, 4f);
+
+        [Header("Third-person Reload")]
+        [SerializeField, Min(0.1f)] private float remoteReloadDuration = 1.1f;
+        [SerializeField] private Vector3 remoteReloadPositionOffset = new(0f, -0.10f, -0.04f);
+        [SerializeField] private Vector3 remoteReloadRotationOffset = new(18f, -15f, -25f);
 
         [Header("Muzzle Flash")]
         [SerializeField, Min(0.01f)] private float muzzleFlashDuration = 0.055f;
@@ -149,6 +155,19 @@ namespace TheSancturary.Inventory
                 BeginMuzzleFlash();
         }
 
+        /// <summary>Rough external reload, driven only by a confirmed action sequence.
+        /// This does not alter ammunition or the owner's existing presentation.</summary>
+        public void PlayRemoteReload()
+        {
+            if (!_configured || _ownerPresentation || _definition == null ||
+                _definition.UseKind != InventoryItemUseKind.Firearm) return;
+            CancelUse();
+            _motionProfile = MotionProfile.Reload;
+            _useDuration = Mathf.Max(.1f, remoteReloadDuration);
+            _useElapsed = 0f;
+            _useActive = true;
+        }
+
         /// <summary>
         /// Stops only local presentation. It has no effect on an authoritative
         /// action that may still be running elsewhere.
@@ -174,7 +193,11 @@ namespace TheSancturary.Inventory
 
             if (_useActive)
             {
-                _useElapsed += deltaTime;
+                // Keep confirmed external actions readable across a slow render frame.
+                // This clock is cosmetic; gameplay and owner timing remain unchanged.
+                _useElapsed += _ownerPresentation
+                    ? deltaTime
+                    : Mathf.Min(deltaTime, _useDuration * 0.25f);
                 if (_useElapsed >= _useDuration)
                 {
                     _useElapsed = _useDuration;
@@ -243,6 +266,11 @@ namespace TheSancturary.Inventory
 
             switch (_motionProfile)
             {
+                case MotionProfile.Reload:
+                    positionOffset = remoteReloadPositionOffset * pulse;
+                    eulerOffset = remoteReloadRotationOffset * pulse;
+                    break;
+
                 case MotionProfile.FlashlightToggle:
                     positionOffset = new Vector3(0f, -0.006f, 0.012f) * pulse;
                     eulerOffset = new Vector3(-3f, 2f, -9f) * pulse;
@@ -256,7 +284,7 @@ namespace TheSancturary.Inventory
                     positionOffset = new Vector3(
                         0.015f * reach,
                         -0.025f * plunger,
-                        0.13f * reach);
+                        (_ownerPresentation ? 0.13f : 0.20f) * reach);
                     eulerOffset = new Vector3(
                         18f * reach,
                         -5f * reach,
