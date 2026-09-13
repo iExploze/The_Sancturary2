@@ -26,6 +26,12 @@ namespace TheSancturary.Inventory
         public ParticleSystem deathEffect;
         public ParticleSystem sleepEffect;
         public AudioClip[] monsterImpacts;
+        [Header("Monster hurt voices")]
+        public AudioClip geoHurtVoice;
+        public AudioClip henryHurtVoice;
+        [Range(0.3f, 2f)] public float geoHurtPitch = 0.65f;
+        [Range(0.3f, 2f)] public float henryHurtPitch = 1.15f;
+        [Range(0f, 1f)] public float hurtVoiceVolume = 1f;
         public AudioClip deathBurst;
         public AudioClip dartImpact;
         public AudioMixerGroup effectsMixer;

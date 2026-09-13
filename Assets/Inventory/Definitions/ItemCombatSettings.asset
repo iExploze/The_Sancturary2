@@ -34,6 +34,11 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 1140bea6da18bc242a7801d45cfee556, type: 3}
   - {fileID: 8300000, guid: 798ac9fc120c9454491d9e25a16f374e, type: 3}
   - {fileID: 8300000, guid: aebf98b09ff2a1843895cbc678b5a29c, type: 3}
+  geoHurtVoice: {fileID: 8300000, guid: cdb0673773360354f858406d1beb1fbf, type: 3}
+  henryHurtVoice: {fileID: 8300000, guid: 3129456b4592589409cb31da4925fb23, type: 3}
+  geoHurtPitch: 0.65
+  henryHurtPitch: 1.15
+  hurtVoiceVolume: 1
   deathBurst: {fileID: 8300000, guid: 36ffddb3141c9cd4582505c0ef277646, type: 3}
   dartImpact: {fileID: 8300000, guid: 7be559b4d1e2786498319026aa1ae1d3, type: 3}
   effectsMixer: {fileID: 0}

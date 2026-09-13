@@ -61,3 +61,10 @@ The Freesound selections use the publicly available high-quality MP3 previews, c
 | monster_death_burst.wav | foley/Impacts/shouldergrab.wav | [0, 4.366375] |
 | monster_dart_contact.wav | foley/Impacts/tap.wav | [0, 0.9520181405895691] |
 | item_reload_single_round.wav | 760469.mp3 | [8.6, 9.27] |
+
+## Monster hurt vocals — September 12 revision
+
+- `geo_hurt_growl.wav`: rubberduck, `hurt_03.ogg` from [80 CC0 creature SFX](https://opengameart.org/content/80-cc0-creature-sfx), CC0 1.0. The author describes recorded mouth performances with processing. Quiet edges trimmed, stereo averaged to mono, peak balanced to 0.85, 10 ms fades; 48 kHz PCM16. Playback pitch 0.65 gives Geo a low hurt grunt/growl.
+- `henry_hurt_scream.wav`: pauliuw, `high_pitch_scream.mp3` from [High pitch scream sounds(2)](https://opengameart.org/content/high-pitch-scream-sounds2), CC0 1.0. First 1.4 seconds selected, quiet edges trimmed, mono conversion, 48 kHz resampling, peak 0.85 and 10 ms fades. Playback pitch 1.15 emphasizes a shrill creature scream for Henry.
+
+Both are premade recordings, not generated audio. Source excerpts are stored in-game as adapted effects. The existing wet contact sounds remain underneath the hurt voices. Voice settings are editable in ItemCombatSettings.
